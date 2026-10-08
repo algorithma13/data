@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Група D - Algorithma 13</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --group-d: #f59e0b;
+            --group-c: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(245, 158, 11, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* НАВИГАЦИЯ */
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;}
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        nav a:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        
+        /* Активен таб за Група D */
+        nav a.active { color: var(--group-d); background: rgba(245, 158, 11, 0.1); }
+
+        /* ОСНОВНО СЪДЪРЖАНИЕ */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            width: 100%;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, var(--group-d) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Стилове за Раздели (Акордеон) */
+        .module-container {
+            background-color: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            margin-bottom: 4rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .module-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            padding-right: 3rem;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .module-header:hover {
+            opacity: 0.8;
+        }
+
+        .module-header::after {
+            content: '▲';
+            position: absolute;
+            right: 1.5rem;
+            top: 40%;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .module-container.collapsed .module-header::after {
+            transform: rotate(180deg);
+        }
+
+        .module-container.collapsed .section-container {
+            display: none;
+        }
+
+        .module-header h2 {
+            font-size: 2.25rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .module-header h2 span {
+            color: var(--group-d);
+        }
+
+        .module-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section-container {
+            margin-bottom: 4rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section-container:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 20px;
+            background-color: var(--group-d);
+            border-radius: 3px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* КАРТИ (Уроци и Задачи) */
+        .item-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .item-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 15px 35px -10px rgba(245, 158, 11, 0.15);
+        }
+
+        .item-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--group-d), #fbbf24);
+        }
+
+        /* Специален стил за карти със задачи (сини) */
+        .task-card::before {
+            background: linear-gradient(180deg, var(--accent), #60a5fa);
+        }
+        
+        .task-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 15px 35px -10px rgba(59, 130, 246, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            gap: 0.5rem; 
+        }
+
+        .badge {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--group-d);
+            padding: 0.25rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em; 
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            white-space: nowrap; 
+            flex-shrink: 0; 
+        }
+        
+        .task-card .badge {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .read-time {
+            color: var(--text-muted);
+            font-size: 0.7rem; 
+            font-family: monospace;
+            text-align: right;
+            white-space: nowrap; 
+        }
+
+        .item-card h3 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .item-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .task-ref {
+            background-color: rgba(11, 17, 32, 0.5);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            border-left: 2px solid var(--accent);
+        }
+
+        .task-ref a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .task-ref a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        .btn-lesson {
+            display: inline-block;
+            text-align: center;
+            padding: 0.85rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin-top: auto;
+            background-color: rgba(245, 158, 11, 0.1); 
+            color: var(--group-d);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-lesson:hover {
+            background-color: var(--group-d);
+            color: #fff;
+        }
+        
+        .task-card .btn-lesson {
+            background-color: rgba(59, 130, 246, 0.1); 
+            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .task-card .btn-lesson:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: auto;
+            background: rgba(11, 17, 32, 0.5);
+        }
+        
+        @media (max-width: 480px) {
+            .item-card { padding: 1.25rem; }
+            .badge { padding: 0.2rem 0.5rem; font-size: 0.6rem; }
+            .read-time { font-size: 0.65rem; }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 2.5rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- НАВИГАЦИЯ -->
+    <header>
+        <a href="index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <nav>
+            <a href="index.html">Начало</a>
+            <a href="group-d.html" class="active">Група D</a>
+            <a href="group-c.html">Група C</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h1>Група D</h1>
+            <p>Материали за 6. клас. Тук ще откриете теоретични уроци, задачи от изминали състезания и интерактивни
+                визуализации на базови алгоритми.</p>
+        </div>
+
+        <!-- ==========================================
+             РАЗДЕЛ I: Преговор
+        =========================================== -->
+        <div class="module-container collapsed" id="module-1">
+            <div class="module-header">
+                <h2>Раздел I: <span>Преговор</span></h2>
+                <p>Припомняне на основните елементи на езика C++, техники на програмиране, вектори и базова математика.
+                </p>
+            </div>
+
+            <section class="section-container">
+                <h3 class="section-title">Теоретични уроци</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 1</span>
+                            <span class="read-time">⏱️ 45 мин</span>
+                        </div>
+                        <h3>Въведение в С++ и линейни алгоритми</h3>
+                        <p>Основни типове данни (int, long long, double, char). Структура на програмата, вход и изход
+                            чрез cin и cout. Размяна на стойности.</p>
+                        <div class="task-ref">
+                            📌 <strong>Към урока:</strong>
+                            <br><a href="#task-1">Задача D1: Аквариум</a>
+                            <br><a href="#task-2">Задача D2: Остатъци</a>
+                            <br><a href="#task-3">Задача D3: Най-близките кратни</a>
+                        </div>
+                        <a href="D/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 2</span>
+                            <span class="read-time">⏱️ 90 мин</span>
+                        </div>
+                        <h3>Техники на програмиране</h3>
+                        <p>Логически операции (И, ИЛИ, НЕ), работа с цикли (for, while, do-while), функции. Въведение в
+                            едномерните масиви и намиране на min/max елемент.</p>
+                        <a href="D/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 3</span>
+                            <span class="read-time">⏱️ 60 мин</span>
+                        </div>
+                        <h3>Структури от данни: Вектори</h3>
+                        <p>Въведение в динамичните масиви <code>std::vector</code>. Инициализация, достъп до елементи,
+                            добавяне и премахване, както и сортиране.</p>
+                        <a href="D/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 4</span>
+                            <span class="read-time">⏱️ 60 мин</span>
+                        </div>
+                        <h3>Математика: Цели числа и алгоритми</h3>
+                        <p>Избор на типове данни (int vs long long), избягване на препълване, модулна аритметика с
+                            отрицателни числа и сума на цифри.</p>
+                        <a href="D/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="section-container" id="tasks">
+                <h3 class="section-title" style="color: #60a5fa;">Тематични задачи</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card task-card" id="task-1">
+                        <div class="card-header">
+                            <span class="badge">Задача D1</span>
+                            <span class="read-time">Време: 1s | Памет: 64MB</span>
+                        </div>
+                        <h3>Аквариум</h3>
+                        <p>Определете колко рибки могат да се пуснат в аквариум с даден обем V и изискуема вода на рибка
+                            M, както и колко излишна вода ще остане.</p>
+                        <a href="D/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                    <div class="item-card task-card" id="task-2">
+                        <div class="card-header">
+                            <span class="badge">Задача D2</span>
+                            <span class="read-time">Време: 1s | Памет: 64MB</span>
+                        </div>
+                        <h3>Остатъци</h3>
+                        <p>Определяне на математическия интервал, в който винаги попада остатъкът от делението на
+                            числото N на числото d.</p>
+                        <a href="D/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                    <div class="item-card task-card" id="task-3">
+                        <div class="card-header">
+                            <span class="badge">Задача D3</span>
+                            <span class="read-time">Време: 1s | Памет: 64MB</span>
+                        </div>
+                        <h3>Най-близките кратни</h3>
+                        <p>Намиране на най-малкото кратно, по-голямо или равно на N, и най-голямото кратно, по-малко или
+                            равно на N.</p>
+                        <a href="D/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Логика за свиване и разтягане на главните раздели
+        document.addEventListener('DOMContentLoaded', () => {
+            const moduleHeaders = document.querySelectorAll('.module-header');
+
+            moduleHeaders.forEach(header => {
+                header.addEventListener('click', function () {
+                    const container = this.parentElement;
+                    container.classList.toggle('collapsed'); 
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

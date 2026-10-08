@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Група C - Algorithma 13</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачите */
+            --accent-glow: rgba(16, 185, 129, 0.5);
+            --group-d: #f59e0b;
+            --group-c: #10b981; /* Зелен акцент за Група C */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08), transparent 25%);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* НАВИГАЦИЯ */
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;}
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        nav a:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        
+        /* Активен таб за Група C */
+        nav a.active { color: var(--group-c); background: rgba(16, 185, 129, 0.1); }
+
+        /* ОСНОВНО СЪДЪРЖАНИЕ */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            width: 100%;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, var(--group-c) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Стилове за Раздели (Акордеон) */
+        .module-container {
+            background-color: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            margin-bottom: 4rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .module-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            padding-right: 3rem;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .module-header:hover {
+            opacity: 0.8;
+        }
+
+        .module-header::after {
+            content: '▲';
+            position: absolute;
+            right: 1.5rem;
+            top: 40%;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .module-container.collapsed .module-header::after {
+            transform: rotate(180deg);
+        }
+
+        .module-container.collapsed .section-container {
+            display: none;
+        }
+
+        .module-header h2 {
+            font-size: 2.25rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .module-header h2 span {
+            color: var(--group-c);
+        }
+
+        .module-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section-container {
+            margin-bottom: 4rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section-container:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 20px;
+            background-color: var(--group-c);
+            border-radius: 3px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* КАРТИ (Уроци и Задачи) */
+        .item-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .item-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.15);
+        }
+
+        .item-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--group-c), #34d399);
+        }
+
+        /* Специален стил за карти със задачи (сини) */
+        .task-card::before {
+            background: linear-gradient(180deg, var(--accent), #60a5fa);
+        }
+        
+        .task-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 15px 35px -10px rgba(59, 130, 246, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            gap: 0.5rem; 
+        }
+
+        .badge {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--group-c);
+            padding: 0.25rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            white-space: nowrap; 
+            flex-shrink: 0;
+        }
+        
+        .task-card .badge {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .read-time {
+            color: var(--text-muted);
+            font-size: clamp(0.7rem, 3vw, 0.85rem);
+            font-family: monospace;
+            text-align: right;
+            white-space: nowrap; 
+        }
+
+        .item-card h3 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .item-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .task-ref {
+            background-color: rgba(11, 17, 32, 0.5);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            border-left: 2px solid var(--accent);
+        }
+
+        .task-ref a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .task-ref a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+
+        /* Подсказки в задачите */
+        .hint-details {
+            margin-bottom: 1.5rem;
+            background-color: rgba(11, 17, 32, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .hint-details summary {
+            padding: 0.85rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #60a5fa;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .hint-details summary:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .hint-content {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .hint-content ul {
+            padding-left: 1.2rem;
+        }
+
+        .hint-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .hint-content code {
+            font-family: monospace;
+            color: #38bdf8;
+        }
+
+        .btn-lesson {
+            display: inline-block;
+            text-align: center;
+            padding: 0.85rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin-top: auto;
+            background-color: rgba(16, 185, 129, 0.1); 
+            color: var(--group-c);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-lesson:hover {
+            background-color: var(--group-c);
+            color: #fff;
+        }
+        
+        .task-card .btn-lesson {
+            background-color: rgba(59, 130, 246, 0.1); 
+            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .task-card .btn-lesson:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: auto;
+            background: rgba(11, 17, 32, 0.5);
+        }
+        
+        @media (max-width: 480px) {
+            .item-card { padding: 1.25rem; }
+            .badge { padding: 0.2rem 0.5rem; font-size: 0.6rem; }
+            .read-time { font-size: 0.65rem; }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 2.5rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- НАВИГАЦИЯ -->
+    <header>
+        <a href="index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <nav>
+            <a href="index.html">Начало</a>
+            <a href="group-d.html">Група D</a>
+            <a href="group-c.html" class="active">Група C</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h1>Група C</h1>
+            <p>Материали за 7-8 клас. Тук ще намерите уроци и задачи, свързани със структури от данни, графи, сортировки и динамично оптимиране.</p>
+        </div>
+
+        <!-- ==========================================
+             РАЗДЕЛ I: Преговор с допълнение
+        =========================================== -->
+        <div class="module-container collapsed" id="module-1">
+            <div class="module-header">
+                <h2>Раздел I: <span>Преговор с допълнение</span></h2>
+                <p>Оптимизация на паметта, бърз вход/изход, полезни макроси и структури за ускоряване на кода.</p>
+            </div>
+
+            <section class="section-container">
+                <h3 class="section-title">Теоретични уроци</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 1 (С)</span>
+                            <span class="read-time">⏱️ 45 мин</span>
+                        </div>
+                        <h3>Трикове на езика C++</h3>
+                        <p>Бърз cin/cout, глобални масиви срещу Stack Overflow, използване на <code>pair</code> и
+                            <code>tuple</code>, и ефективно подаване по референция.
+                        </p>
+                        <a href="C/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 2 (С)</span>
+                            <span class="read-time">⏱️ 60 мин</span>
+                        </div>
+                        <h3>Побитови операции</h3>
+                        <p>Побитово И, ИЛИ, отрицание и XOR. Бърза проверка за четност и алгоритъм за намиране на
+                            уникален елемент чрез XOR.</p>
+                        <div class="task-ref">
+                            📌 <strong>Към урока:</strong>
+                            <br><a href="#task-1">Задача C1: Скакалец</a>
+                        </div>
+                        <a href="C/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 3 (С)</span>
+                            <span class="read-time">⏱️ 45 мин</span>
+                        </div>
+                        <h3>Побитово отместване (Bit Shift)</h3>
+                        <p>Изключително бързо умножение и деление чрез отместване на битове наляво
+                            (<code>&lt;&lt;</code>) и надясно (<code>&gt;&gt;</code>). Внимание за пренатоварване.</p>
+                        <a href="C/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 4 (С)</span>
+                            <span class="read-time">⏱️ 90 мин</span>
+                        </div>
+                        <h3>Задачи с побитови маски</h3>
+                        <p>Как да променяме, нулираме или обръщаме точно определени битове чрез създаване на
+                            специализирани побитови маски с <code>1 &lt;&lt; p</code>.</p>
+                        <div class="task-ref">
+                            📌 <strong>Към урока:</strong>
+                            <a href="#task-2">Задача C2: Азерия</a>
+                            <a href="#task-3">Задача C3: Пица</a>
+                            <a href="#task-4">Задача C4: Съвместимост</a>
+                        </div>
+                        <a href="C/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="section-container" id="tasks">
+                <h3 class="section-title" style="color: #60a5fa;">Тематични задачи</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card task-card" id="task-1">
+                        <div class="card-header">
+                            <span class="badge">Задача C1</span>
+                            <span class="read-time">Време: 2s | Памет: 512MB</span>
+                        </div>
+                        <h3>Скакалец</h3>
+                        <p>Намерете остатъка при деление на S на N (където N е степен на 2) <strong>БЕЗ</strong> да
+                            използвате оператора за модулно деление (%).</p>
+                        <a href="C/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                    <div class="item-card task-card" id="task-2">
+                        <div class="card-header">
+                            <span class="badge">Задача C2</span>
+                            <span class="read-time">Време: 0.18s | Памет: 256MB</span>
+                        </div>
+                        <h3>Азерия</h3>
+                        <p>Управлявайте 60 различни заклинания в една променлива! Имплементирайте команди за научаване,
+                            забравяне и проверка чрез побитови маски.</p>
+                        <a href="C/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                    <div class="item-card task-card" id="task-3">
+                        <div class="card-header">
+                            <span class="badge">Задача C3</span>
+                            <span class="read-time">Време: 0.15s | Памет: 256MB</span>
+                        </div>
+                        <h3>Пица</h3>
+                        <p>Група приятели поръчват пица, но трябва да изберат само добавки, които абсолютно всички
+                            харесват. Намерете максималния брой съвпадащи добавки.</p>
+                        <a href="C/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                    <div class="item-card task-card" id="task-4">
+                        <div class="card-header">
+                            <span class="badge">Задача C4</span>
+                            <span class="read-time">Време: 0.18s | Памет: 256MB</span>
+                        </div>
+                        <h3>Съвместимост</h3>
+                        <p>Открийте кои софтуерни библиотеки (маркирани с букви 'a'-'z') са общи за всички клиентски
+                            системи. Изведете ги сортирани по азбучен ред.</p>
+                        <details class="hint-details">
+                            <summary>💡 Указания (Подсказки)</summary>
+                            <div class="hint-content">
+                                <ul>
+                                    <li><strong>Азбуката като маска:</strong> Има точно 26 малки латински букви ('a' до
+                                        'z'). 26 бита се побират идеално в стандартен 32-битов <code>int</code>!</li>
+                                    <li><strong>Трансформация:</strong> За да превърнете буква <code>c</code> в номер на
+                                        бит, използвайте <code>c - 'a'</code>. Така 'a' става 0-ви бит, 'b' е 1-ви бит и
+                                        т.н.</li>
+                                    <li><strong>Автоматично сортиране:</strong> Тъй като битовете в маската са физически
+                                        подредени (от 0 до 25), ако накрая обходите крайния резултат и отпечатате
+                                        активните битове като символи <code>char('a' + i)</code>, те ще излязат
+                                        автоматично сортирани по азбучен ред!</li>
+                                </ul>
+                            </div>
+                        </details>
+                        <a href="C/tasks/task-4.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Логика за свиване и разтягане на главните раздели
+        document.addEventListener('DOMContentLoaded', () => {
+            const moduleHeaders = document.querySelectorAll('.module-header');
+
+            moduleHeaders.forEach(header => {
+                header.addEventListener('click', function () {
+                    const container = this.parentElement;
+                    container.classList.toggle('collapsed'); 
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

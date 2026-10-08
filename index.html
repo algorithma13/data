@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithma 13 - Платформа за състезателно програмиране</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --group-d: #f59e0b;
+            --group-c: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.08), transparent 25%);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* НАВИГАЦИЯ */
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;}
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        nav a:hover, .dropdown:hover .dropbtn { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        nav a.active { color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+
+        /* ПАДАЩО МЕНЮ */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            min-width: 150px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.3);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            z-index: 101;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .dropdown-content a {
+            padding: 0.75rem 1.25rem;
+            display: block;
+            border-radius: 0;
+            text-align: center;
+        }
+
+        .dropdown-content a:not(:last-child) {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .dropdown-content a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: dropdownFadeIn 0.2s ease-out;
+        }
+
+        /* ОСНОВНО СЪДЪРЖАНИЕ */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 5rem;
+            animation: fadeInDown 0.8s ease-out;
+            position: relative;
+        }
+
+        .hero-section h1 {
+            font-size: 2.75rem; 
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section h1 span {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* МРЕЖА С РАЗДЕЛИ */
+        .paths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2.5rem;
+            width: 100%;
+            max-width: 900px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .path-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .path-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .path-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            opacity: 0.5;
+        }
+
+        .card-d::before { background: linear-gradient(90deg, var(--group-d), #fbbf24); }
+        .card-d:hover { box-shadow: 0 20px 40px -10px rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); }
+
+        .card-c::before { background: linear-gradient(90deg, var(--group-c), #34d399); }
+        .card-c:hover { box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); }
+
+        .path-header {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .path-icon {
+            background: rgba(255,255,255,0.05);
+            width: 65px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .path-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .path-title span {
+            font-size: 0.95rem; 
+            color: var(--text-muted); 
+            font-weight: normal; 
+            display: block; 
+            margin-top: 0.25rem;
+        }
+
+        .path-desc {
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            flex: 1;
+            font-size: 1.05rem;
+        }
+
+        .btn-enter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 1.05rem;
+            width: 100%;
+        }
+
+        .btn-enter svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .btn-enter:hover svg {
+            transform: translateX(6px);
+        }
+
+        .btn-d { background-color: rgba(245, 158, 11, 0.1); color: var(--group-d); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .btn-d:hover { background-color: var(--group-d); color: white; }
+
+        .btn-c { background-color: rgba(16, 185, 129, 0.1); color: var(--group-c); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .btn-c:hover { background-color: var(--group-c); color: white; }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes dropdownFadeIn {
+            from { opacity: 0; transform: translate(-50%, -10px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: auto;
+            background: rgba(11, 17, 32, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section h1 { font-size: 2rem; }
+            .paths-grid { grid-template-columns: 1fr; }
+            .dropdown-content { position: static; transform: none; display: none; margin-top: 0; box-shadow: none; border: none; background: transparent;}
+            .dropdown:hover .dropdown-content { display: block; animation: none;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- НАВИГАЦИЯ -->
+    <header>
+        <a href="index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <nav>
+            <a href="index.html" class="active">Начало</a>
+            <a href="group-d.html">Група D</a>
+            <a href="group-c.html">Група C</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ГЕРОЙСКА СЕКЦИЯ -->
+        <section class="hero-section">
+            <h1><span>Algorithma 13</span></h1>
+            <p>Платформата, която превръща сложния C++ код и структури от данни в достъпно и интерактивно преживяване. Изберете своята група и започнете подготовката.</p>
+        </section>
+
+        <!-- СЪСТЕЗАТЕЛНИ РАЗДЕЛИ -->
+        <div class="paths-grid">
+
+            <!-- Група D -->
+            <div class="path-card card-d">
+                <div class="path-header">
+                    <div class="path-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px; color: var(--group-d);">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </div>
+                    <h2 class="path-title">Група D <span>(6. клас)</span></h2>
+                </div>
+                <p class="path-desc">Официални задачи от НОИ, структури от данни, сортиране и оптимизация. Интерактивни дебъгери стъпка по стъпка за задълбочено разбиране на C++ кода.</p>
+                <a href="group-d.html" class="btn-enter btn-d">
+                    Към учебните материали 
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Група C -->
+            <div class="path-card card-c">
+                <div class="path-header">
+                    <div class="path-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px; color: var(--group-c);">
+                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                            <rect x="9" y="9" width="6" height="6"></rect>
+                            <line x1="9" y1="1" x2="9" y2="4"></line>
+                            <line x1="15" y1="1" x2="15" y2="4"></line>
+                            <line x1="9" y1="20" x2="9" y2="23"></line>
+                            <line x1="15" y1="20" x2="15" y2="23"></line>
+                            <line x1="20" y1="9" x2="23" y2="9"></line>
+                            <line x1="20" y1="14" x2="23" y2="14"></line>
+                            <line x1="1" y1="9" x2="4" y2="9"></line>
+                            <line x1="1" y1="14" x2="4" y2="14"></line>
+                        </svg>
+                    </div>
+                    <h2 class="path-title">Група C <span>(7. - 8. клас)</span></h2>
+                </div>
+                <p class="path-desc">Сложна алгоритмична теория, графи, дървета и състояния. Анализи на турнирни задачи и симулатори на паметта за напреднали състезатели.</p>
+                <a href="group-c.html" class="btn-enter btn-c">
+                    Към учебните материали
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+</body>
+</html>
