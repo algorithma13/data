@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 3: Вектори</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Променено от 1.2 на 1 за точно 50/50 разделяне */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before { content: '⚡'; }
+
+        /* Вектор визуализатор */
+        .vector-container {
+            display: flex;
+            gap: 0.2rem;
+            padding: 1rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            min-height: 70px;
+            align-items: center;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .v-elem {
+            background-color: rgba(245, 158, 11, 0.2);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .v-elem.new {
+            animation: popIn 0.3s ease-out forwards;
+        }
+        
+        .v-elem.removing {
+            animation: popOut 0.3s ease-in forwards;
+        }
+
+        .v-index {
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes popOut {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"] {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 80px;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover { background-color: var(--accent-hover); color: #fff;}
+        button.danger { background-color: #ef4444; color: #fff; }
+        button.danger:hover { background-color: #dc2626; }
+        button.action { background-color: #3b82f6; color: #fff; }
+        button.action:hover { background-color: #2563eb; }
+
+        .stat-box {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            color: #38bdf8;
+            font-size: 0.9rem;
+            text-align: center;
+            border: 1px dashed var(--border);
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Структури от данни: Вектори</h1>
+                
+                <h2>1. Типът vector</h2>
+                <p>На вектора можем да гледаме като на масив, размерът на който може да се изменя динамично по време на изпълнението на програмата.</p>
+                <p>Използваме го, когато не можем да си позволим да заделим статичен масив с максималния възможен брой елементи (например, защото не знаем този брой предварително).</p>
+<pre>#include &lt;iostream&gt;
+#include &lt;vector&gt; // Задължителна библиотека
+using namespace std;</pre>
+
+                <h2>2. Деклариране на вектор</h2>
+                <p>Общата форма е <code>vector&lt;тип&gt; име;</code>. Векторите могат да се декларират празни, или с определен начален капацитет и стойности по подразбиране.</p>
+<pre>// Празен вектор
+vector&lt;int&gt; v; 
+
+// Вектор с начален капацитет 10 (попълнен с нули)
+vector&lt;int&gt; v1(10); 
+
+// Вектор с капацитет 5 и стойности по подразбиране 10
+vector&lt;int&gt; v2(5, 10); 
+
+// Инициализация със списък (C++11)
+vector&lt;int&gt; v3{342, 42, 432};</pre>
+
+                <h2>3. Основни операции</h2>
+                <ul>
+                    <li><strong>Добавяне:</strong> <code>v.push_back(X);</code> добавя елемента X в края на вектора. Размерът му се увеличава с 1.</li>
+                    <li><strong>Премахване:</strong> <code>v.pop_back();</code> премахва последния елемент от вектора.</li>
+                    <li><strong>Достъп:</strong> Както при масивите <code>v[i]</code> или по-сигурния метод <code>v.at(i)</code> (хвърля грешка, ако индексът е извън граници).</li>
+                </ul>
+                <p><em>👉 Тествайте динамичното добавяне и премахване на елементи във визуализатора вдясно!</em></p>
+
+                <h2>4. Векторни функции</h2>
+                <ul>
+                    <li><code>v.size()</code> - връща текущия брой на елементите във вектора.</li>
+                    <li><code>v.empty()</code> - връща true(1), ако векторът е празен, и false(0) в противен случай.</li>
+                    <li><code>v.clear()</code> - премахва всички елементи от вектора.</li>
+                    <li><code>v.front()</code> и <code>v.back()</code> - връщат съответно първия и последния елемент.</li>
+                </ul>
+
+                <h2>5. Обхождане (Итерация)</h2>
+                <p>Можем да обходим вектор със стандартен <code>for</code> цикъл чрез индекси:</p>
+<pre>for (int i = 0; i &lt; v.size(); i++) {
+    cout &lt;&lt; v[i] &lt;&lt; " ";
+}</pre>
+                
+                <p>Или чрез модерния С++11 range-based for цикъл. Използваме референция (<code>&amp;</code>), за да не копираме елементите излишно.</p>
+<pre>// Само за четене (по-бързо и безопасно)
+for (const auto&amp; value : v) {
+    cout &lt;&lt; value &lt;&lt; " ";
+}
+
+// Ако искаме да променим стойностите в самия вектор
+for (auto&amp; value : v) {
+    value *= 2; 
+}</pre>
+
+                <h2>6. Сортиране на вектор</h2>
+                <p>За да сортираме вектор, използваме функцията <code>sort</code> от библиотеката <code>&lt;algorithm&gt;</code>. Подаваме й итератори към началото и края.</p>
+<pre>#include &lt;algorithm&gt;
+// ...
+vector&lt;int&gt; v{ 342, 42, 432 };
+sort(v.begin(), v.end()); 
+// Резултат: 42 342 432</pre>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+            
+            <!-- Визуализатор: Вектор -->
+            <div class="vis-card">
+                <div class="vis-title">Интерактивен std::vector</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Добавяйте, премахвайте и сортирайте елементи, за да видите как векторът динамично променя размера си (v.size()).
+                </p>
+
+                <div class="controls">
+                    <input type="number" id="val-input" placeholder="Стойност" value="42">
+                    <button onclick="pushBack()">push_back()</button>
+                    <button class="danger" onclick="popBack()">pop_back()</button>
+                </div>
+                
+                <div class="controls">
+                    <button class="action" onclick="sortVector()">sort()</button>
+                    <button class="danger" onclick="clearVector()">clear()</button>
+                </div>
+
+                <div class="vector-container" id="vector-vis">
+                    <!-- Елементите ще се появят тук -->
+                    <div style="color:var(--text-muted); width: 100%; text-align:center;" id="empty-msg">Векторът е празен</div>
+                </div>
+
+                <div class="stat-box" id="vector-stats">
+                    v.size() = 0 | v.empty() = true
+                </div>
+                <div class="stat-box" id="vector-frontback" style="margin-top: 0.5rem; border-color: var(--accent); color: var(--accent);">
+                    front: - | back: -
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        let vec = [];
+
+        function renderVector(actionType = 'render', targetIdx = -1) {
+            const container = document.getElementById('vector-vis');
+            const emptyMsg = document.getElementById('empty-msg');
+            const stats = document.getElementById('vector-stats');
+            const fb = document.getElementById('vector-frontback');
+
+            if (vec.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted); width: 100%; text-align:center;" id="empty-msg">Векторът е празен</div>';
+                stats.innerText = "v.size() = 0 | v.empty() = true";
+                fb.innerText = "front: - | back: -";
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            vec.forEach((val, i) => {
+                const el = document.createElement('div');
+                el.className = 'v-elem';
+                if (actionType === 'push' && i === vec.length - 1) el.classList.add('new');
+                
+                el.innerText = val;
+                
+                const idx = document.createElement('div');
+                idx.className = 'v-index';
+                idx.innerText = i;
+                
+                el.appendChild(idx);
+                container.appendChild(el);
+            });
+
+            if (actionType === 'pop') {
+                const el = document.createElement('div');
+                el.className = 'v-elem removing';
+                el.innerText = targetIdx;
+                container.appendChild(el);
+                
+                setTimeout(() => {
+                    if (el.parentNode) el.parentNode.removeChild(el);
+                }, 300);
+            }
+
+            stats.innerText = `v.size() = ${vec.length} | v.empty() = false`;
+            fb.innerText = `front: ${vec[0]} | back: ${vec[vec.length - 1]}`;
+        }
+
+        function pushBack() {
+            const inp = document.getElementById('val-input').value;
+            if (inp === '') return;
+            vec.push(parseInt(inp));
+            renderVector('push');
+            
+            document.getElementById('val-input').value = Math.floor(Math.random() * 100);
+        }
+
+        function popBack() {
+            if (vec.length === 0) return;
+            const removedVal = vec.pop();
+            renderVector('pop', removedVal);
+        }
+
+        function sortVector() {
+            if (vec.length < 2) return;
+            vec.sort((a, b) => a - b);
+            renderVector('render');
+        }
+
+        function clearVector() {
+            vec = [];
+            renderVector();
+        }
+
+        renderVector();
+    </script>
+</body>
+</html>

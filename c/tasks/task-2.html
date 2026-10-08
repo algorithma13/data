@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C2: Азерия</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачи */
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .limits { color: var(--text-muted); font-size: 0.95rem; display: flex; gap: 1rem; }
+        
+        h2 { font-size: 1.25rem; color: var(--text-main); margin-top: 2rem; margin-bottom: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .constraints {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            color: #60a5fa;
+            margin-bottom: 1.5rem;
+        }
+
+        table.examples {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.examples th, table.examples td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.examples th { background-color: rgba(15, 23, 42, 0.8); color: var(--text-main); font-weight: 600; }
+        table.examples td { font-family: monospace; color: #38bdf8; vertical-align: top; }
+
+        /* Десен панел стилове */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hint-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .hint-box.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-left-color: #ef4444;
+        }
+        
+        .hint-box.danger h4 { color: #ef4444; }
+
+        .hint-box h4 { color: #10b981; margin-bottom: 0.5rem; }
+        .hint-box ul { padding-left: 1.2rem; color: var(--text-main); font-size: 0.95rem; }
+        .hint-box li { margin-bottom: 0.5rem; }
+        .hint-box code { background-color: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; color: #10b981;}
+        .hint-box.danger code { color: #ef4444; }
+
+        /* Amulet Vis */
+        .amulet-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .rune {
+            aspect-ratio: 1;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .rune.active {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            text-shadow: 0 0 3px #10b981;
+        }
+
+        .amulet-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .amulet-controls input {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 70px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--code-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover { background-color: var(--bg-primary); border-color: var(--accent); }
+        button.learn:hover { border-color: #10b981; color: #10b981;}
+        button.forget:hover { border-color: #ef4444; color: #ef4444;}
+        button.check:hover { border-color: #3b82f6; color: #3b82f6;}
+
+        .log-box {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            font-family: monospace;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px dashed var(--border);
+        }
+
+        .log-box span { color: #3b82f6; }
+        .log-yes { color: #10b981 !important; font-size: 1.5rem; font-weight: bold;}
+        .log-no { color: #ef4444 !important; font-size: 1.5rem; font-weight: bold;}
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА C2: Азерия</h1>
+                <div class="limits">
+                    <span>⏱️ Време: 0.18 с.</span>
+                    <span>💾 Памет: 256 MB</span>
+                    <span>🏢 Школа МГ</span>
+                </div>
+            </div>
+            
+            <p>В голямата библиотека на Азерия, магьосницата Грузилда изучава древни заклинания.</p>
+            <p>Нейната сила се съхранява в магически амулет, който може да „запомня" до 60 различни заклинания. Всяко заклинание има уникален номер от 0 до 59.</p>
+            <p>Грузилда намира поредица от магически свитъци. Всеки свитък съдържа инструкция: да научи ново заклинание, да забрави вече наученото, или да провери дали амулетът съдържа определено заклинание. Помогнете на Грузилда бързо да обработи различните свитъци.</p>
+            
+            <p>Да се напише програма <code>azeria.cpp</code>, която получава поредица от команди. Програмата да поддържа актуално състояние на заклинанията, които Грузилда знае и да отговаря на нейните проверки. Първоначално Грузилда не знае нито едно заклинание.</p>
+            
+            <p>Командите са три вида:</p>
+            <ul>
+                <li><code>learn id</code> - Грузилда научава заклинанието с номер id. Ако вече го знае, нищо не променя.</li>
+                <li><code>forget id</code> - Грузилда забравя заклинанието с номер id. Ако не го знае, нищо не променя.</li>
+                <li><code>check id</code> - Трябва да се провери дали Грузилда знае заклинанието с номер id и да се изведе "YES" или "NO".</li>
+            </ul>
+
+            <h2>Вход</h2>
+            <p>На първия ред на стандартния вход ще се въведе едно цяло число <strong>Q</strong> - броят на командите, които Грузилда ще обработи.</p>
+            <p>Следващите Q реда съдържат по една команда във формата, който е описан по-горе.</p>
+
+            <h2>Изход</h2>
+            <p>За всяка команда от тип <code>check</code>, програмата да изведе на нов ред "YES" или "NO".</p>
+
+            <h2>Ограничения</h2>
+            <div class="constraints">
+                1 &le; Q &le; 20000<br>
+                0 &le; id &le; 59
+            </div>
+
+            <h2>Пример</h2>
+            <table class="examples">
+                <thead>
+                    <tr>
+                        <th>Примерен вход</th>
+                        <th>Изход за примера</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>8<br>learn 3<br>learn 5<br>check 3<br>check 4<br>forget 3<br>check 3<br>learn 3<br>check 3</td>
+                        <td>YES<br>NO<br>NO<br>YES</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Подсказки и Визуализатор -->
+        <div class="right-panel">
+            
+            <div class="vis-card">
+                <div class="vis-title">💡 Указания: Побитова маска в 64-бита</div>
+                <div class="hint-box">
+                    <h4>Амулетът е една променлива!</h4>
+                    <ul>
+                        <li>Използвайте една 64-битова променлива (<code>unsigned long long</code>), която ще служи като "амулет".</li>
+                        <li>Всеки бит от 0 до 59 на тази променлива ще отговаря на съответното заклинание. Ако <code>k</code>-тия бит е 1, Грузилда знае заклинание номер <code>k</code>.</li>
+                        <li><strong>learn:</strong> <code>amulet = amulet | (1ULL &lt;&lt; id);</code></li>
+                        <li><strong>forget:</strong> <code>amulet = amulet &amp; ~(1ULL &lt;&lt; id);</code></li>
+                        <li><strong>check:</strong> <code>if ((amulet &amp; (1ULL &lt;&lt; id)) != 0)</code></li>
+                    </ul>
+                </div>
+                <div class="hint-box danger">
+                    <h4>Критична грешка в C++: 1 &lt;&lt; 40</h4>
+                    <ul>
+                        <li>В C++ константата <code>1</code> по подразбиране е 32-битов <code>int</code>!</li>
+                        <li>Ако напишете <code>1 &lt;&lt; 40</code>, програмата ще извърши "Undefined Behavior" (обикновено се превърта до 0), защото не може да изместите 32-битово число с 40 позиции!</li>
+                        <li><strong>Задължително:</strong> За да отмествате над 31 позиции, ползвайте суфикса ULL (Unsigned Long Long): <code>1ULL &lt;&lt; id</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="vis-card">
+                <div class="vis-title">🔮 Симулатор на Амулета на Грузилда</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Амулетът разполага с 60 слота (0-59). Въведете номер на заклинание и изпълнете команда. Забележете, че всичко се пази в едно единствено число!
+                </p>
+
+                <div class="amulet-controls">
+                    <input type="number" id="spell-id" placeholder="id" value="3" min="0" max="59">
+                    <button class="learn" onclick="runCommand('learn')">learn</button>
+                    <button class="forget" onclick="runCommand('forget')">forget</button>
+                    <button class="check" onclick="runCommand('check')">check</button>
+                </div>
+
+                <div class="log-box" id="sim-log">
+                    Очаквам магическа команда...
+                </div>
+
+                <div class="amulet-grid" id="amulet-vis">
+                    <!-- Руните се генерират тук -->
+                </div>
+                
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; font-family: monospace;">
+                    amulet = <span id="amulet-val" style="color: #38bdf8;">0</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Използваме BigInt в JS (n), защото стандартните битови операции са лимитирани до 32 бита
+        let amulet = 0n;
+
+        function renderAmulet() {
+            const container = document.getElementById('amulet-vis');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 60; i++) {
+                const rune = document.createElement('div');
+                rune.className = 'rune';
+                
+                // Проверка на бит: (amulet & (1 << i)) != 0
+                const mask = 1n << BigInt(i);
+                if ((amulet & mask) !== 0n) {
+                    rune.classList.add('active');
+                }
+                
+                rune.innerText = i;
+                container.appendChild(rune);
+            }
+            
+            document.getElementById('amulet-val').innerText = amulet.toString();
+        }
+
+        function runCommand(cmd) {
+            const idVal = parseInt(document.getElementById('spell-id').value);
+            const log = document.getElementById('sim-log');
+
+            if (isNaN(idVal) || idVal < 0 || idVal > 59) {
+                log.innerHTML = "<span style='color:#ef4444'>Невалидно заклинание! Въведете от 0 до 59.</span>";
+                return;
+            }
+
+            const id = BigInt(idVal);
+            const mask = 1n << id;
+
+            if (cmd === 'learn') {
+                amulet = amulet | mask;
+                log.innerHTML = `<code>amulet = amulet | (1ULL &lt;&lt; ${idVal})</code><br>Грузилда научи заклинание ${idVal}.`;
+            } else if (cmd === 'forget') {
+                // Побитово И с отрицание на маската
+                amulet = amulet & (~mask);
+                log.innerHTML = `<code>amulet = amulet &amp; ~(1ULL &lt;&lt; ${idVal})</code><br>Грузилда забрави заклинание ${idVal}.`;
+            } else if (cmd === 'check') {
+                const hasSpell = (amulet & mask) !== 0n;
+                if (hasSpell) {
+                    log.innerHTML = `<code>(amulet &amp; (1ULL &lt;&lt; ${idVal})) != 0</code><br><span class="log-yes">YES</span>`;
+                } else {
+                    log.innerHTML = `<code>(amulet &amp; (1ULL &lt;&lt; ${idVal})) != 0</code><br><span class="log-no">NO</span>`;
+                }
+            }
+
+            renderAmulet();
+        }
+
+        // Init
+        renderAmulet();
+    </script>
+</body>
+</html>

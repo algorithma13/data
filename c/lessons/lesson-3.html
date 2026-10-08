@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 3: Побитово отместване</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981;
+            /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .note-box h4 {
+            color: #ef4444;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before {
+            content: '⚡';
+        }
+
+        /* Bit Shifter Animator */
+        .shifter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            background-color: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .shifter-controls input {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 70px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .shifter-btn {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .shifter-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .shifter-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .bits-container {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: center;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+            padding: 1rem 0;
+        }
+
+        .bit-box {
+            width: 35px;
+            height: 45px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            border-radius: 0.25rem;
+            transition: transform 0.5s ease, opacity 0.5s;
+            position: relative;
+        }
+
+        .bit-box.one {
+            color: var(--accent);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .bit-box.zero {
+            color: var(--text-muted);
+        }
+
+        .bit-box.falling {
+            transform: translateY(40px);
+            opacity: 0;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .bit-box.entering {
+            transform: translateY(-40px);
+            opacity: 0;
+        }
+
+        .bit-box.highlight {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .calc-result {
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.2rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+        }
+
+        button.action {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button.action:hover {
+            background-color: var(--accent-hover);
+            color: #fff;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Побитово отместване (Bit Shift)</h1>
+
+                <h2>1. Същност на побитовото отместване</h2>
+                <p>Процесорите "мислят" в двоичен код с нули и единици. Отместването (shifting) позволява на процесорите
+                    да работят с тези нули и единици директно, което е <strong>изключително бързо</strong> – много
+                    по-бързо дори от стандартно събиране или изваждане.</p>
+                <p>Най-голямото предимство: Отместването може да се използва за светкавично умножение или деление със
+                    <strong>степени на двойката</strong> (2, 4, 8, 16 и т.н.).
+                </p>
+
+                <h2>2. Отместване наляво <code>&lt;&lt;</code> (Умножение)</h2>
+                <p>Синтаксис: <code>x &lt;&lt; k</code>, където <code>x</code> е числото, а <code>k</code> е броят
+                    позиции за изместване.</p>
+                <p>Пример: Ако имаме числото 78 (<code>01001110</code>) и го отместим с 1 позиция наляво
+                    (<code>78 &lt;&lt; 1</code>), получаваме <code>10011100</code>, което е 156. Това е еквивалентно на
+                    <strong>умножение по 2</strong>.
+                </p>
+                <pre>int x = 10;
+int k = x &lt;&lt; 1; // отмества с 1 бит
+cout &lt;&lt; k &lt;&lt; endl; // Изход: 20</pre>
+
+                <div class="note-box">
+                    <h4>Важно: Пренатоварване (Опасност от загуба)</h4>
+                    <p>Ако използваме 8-битова променлива и имаме числото 255 (<code>11111111</code>). Ако го отместим
+                        наляво, най-левият бит (1) "изпада" от паметта и се губи завинаги! Отдясно се добавя 0.
+                        Получаваме <code>11111110</code> (254). Губим информация! Винаги се уверявайте, че променливата
+                        ви (напр. <code>long long</code>) е достатъчно голяма, за да побере новата стойност.</p>
+                </div>
+                <p><em>👉 Тествайте изпадането на битове във визуализатора вдясно!</em></p>
+
+                <h2>3. Отместване надясно <code>&gt;&gt;</code> (Деление)</h2>
+                <p>Синтаксис: <code>x &gt;&gt; k</code>. Това е еквивалентно на <strong>целочислено деление на
+                        2<sup>k</sup></strong>.</p>
+                <p>Пример: 78 (<code>01001110</code>) отместено надясно (<code>78 &gt;&gt; 1</code>) става
+                    <code>00100111</code>, което е 39. Деление на 2.
+                </p>
+
+                <h3>А какво става, ако делим нечетно число?</h3>
+                <p>Ако имаме числото 13 (<code>00001101</code>) и го отместим надясно с 1, най-десният бит (1) "изпада".
+                    Резултатът е <code>00000110</code>, което е 6.</p>
+                <p><strong>Правило:</strong> Резултатът винаги се закръгля надолу до най-близкото цяло число (точно
+                    както работи операторът <code>/</code> в C++).</p>
+                <pre>short x = 78;
+short k = x &gt;&gt; 1;
+cout &lt;&lt; k &lt;&lt; endl; // Изход: 39</pre>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+
+            <div class="vis-card">
+                <div class="vis-title">Аниматор на Побитово отместване (8-bit)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Въведете число, изберете посока и брой стъпки. Наблюдавайте как битовете се "преместват" и какви
+                    битове изпадат от паметта (пренатоварване).
+                </p>
+
+                <div class="shifter-controls">
+                    <div style="color: var(--text-muted);">x =</div>
+                    <input type="number" id="shift-x" value="78" min="0" max="255" onchange="resetShifter()">
+
+                    <button class="shifter-btn active" id="btn-left" onclick="setDir('left')">&lt;&lt; Наляво</button>
+                    <button class="shifter-btn" id="btn-right" onclick="setDir('right')">&gt;&gt; Надясно</button>
+
+                    <div style="color: var(--text-muted); margin-left: auto;">k =</div>
+                    <input type="number" id="shift-k" value="1" min="1" max="8">
+                </div>
+
+                <div class="bits-container" id="bits-vis">
+                    <!-- Битовете се генерират тук -->
+                </div>
+
+                <div class="calc-result" id="shift-result">
+                    Готови за симулация.
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button class="action" onclick="animateShift()">Анимирай Отместването</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+
+    <script>
+        let currentBits = [];
+        let shiftDir = 'left';
+
+        function toBinArray8(num) {
+            return num.toString(2).padStart(8, '0').split('');
+        }
+
+        function setDir(dir) {
+            shiftDir = dir;
+            document.getElementById('btn-left').classList.remove('active');
+            document.getElementById('btn-right').classList.remove('active');
+            document.getElementById('btn-' + dir).classList.add('active');
+            resetShifter();
+        }
+
+        function resetShifter() {
+            let x = parseInt(document.getElementById('shift-x').value);
+            if (isNaN(x) || x < 0) x = 0;
+            if (x > 255) {x = 255; document.getElementById('shift-x').value = 255;}
+
+            currentBits = toBinArray8(x);
+            renderBits();
+            document.getElementById('shift-result').innerHTML = `<code>${x} (Десетично)</code>`;
+        }
+
+        function renderBits() {
+            const container = document.getElementById('bits-vis');
+            container.innerHTML = '';
+
+            currentBits.forEach(b => {
+                const box = document.createElement('div');
+                box.className = `bit-box ${b === '1' ? 'one' : 'zero'}`;
+                box.innerText = b;
+                container.appendChild(box);
+            });
+        }
+
+        function animateShift() {
+            const k = parseInt(document.getElementById('shift-k').value) || 1;
+            const container = document.getElementById('bits-vis');
+            const boxes = container.children;
+
+            // Взимаме текущото число за лога
+            const startVal = parseInt(currentBits.join(''), 2);
+            let endVal = 0;
+
+            if (shiftDir === 'left') {
+                endVal = (startVal << k) & 255; // Маскираме до 8 бита
+
+                // Анимация за изпадащите отляво
+                for (let i = 0; i < k; i++) {
+                    if (boxes[i]) boxes[i].classList.add('falling');
+                }
+
+                // Анимация за преместването
+                for (let i = k; i < 8; i++) {
+                    if (boxes[i]) boxes[i].style.transform = `translateX(-${k * 39}px)`;
+                }
+
+            } else {
+                endVal = startVal >> k;
+
+                // Анимация за изпадащите отдясно
+                for (let i = 8 - k; i < 8; i++) {
+                    if (boxes[i]) boxes[i].classList.add('falling');
+                }
+
+                // Анимация за преместването
+                for (let i = 0; i < 8 - k; i++) {
+                    if (boxes[i]) boxes[i].style.transform = `translateX(${k * 39}px)`;
+                }
+            }
+
+            document.getElementById('shift-result').innerHTML = `<span style="color:var(--text-muted)">Отместване...</span>`;
+
+            // След края на анимацията, преначертаваме новия масив
+            setTimeout(() => {
+                let newBits = [];
+                let droppedOne = false; // Флаг дали сме изгубили 1-ца
+
+                if (shiftDir === 'left') {
+                    for (let i = 0; i < k; i++) if (currentBits[i] === '1') droppedOne = true;
+                    newBits = currentBits.slice(k);
+                    for (let i = 0; i < k; i++) newBits.push('0');
+                } else {
+                    for (let i = 8 - k; i < 8; i++) if (currentBits[i] === '1') droppedOne = true;
+                    newBits = currentBits.slice(0, 8 - k);
+                    for (let i = 0; i < k; i++) newBits.unshift('0');
+                }
+
+                currentBits = newBits;
+                renderBits();
+
+                // Хайлайтваме новите нули
+                const newBoxes = container.children;
+                if (shiftDir === 'left') {
+                    for (let i = 8 - k; i < 8; i++) newBoxes[i].classList.add('highlight');
+                } else {
+                    for (let i = 0; i < k; i++) newBoxes[i].classList.add('highlight');
+                }
+
+                let logHtml = `Резултат: <code><span style="color:var(--accent)">${endVal}</span> (Десетично)</code>`;
+                if (droppedOne) {
+                    logHtml += `<div style="color:#ef4444; font-size:0.9rem; margin-top:0.5rem;">⚠️ Изпадна единица! Загуба на информация (Пренатоварване/Закръгляне).</div>`;
+                }
+
+                document.getElementById('shift-result').innerHTML = logHtml;
+
+                // Обновяваме input полето
+                document.getElementById('shift-x').value = endVal;
+
+            }, 500);
+        }
+
+        // Init
+        resetShifter();
+    </script>
+</body>
+
+</html>

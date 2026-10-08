@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 1: Трикове на езика С++</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981;
+            /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .note-box.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left-color: #10b981;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before {
+            content: '⚡';
+        }
+
+        /* Memory Simulator */
+        .memory-layout {
+            display: flex;
+            gap: 1rem;
+            height: 200px;
+            margin-bottom: 1rem;
+        }
+
+        .mem-section {
+            flex: 1;
+            border: 2px dashed var(--border);
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            background-color: rgba(15, 23, 42, 0.5);
+            overflow: hidden;
+        }
+
+        .mem-title {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            background-color: var(--card-bg);
+            z-index: 10;
+        }
+
+        .mem-fill {
+            width: 100%;
+            background-color: var(--accent);
+            transition: height 0.5s ease-out;
+            height: 0%;
+        }
+
+        .mem-fill.danger {
+            background-color: #ef4444;
+            animation: pulse 0.5s infinite;
+        }
+
+        .mem-fill.safe {
+            background-color: #3b82f6;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* By Value vs Reference Simulator */
+        .copy-box {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .copy-block {
+            width: 60px;
+            height: 80px;
+            background-color: #334155;
+            border: 2px solid #475569;
+            border-radius: 0.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            position: relative;
+        }
+
+        .copy-block.new {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .copy-block.ref {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .copy-anim-container {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            width: 130px;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Трикове на езика С++</h1>
+
+                <h2>1. Къде създаваме масиви?</h2>
+                <p>В състезателните задачи често се налага да работим с големи масиви (напр. 1 000 000 елемента). Ако
+                    декларирате такъв масив вътре във функция (например <code>main</code>), той се създава в паметта,
+                    наречена <strong>стек (stack)</strong>.</p>
+                <div class="note-box">
+                    Стекът има силно ограничен размер (обикновено няколко MB). Заделянето на голям масив там води до
+                    <strong>Stack Overflow</strong> (срив на програмата).
+                </div>
+                <div class="note-box success">
+                    <strong>Решение:</strong> Декларирайте големите масиви <strong>глобално</strong> (извън всички
+                    функции). Те отиват в <strong>Хийп (Heap)</strong> паметта, която е ограничена само от общата ви
+                    RAM.
+                </div>
+                <pre>// ПРАВИЛНО (Глобално деклариране)
+int arr[1000001]; 
+int main() { ... }</pre>
+
+                <h2>2. Бърз вход и изход</h2>
+                <p>Стандартните <code>cin</code> и <code>cout</code> могат да бъдат бавни и да доведат до Time Limit
+                    Exceeded (TLE) при голям обем входни данни. Добавете тези три реда в началото на <code>main</code>:
+                </p>
+                <pre>ios_base::sync_with_stdio(false);
+cin.tie(NULL);
+cout.tie(NULL);</pre>
+                <p><strong>Важно:</strong> Използвайте <code>'\n'</code> вместо <code>endl</code>. <code>endl</code> не само добавя нов ред, но и изпразва буфера на cout (flushing), което е
+                    много бавна операция.</p>
+
+                <h2>3. Подаване по Референция (Указатели)</h2>
+                <p>В С++ по подразбиране аргументите на функции се подават по <strong>стойност</strong>. Това означава,
+                    че се създава копие на обекта. При голям <code>vector</code> това е пагубно бавно.</p>
+                <p><strong>Решение:</strong> Подавайте големи обекти по референция, като добавите <code>&amp;</code>
+                    след типа на аргумента. Това не създава копие, а само псевдоним (прякор).</p>
+                <pre>// БАВНО: Създава копие при всяко извикване
+void by_value(vector&lt;int&gt; v) { ... }
+
+// БЪРЗО: Подава се само "прякор" към оригинала
+void by_ref(vector&lt;int&gt;&amp; v) { ... }</pre>
+                <p><em>👉 Тествайте симулатора вдясно, за да видите разликата!</em></p>
+
+                <h2>4. Контейнери <code>pair</code> и <code>tuple</code></h2>
+                <p>Често се налага да групираме няколко стойности (напр. координати или тегло на ребро в граф).</p>
+                <ul>
+                    <li><code>pair&lt;T1, T2&gt;</code> - достъпва се с <code>.first</code> и <code>.second</code>.</li>
+                    <li><code>tuple&lt;T1, T2, ...&gt;</code> - достъпва се с <code>get&lt;индекс&gt;(името)</code>.
+                    </li>
+                </ul>
+                <pre>vector&lt;pair&lt;int, int&gt;&gt; points;
+points.push_back({1, 5}); // С++11 инициализация
+sort(points.begin(), points.end()); // Сортира първо по X, после по Y</pre>
+
+                <h2>5. Съкращаване на дълги имена (using)</h2>
+                <p>За да спестите време по време на състезание, използвайте <code>using</code> за създаване на
+                    псевдоними:</p>
+                <pre>using ll = long long;
+using vi = vector&lt;int&gt;;
+using pii = pair&lt;int, int&gt;;
+using vpii = vector&lt;pii&gt;;
+
+// Сега можете да пишете:
+vpii my_edges;</pre>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+
+            <!-- Визуализатор 1: Памет (Stack vs Heap) -->
+            <div class="vis-card">
+                <div class="vis-title">Симулатор на Памет (Stack Overflow)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Вижте разликата при заделяне на голям масив <code>arr[1000000]</code> вътре в <code>main()</code>
+                    спрямо глобално.
+                </p>
+
+                <div class="memory-layout">
+                    <div class="mem-section">
+                        <div class="mem-title">Stack (Стек) ~8MB</div>
+                        <div class="mem-fill" id="stack-fill"></div>
+                    </div>
+                    <div class="mem-section">
+                        <div class="mem-title">Heap (RAM) ~8GB+</div>
+                        <div class="mem-fill" id="heap-fill"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button style="background-color: #ef4444;" onclick="simStack()">Локално (в main)</button>
+                    <button style="background-color: #3b82f6;" onclick="simHeap()">Глобално (извън main)</button>
+                </div>
+                <div id="mem-log"
+                    style="text-align: center; margin-top: 1rem; font-family: monospace; font-size: 0.9rem; min-height: 40px;">
+                    Изберете къде да се задели масивът.
+                </div>
+            </div>
+
+            <!-- Визуализатор 2: By Value vs Reference -->
+            <div class="vis-card">
+                <div class="vis-title">Подаване: Стойност vs Референция</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Какво се случва с паметта при извикване на функция, ако ѝ подадем вектор с 100 000 елемента?
+                </p>
+
+                <div class="copy-box">
+                    <div style="text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 0.5rem; color: var(--text-muted);">main()</div>
+                        <div class="copy-block">
+                            Оригинален<br>Vector<br>[100k]
+                        </div>
+                    </div>
+                    <div style="font-size: 2rem; color: var(--border);">&rarr;</div>
+                    <div style="text-align: center; width: 130px;">
+                        <div style="font-weight: bold; margin-bottom: 0.5rem; color: var(--text-muted);">function()
+                        </div>
+                        <div class="copy-anim-container" id="copy-target">
+                            <!-- Блоковете се появяват тук -->
+                            <div
+                                style="font-size: 0.8rem; color: var(--text-muted); width: 100%; text-align: center; padding-top: 20px;">
+                                Очаква данни...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button style="background-color: #ef4444;" onclick="simByValue()">по Стойност (v)</button>
+                    <button style="background-color: #10b981;" onclick="simByRef()">по Референция (&v)</button>
+                </div>
+                <div id="ref-log"
+                    style="text-align: center; margin-top: 1rem; font-family: monospace; font-size: 0.9rem; min-height: 40px;">
+                    Изберете метод.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // 1. Memory Simulator
+        function simStack() {
+            const stack = document.getElementById('stack-fill');
+            const heap = document.getElementById('heap-fill');
+            const log = document.getElementById('mem-log');
+
+            heap.style.height = '0%';
+            heap.className = 'mem-fill';
+
+            stack.className = 'mem-fill';
+
+            setTimeout(() => {
+                stack.style.height = '100%';
+                stack.classList.add('danger');
+                log.innerHTML = "<span style='color:#ef4444'>ГРЕШКА: Stack Overflow! (код 0xC00000FD)</span><br>Програмата крашна.";
+            }, 100);
+        }
+
+        function simHeap() {
+            const stack = document.getElementById('stack-fill');
+            const heap = document.getElementById('heap-fill');
+            const log = document.getElementById('mem-log');
+
+            stack.style.height = '0%';
+            stack.className = 'mem-fill';
+
+            heap.className = 'mem-fill';
+
+            setTimeout(() => {
+                heap.style.height = '15%'; // Takes very little of Heap
+                heap.classList.add('safe');
+                log.innerHTML = "<span style='color:#3b82f6'>УСПЕХ: Паметта е заделена безопасно.</span><br>Масивът заема малка част от RAM-та.";
+            }, 100);
+        }
+
+        // 2. Reference Simulator
+        function simByValue() {
+            const target = document.getElementById('copy-target');
+            const log = document.getElementById('ref-log');
+            target.innerHTML = '';
+
+            // Animate creating a massive copy
+            target.innerHTML = '<div class="copy-block new">Ново<br>Копие<br>[100k]</div><div style="font-size:0.7rem; color:#ef4444; width:100%; text-align:center;">Бавна операция!<br>+Памет</div>';
+
+            log.innerHTML = "<span style='color:#ef4444'>Извикване по стойност.</span><br>Функцията заделя нова памет и копира всички 100 000 елемента. O(N) време.";
+        }
+
+        function simByRef() {
+            const target = document.getElementById('copy-target');
+            const log = document.getElementById('ref-log');
+            target.innerHTML = '';
+
+            target.innerHTML = '<div class="copy-block ref" style="border-style: dashed;">Прякор<br>&amp;vector</div><div style="font-size:0.7rem; color:#10b981; width:100%; text-align:center;">Мигновено!<br>0 байта</div>';
+
+            log.innerHTML = "<span style='color:#10b981'>Извикване по референция.</span><br>Не се копира нищо. Функцията просто гледа към оригиналния вектор. O(1) време.";
+        }
+    </script>
+</body>
+
+</html>

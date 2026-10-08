@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 2: Техники на програмиране</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b;
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Променено от 1.2 на 1 за точно 50/50 разделяне */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .note-box strong { color: var(--accent); }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before { content: '⚡'; }
+
+        /* Логически операции - Визуализатор */
+        .logic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logic-box {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .logic-box.true {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .logic-box.false {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .logic-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            border: 1px dashed var(--border);
+        }
+        
+        .logic-result span { font-size: 1.2rem; }
+        .res-true { color: #10b981; }
+        .res-false { color: #ef4444; }
+
+        /* Масиви - Визуализатор */
+        .array-container {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .array-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+        }
+
+        .array-index {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .array-value {
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+            transition: all 0.3s;
+        }
+
+        .array-cell.highlight-max .array-value {
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .array-cell.highlight-min .array-value {
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+        
+        .array-cell.scanning .array-value {
+            border-color: var(--accent);
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+        button:disabled { background-color: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        .btn-group { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;}
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Техники на програмирането</h1>
+                
+                <h2>1. Съставни логически условия</h2>
+                <p>В програмирането често трябва да проверяваме повече от едно условие едновременно. Използваме следните оператори:</p>
+                <ul>
+                    <li><strong>Логическо И (&&):</strong> <code>(A) && (B)</code> е вярно само ако <strong>И</strong> двете условия са верни. Използва се за проверка дали число принадлежи на интервал: <code>(a &lt;= x) && (x &lt;= b)</code>.</li>
+                    <li><strong>Логическо ИЛИ (||):</strong> <code>(A) || (B)</code> е вярно ако <strong>ПОНЕ ЕДНО</strong> от условията е вярно. Използва се за проверка дали число е извън интервал: <code>(x &lt; a) || (x &gt; b)</code>.</li>
+                    <li><strong>Логическо отрицание (!):</strong> <code>!(A)</code> обръща стойността. Ако A е вярно, става грешно и обратното.</li>
+                </ul>
+                <p><em>👉 Тествайте логическите гейтове във визуализатора вдясно!</em></p>
+
+                <h2>2. Цикли (Повтарящи се действия)</h2>
+                <p>Когато искаме да повторим част от кода многократно, използваме цикли. Най-често използваният е <code>for</code> цикълът.</p>
+                
+<pre>// Отпечатва числата от 1 до 100
+for(int i = 1; i &lt;= 100; i++) {
+    cout &lt;&lt; i &lt;&lt; endl;
+}</pre>
+
+                <p>Можем да вложим един цикъл в друг (например за отпечатване на таблицата за умножение). Други видове цикли са <code>while</code> (цикъл с пред-условие) и <code>do-while</code> (с пост-условие).</p>
+                
+<pre>// Цикъл, който чете числа до въвеждане на 0 (сигнал за край)
+int a = 1, s = 0;
+while (a != 0) {
+    cin &gt;&gt; a;
+    s += a;
+}</pre>
+
+                <h2>3. Функции в C++</h2>
+                <p>Функциите ни позволяват да групираме код, който ползваме често, за да не го пишем многократно.</p>
+<pre>// Дефиниране на функция, която връща по-голямото от две числа
+int max2(int a, int b) {
+    if (a &gt; b) return a;
+    return b;
+}
+
+// Извикване
+int m = max2(5, 10); // m ще получи стойност 10</pre>
+
+                <h2>4. Едномерни масиви</h2>
+                <p>Масивът е последователност от еднотипни променливи, подредени в паметта една след друга.</p>
+                <div class="note-box">
+                    <strong>Много важно:</strong> В С++ индексацията на масивите <strong>започва от 0</strong>. Ако обявим <code>int a[10];</code>, валидните индекси са от <code>0</code> до <code>9</code>. Достъпването на <code>a[10]</code> е груба грешка!
+                </div>
+
+                <h3>Запълване на масив от клавиатурата:</h3>
+<pre>int a[10];
+for (int i = 0; i &lt; 10; i++) {
+    cin &gt;&gt; a[i];
+}</pre>
+
+                <h3>Намиране на максимум и минимум в масив</h3>
+                <p>Това е един от най-важните алгоритми. За да го направим безопасно, задаваме на началния максимум много малка стойност (напр. <code>-1000000</code>), а на минимума - много голяма. След това обхождаме масива.</p>
+<pre>const int MAX_VAL = 1e6;
+int maxv = -MAX_VAL; 
+int minv = MAX_VAL;
+
+for (int i = 0; i &lt; n; i++) {
+    if (a[i] &gt; maxv) {
+        maxv = a[i]; // Намерихме нов максимум
+    }
+    if (a[i] &lt; minv) {
+        minv = a[i]; // Намерихме нов минимум
+    }
+}</pre>
+                <p><em>👉 Проследете стъпка по стъпка как работи този алгоритъм във втория визуализатор вдясно!</em></p>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+            
+            <div class="vis-card">
+                <div class="vis-title">Логически оператори (&&, ||)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Кликнете върху кутиите "Условие А" и "Условие В", за да смените стойността им (Вярно/Грешно) и вижте резултата.
+                </p>
+                
+                <div class="logic-grid">
+                    <div id="cond-a" class="logic-box false" onclick="toggleLogic('a')">Условие A<br><b>Грешно (0)</b></div>
+                    <div id="cond-b" class="logic-box false" onclick="toggleLogic('b')">Условие B<br><b>Грешно (0)</b></div>
+                </div>
+
+                <div class="logic-result">
+                    A && B (И): <span id="res-and" class="res-false">ГРЕШНО</span><br><br>
+                    A || B (ИЛИ): <span id="res-or" class="res-false">ГРЕШНО</span>
+                </div>
+            </div>
+
+            <div class="vis-card">
+                <div class="vis-title">Търсене на Min и Max в масив</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Алгоритъмът обхожда елементите един по един. Ако намери по-голям от досегашния <code>maxv</code>, го презаписва.
+                </p>
+
+                <div class="logic-result" style="text-align: left; font-family: monospace; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    maxv = <span id="val-maxv" style="color: #ef4444">-&infin;</span><br>
+                    minv = <span id="val-minv" style="color: #3b82f6">+&infin;</span>
+                </div>
+
+                <div class="array-container" id="array-vis">
+                    <!-- Генерира се от JS -->
+                </div>
+
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; height: 20px; margin-bottom: 10px;" id="scan-log">
+                    Натиснете "Стъпка напред", за да започнете цикъла.
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn-reset" onclick="initArray()" style="background:var(--border); color:white;">Нов масив</button>
+                    <button id="btn-step" onclick="scanStep()">Стъпка напред &rarr;</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        let stateA = false;
+        let stateB = false;
+
+        function toggleLogic(cond) {
+            if (cond === 'a') stateA = !stateA;
+            if (cond === 'b') stateB = !stateB;
+            updateLogicUI();
+        }
+
+        function updateLogicUI() {
+            const boxA = document.getElementById('cond-a');
+            const boxB = document.getElementById('cond-b');
+            const resAnd = document.getElementById('res-and');
+            const resOr = document.getElementById('res-or');
+
+            boxA.className = 'logic-box ' + (stateA ? 'true' : 'false');
+            boxA.innerHTML = 'Условие A<br><b>' + (stateA ? 'ВЯРНО (1)' : 'ГРЕШНО (0)') + '</b>';
+            
+            boxB.className = 'logic-box ' + (stateB ? 'true' : 'false');
+            boxB.innerHTML = 'Условие B<br><b>' + (stateB ? 'ВЯРНО (1)' : 'ГРЕШНО (0)') + '</b>';
+
+            const andRes = stateA && stateB;
+            const orRes = stateA || stateB;
+
+            resAnd.className = andRes ? 'res-true' : 'res-false';
+            resAnd.innerText = andRes ? 'ВЯРНО' : 'ГРЕШНО';
+
+            resOr.className = orRes ? 'res-true' : 'res-false';
+            resOr.innerText = orRes ? 'ВЯРНО' : 'ГРЕШНО';
+        }
+
+        let arr = [];
+        let scanIndex = -1;
+        let maxv = -999;
+        let minv = 999;
+        let maxIndex = -1;
+        let minIndex = -1;
+
+        function initArray() {
+            arr = Array.from({length: 7}, () => Math.floor(Math.random() * 61) - 10);
+            scanIndex = -1;
+            maxv = -999;
+            minv = 999;
+            maxIndex = -1;
+            minIndex = -1;
+
+            document.getElementById('val-maxv').innerText = "-&infin;";
+            document.getElementById('val-minv').innerText = "+&infin;";
+            document.getElementById('scan-log').innerText = "Натиснете 'Стъпка напред', за да започнете цикъла.";
+            document.getElementById('btn-step').disabled = false;
+
+            renderArray();
+        }
+
+        function renderArray() {
+            const container = document.getElementById('array-vis');
+            container.innerHTML = '';
+
+            arr.forEach((val, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'array-cell';
+                cell.id = 'cell-' + idx;
+
+                const indexLabel = document.createElement('div');
+                indexLabel.className = 'array-index';
+                indexLabel.innerText = 'a[' + idx + ']';
+
+                const valBox = document.createElement('div');
+                valBox.className = 'array-value';
+                valBox.innerText = val;
+
+                if (idx === scanIndex) cell.classList.add('scanning');
+                if (idx === maxIndex && scanIndex >= idx) cell.classList.add('highlight-max');
+                if (idx === minIndex && scanIndex >= idx) cell.classList.add('highlight-min');
+
+                cell.appendChild(indexLabel);
+                cell.appendChild(valBox);
+                container.appendChild(cell);
+            });
+        }
+
+        function scanStep() {
+            scanIndex++;
+            const log = document.getElementById('scan-log');
+            
+            if (scanIndex >= arr.length) {
+                log.innerText = "Цикълът приключи. Резултатите са финални.";
+                document.getElementById('btn-step').disabled = true;
+                document.querySelectorAll('.array-cell').forEach(c => c.classList.remove('scanning'));
+                return;
+            }
+
+            const currentVal = arr[scanIndex];
+            let msg = 'Проверяваме a[' + scanIndex + '] = ' + currentVal + '. ';
+            let updated = false;
+
+            if (currentVal > maxv) {
+                maxv = currentVal;
+                maxIndex = scanIndex;
+                document.getElementById('val-maxv').innerText = maxv;
+                msg += "Нов Максимум! ";
+                updated = true;
+            }
+
+            if (currentVal < minv) {
+                minv = currentVal;
+                minIndex = scanIndex;
+                document.getElementById('val-minv').innerText = minv;
+                msg += "Нов Минимум! ";
+                updated = true;
+            }
+
+            if (!updated) msg += "Няма промяна.";
+
+            log.innerText = msg;
+            renderArray();
+        }
+
+        updateLogicUI();
+        initArray();
+    </script>
+</body>
+</html>

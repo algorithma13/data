@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 2: Побитови операции</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981;
+            /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        table.logic-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.logic-table th,
+        table.logic-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        table.logic-table th {
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--text-main);
+        }
+
+        table.logic-table td {
+            color: #38bdf8;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before {
+            content: '⚡';
+        }
+
+        /* Bitwise Calculator */
+        .bit-calc-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .bit-calc-grid input {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 80px;
+            font-family: monospace;
+        }
+
+        .binary-rep {
+            color: var(--text-muted);
+            letter-spacing: 2px;
+        }
+
+        .binary-res {
+            color: var(--accent);
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        select {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            outline: none;
+        }
+
+        /* XOR Array Vis */
+        .array-vis {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+
+        .arr-box {
+            width: 40px;
+            height: 40px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            color: var(--text-main);
+            transition: all 0.3s;
+        }
+
+        .arr-box.active {
+            border-color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .arr-box.done {
+            opacity: 0.3;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            background-color: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Побитови операции</h1>
+
+                <h2>1. Какво представляват?</h2>
+                <p>Те работят директно с <strong>двоично представени данни</strong> (битовете на числата в паметта). Тъй
+                    като се изпълняват директно от процесора, те са изключително бързи.</p>
+                <div class="note-box">
+                    <em>Забележка:</em> В този урок ще приемем, че работим с <code>unsigned</code> (беззнакови) числа,
+                    за да не усложняваме обясненията с битовете за знак при отрицателните числа.
+                </div>
+
+                <h2>2. Видове операции</h2>
+
+                <h3>Побитово отрицание <code>~X</code></h3>
+                <p>Унарна операция. Преобразува всеки бит: 1 става 0, а 0 става 1.</p>
+
+                <h3>Побитово ИЛИ <code>X | Y</code></h3>
+                <p>За всяка двойка битове: Резултатът е 1, ако <strong>поне един</strong> от битовете е 1.</p>
+
+                <h3>Побитово И <code>X &amp; Y</code></h3>
+                <p>За всяка двойка битове: Резултатът е 1, <strong>само ако и двата</strong> бита са 1.</p>
+
+                <h3>Побитово изключващо ИЛИ (XOR) <code>X ^ Y</code></h3>
+                <p>За всяка двойка битове: Резултатът е 1, само ако двата бита са <strong>различни</strong>.</p>
+
+                <p><em>👉 Използвайте калкулатора вдясно, за да тествате операциите в реално време!</em></p>
+
+                <h2>3. Практически приложения и оптимизации</h2>
+
+                <h3>Бърза проверка за четност</h3>
+                <p>Вместо <code>if (n % 2 == 0)</code>, което използва бавната операция деление, можем да проверим
+                    най-младшия бит (най-десния).</p>
+                <p>Ако <code>(n &amp; 1) == 0</code>, числото е четно. Ако е <code>1</code>, числото е нечетно.</p>
+
+                <h3>Уникални свойства на XOR (^)</h3>
+                <ul>
+                    <li><code>X ^ X = 0</code> (Всяко число XOR-нато със себе си дава 0).</li>
+                    <li><code>X ^ 0 = X</code> (Всяко число XOR-нато с 0 дава самото себе си).</li>
+                </ul>
+
+                <h2>4. Задача: Намиране на уникален елемент</h2>
+                <p>Даден е масив, в който <strong>всички елементи се повтарят точно по два пъти</strong>, с изключение
+                    на един елемент. Намерете го.</p>
+                <p>Ако обходим масива и приложим XOR последователно на всички елементи, двойките еднакви числа ще се
+                    "нулират" (защото X^X=0). Накрая ще остане само уникалният елемент (защото X^0=X)!</p>
+                <pre>int find_unique(vector&lt;int&gt;&amp; nums) {
+    int ans = 0;
+    for(int n : nums) {
+        ans ^= n; // същото като ans = ans ^ n;
+    }
+    return ans;
+}
+
+// Пример: {4, 1, 5, 2, 9, 1, 4, 2, 5} -> Отговор: 9</pre>
+                <p><em>👉 Проследете този алгоритъм стъпка по стъпка във втория визуализатор вдясно!</em></p>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+
+            <!-- Визуализатор 1: Bitwise Calculator -->
+            <div class="vis-card">
+                <div class="vis-title">Побитов Калкулатор (8-bit)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Въведете числа от 0 до 255 и изберете операция, за да видите как се променят битовете.
+                </p>
+
+                <div class="bit-calc-grid">
+                    <input type="number" id="bc-x" value="12" min="0" max="255" onchange="calcBits()">
+                    <div class="binary-rep" id="bin-x">00001100</div>
+
+                    <select id="bc-op" onchange="calcBits()">
+                        <option value="and">&amp; (И)</option>
+                        <option value="or">| (ИЛИ)</option>
+                        <option value="xor">^ (XOR)</option>
+                    </select>
+                    <div></div>
+
+                    <input type="number" id="bc-y" value="10" min="0" max="255" onchange="calcBits()">
+                    <div class="binary-rep" id="bin-y">00001010</div>
+
+                    <div style="grid-column: span 2; border-top: 1px solid var(--border); margin: 0.5rem 0;"></div>
+
+                    <div style="font-weight: bold; text-align: center; color: var(--accent)" id="bc-res-dec">8</div>
+                    <div class="binary-res" id="bin-res">00001000</div>
+                </div>
+            </div>
+
+            <!-- Визуализатор 2: Unique Element with XOR -->
+            <div class="vis-card">
+                <div class="vis-title">Алгоритъм: Уникален елемент с XOR</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Проследете как повтарящите се числа се "унищожават" взаимно чрез <code>X ^ X = 0</code>, оставяйки
+                    само уникалното число.
+                </p>
+
+                <div class="array-vis" id="xor-arr">
+                    <!-- Кутийките се генерират тук -->
+                </div>
+
+                <div
+                    style="background-color: var(--code-bg); padding: 1rem; border-radius: 0.5rem; text-align: center; margin-bottom: 1rem; border: 1px dashed var(--border);">
+                    <div style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Текущ резултат
+                        (ans)</div>
+                    <div style="font-size: 2rem; font-family: monospace; font-weight: bold; color: var(--accent);"
+                        id="xor-ans">0</div>
+                    <div id="xor-log"
+                        style="font-family: monospace; font-size: 0.9rem; color: #38bdf8; margin-top: 0.5rem;">Готови за
+                        старт.</div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button style="background-color: var(--border);" onclick="initXor()">Рестарт</button>
+                    <button id="xor-step-btn" onclick="stepXor()">XOR следващ &rarr;</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // 1. Bitwise Calculator
+        function toBin8(num) {
+            return num.toString(2).padStart(8, '0');
+        }
+
+        function calcBits() {
+            const x = parseInt(document.getElementById('bc-x').value) || 0;
+            const y = parseInt(document.getElementById('bc-y').value) || 0;
+            const op = document.getElementById('bc-op').value;
+
+            document.getElementById('bin-x').innerText = toBin8(x);
+            document.getElementById('bin-y').innerText = toBin8(y);
+
+            let res = 0;
+            if (op === 'and') res = x & y;
+            if (op === 'or') res = x | y;
+            if (op === 'xor') res = x ^ y;
+
+            document.getElementById('bc-res-dec').innerText = res;
+            document.getElementById('bin-res').innerText = toBin8(res);
+        }
+
+        // 2. XOR Unique Element Animator
+        const defaultArr = [4, 1, 5, 2, 9, 1, 4, 2, 5];
+        let xorStep = 0;
+        let ans = 0;
+
+        function initXor() {
+            xorStep = 0;
+            ans = 0;
+
+            const container = document.getElementById('xor-arr');
+            container.innerHTML = '';
+
+            defaultArr.forEach((val, i) => {
+                const box = document.createElement('div');
+                box.className = 'arr-box';
+                box.id = 'xb-' + i;
+                box.innerText = val;
+                container.appendChild(box);
+            });
+
+            document.getElementById('xor-ans').innerText = '0';
+            document.getElementById('xor-log').innerHTML = '<code>ans = 0</code>';
+            document.getElementById('xor-step-btn').disabled = false;
+        }
+
+        function stepXor() {
+            if (xorStep >= defaultArr.length) return;
+
+            // Remove active from previous
+            if (xorStep > 0) {
+                document.getElementById('xb-' + (xorStep - 1)).classList.remove('active');
+                document.getElementById('xb-' + (xorStep - 1)).classList.add('done');
+            }
+
+            const val = defaultArr[xorStep];
+            const box = document.getElementById('xb-' + xorStep);
+            box.classList.add('active');
+
+            const oldAns = ans;
+            ans = ans ^ val;
+
+            document.getElementById('xor-ans').innerText = ans;
+
+            let logMsg = `<code>${oldAns} ^ ${val} = ${ans}</code>`;
+            if (oldAns === val) logMsg += ' <span style="color:#ef4444;">(Нулиране!)</span>';
+
+            document.getElementById('xor-log').innerHTML = logMsg;
+
+            xorStep++;
+
+            if (xorStep >= defaultArr.length) {
+                document.getElementById('xor-step-btn').disabled = true;
+                setTimeout(() => {
+                    box.classList.remove('active');
+                    box.classList.add('done');
+                    document.getElementById('xor-log').innerHTML = `Край! Уникалният елемент е <strong>${ans}</strong>.`;
+                }, 1000);
+            }
+        }
+
+        // Init
+        calcBits();
+        initXor();
+    </script>
+</body>
+
+</html>

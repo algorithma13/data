@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 1: Въведение в С++ и линейни алгоритми</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent full body scroll, panels will scroll */
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } /* Син цвят за числото 13, за да съвпада с главния бранд */
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 { font-size: 2.5rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+        }
+        
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before {
+            content: '⚡';
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        input[type="number"], input[type="text"] {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 150px;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            background-color: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Специфични стилове за визуализациите */
+        .result-box {
+            background-color: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            font-family: monospace;
+            color: #cbd5e1;
+            min-height: 60px;
+        }
+
+        .digit-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .digit-row:last-child {
+            border-bottom: none;
+        }
+
+        .math-expr {
+            color: #60a5fa;
+        }
+
+        .digit-val {
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        /* Кутии за размяна на променливи */
+        .swap-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .var-box {
+            width: 80px;
+            height: 80px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .var-box.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .var-name {
+            position: absolute;
+            top: -25px;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        .var-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Елементи на езика C++</h1>
+                <p>Добре дошли в първия урок. Тук ще си припомним основните типове данни и ще разгледаме най-важните аритметични операции в състезателното програмиране.</p>
+                
+                <h2>1. Типове данни и операции</h2>
+                <ul>
+                    <li><strong>Цели числа:</strong> <code>int</code> (и <code>long long</code> за по-големи)</li>
+                    <li><strong>Дробни числа:</strong> <code>float</code>, <code>double</code></li>
+                    <li><strong>Изчисления:</strong> Използвайте <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> и скоби <code>()</code> за аритметични операции.</li>
+                </ul>
+
+                <h2 id="division">2. Операция деление ( / )</h2>
+                <p>Операцията деление, приложена между <strong>две целочислени променливи</strong>, дава <em>цялата част</em> от резултата на делението (отрязва дробната).</p>
+<pre>int a = 7, b = 3;
+cout << a / b << endl; // ще отпечата 2</pre>
+                <p>Ако поне една от променливите е дробна, резултатът е точен:</p>
+<pre>double a = 7, b = 3;
+cout << a / b << endl; // ще отпечата 2.33333</pre>
+
+                <h2 id="modulo">3. Операция „остатък от деление“ ( % )</h2>
+                <p>Използва се знакът <code>%</code> само между целочислени променливи или константи.</p>
+                <p>Например изразът <code>5 % 3</code> има стойност <code>2</code>, защото 2 е остатъкът при делението на 5 с 3.</p>
+
+                <h2 id="digits">4. Отделяне на цифрите на цяло число</h2>
+                <p>Това е един от най-често използваните алгоритми. Ако имаме числото <code>n = 371234</code>, можем да извлечем всяка негова цифра чрез комбинация от <code>/</code> и <code>%</code>:</p>
+                <ul>
+                    <li><strong>единици:</strong> <code>n % 10</code> (напр. 371234 % 10 = 4)</li>
+                    <li><strong>десетици:</strong> <code>(n / 10) % 10</code> (371234 / 10 = 37123; 37123 % 10 = 3)</li>
+                    <li><strong>стотици:</strong> <code>(n / 100) % 10</code></li>
+                    <li><strong>хиляди:</strong> <code>(n / 1000) % 10</code></li>
+                    <li><strong>десетохиляди:</strong> <code>(n / 10000) % 10</code></li>
+                </ul>
+                <p><em>👉 Погледнете интерактивния панел вдясно, за да тествате как работи това за произволно число!</em></p>
+
+                <h2>5. Знаков тип (char)</h2>
+                <p>Променливите от тип <code>char</code> съхраняват един единствен символ в единични кавички.</p>
+<pre>char c = 'z';</pre>
+                <p>Всеки символ има числов код (ASCII). Например 'A' има код 65. Можем да превръщаме между знак и числов код:</p>
+<pre>char a = 'A';
+int n = (int)a; // n става 65</pre>
+                <p><strong>Много важен трик:</strong> Превръщане на символ-цифра в истинско число става чрез изваждане на кода на нулата (<code>'0'</code>):</p>
+<pre>char c = '7';
+int i = c - '0'; // i става равно на числото 7</pre>
+
+                <h2>6. Разклоняване и условен оператор</h2>
+                <p>Намиране на максимум от две числа:</p>
+<pre>// Вариант 1: с if-else
+if (a > b) { 
+    mx = a; 
+} else { 
+    mx = b; 
+}
+
+// Вариант 2: с вградена функция
+mx = max(a, b);</pre>
+
+                <h2 id="swap">7. Размяна на стойности (Swap)</h2>
+                <p>Понякога е трудно да се възприеме, <code>a = b; b = a;</code> няма да осъществи размяната (тъй като първоначалната стойност на 'a' ще се загуби).</p>
+                <p>Правилният подход е с въвеждане на допълнителна временна променлива (често наричана <code>t</code> или <code>temp</code>):</p>
+<pre>int t = a;
+a = b;
+b = t;</pre>
+                <p><em>👉 Проследете стъпките на размяната във втория визуализатор вдясно!</em></p>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+            
+            <!-- Визуализатор 1: Деление и Остатък -->
+            <div class="vis-card">
+                <div class="vis-title">Интерактивно деление и остатък</div>
+                <div class="input-group">
+                    <input type="number" id="div-a" value="7" placeholder="Число A">
+                    <span> / % </span>
+                    <input type="number" id="div-b" value="3" placeholder="Число B">
+                    <button onclick="calculateDivMod()">Пресметни</button>
+                </div>
+                <div class="result-box" id="div-result">
+                    <div style="color:var(--text-muted)">Въведете числа и натиснете "Пресметни".</div>
+                </div>
+            </div>
+
+            <!-- Визуализатор 2: Извличане на цифри -->
+            <div class="vis-card">
+                <div class="vis-title">Алгоритъм за извличане на цифри</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Въведете до 6-цифрено число, за да видите как се прилагат математическите операции за извличане на всяка позиция.
+                </p>
+                <div class="input-group">
+                    <input type="number" id="digit-n" value="371234" max="999999" placeholder="напр. 371234">
+                    <button onclick="extractDigits()">Извлечи</button>
+                </div>
+                <div class="result-box" id="digit-result">
+                    <div style="color:var(--text-muted)">Резултатът ще се появи тук.</div>
+                </div>
+            </div>
+
+            <!-- Визуализатор 3: Размяна на променливи (Swap) -->
+            <div class="vis-card">
+                <div class="vis-title">Визуализация на Swap (Размяна)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Проследете как стойностите мигрират между кутиите чрез временната променлива <code>t</code>.
+                </p>
+                <div class="swap-container">
+                    <div class="var-box" id="box-a">
+                        <span class="var-name">a</span>
+                        <span class="var-value" id="val-a">5</span>
+                    </div>
+                    <div class="var-box" id="box-t" style="border-style: dashed; border-color: var(--text-muted);">
+                        <span class="var-name">t (temp)</span>
+                        <span class="var-value" id="val-t">-</span>
+                    </div>
+                    <div class="var-box" id="box-b">
+                        <span class="var-name">b</span>
+                        <span class="var-value" id="val-b">9</span>
+                    </div>
+                </div>
+                <div class="step-controls">
+                    <button id="btn-reset-swap" onclick="resetSwap()" style="background:var(--border); color:white;">Рестарт</button>
+                    <button id="btn-step-swap" onclick="nextSwapStep()">Стъпка 1: t = a;</button>
+                </div>
+                <div id="swap-log" class="result-box" style="min-height:30px; text-align:center;">
+                    Готови за старт.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <!-- JavaScript за интерактивността -->
+    <script>
+        // --- 1. Деление и Остатък ---
+        function calculateDivMod() {
+            const a = parseInt(document.getElementById('div-a').value);
+            const b = parseInt(document.getElementById('div-b').value);
+            const resBox = document.getElementById('div-result');
+
+            if (isNaN(a) || isNaN(b)) {
+                resBox.innerHTML = "<span style='color:red;'>Моля, въведете валидни числа.</span>";
+                return;
+            }
+            if (b === 0) {
+                resBox.innerHTML = "<span style='color:red;'>Грешка: Деление на нула!</span>";
+                return;
+            }
+
+            const intDiv = Math.floor(a / b);
+            const floatDiv = (a / b).toFixed(5);
+            const mod = a % b;
+
+            resBox.innerHTML = `
+                <div class="digit-row">
+                    <span>Целочислено деление <code>(int) ${a} / ${b}</code>:</span>
+                    <span class="digit-val">${intDiv}</span>
+                </div>
+                <div class="digit-row">
+                    <span>Реално деление <code>(double) ${a} / ${b}</code>:</span>
+                    <span class="digit-val">${floatDiv}</span>
+                </div>
+                <div class="digit-row">
+                    <span>Остатък <code>${a} % ${b}</code>:</span>
+                    <span class="digit-val">${mod}</span>
+                </div>
+            `;
+        }
+
+        // --- 2. Извличане на цифри ---
+        function extractDigits() {
+            let n = parseInt(document.getElementById('digit-n').value);
+            const resBox = document.getElementById('digit-result');
+
+            if (isNaN(n) || n < 0) {
+                resBox.innerHTML = "<span style='color:red;'>Моля, въведете положително число.</span>";
+                return;
+            }
+
+            const positions = ["единици", "десетици", "стотици", "хиляди", "десетохиляди", "стохиляди"];
+            let html = "";
+            let currentDivisor = 1;
+            let tempN = n;
+
+            for(let i=0; i<positions.length; i++) {
+                if (tempN === 0 && i > 0) break; // Спираме, ако няма повече цифри
+                
+                let divided = Math.floor(n / currentDivisor);
+                let digit = divided % 10;
+                
+                let expr = currentDivisor === 1 
+                    ? `${n} % 10` 
+                    : `(${n} / ${currentDivisor}) % 10 = ${divided} % 10`;
+
+                html += `
+                    <div class="digit-row">
+                        <span>${positions[i]}: <span class="math-expr">${expr}</span></span>
+                        <span class="digit-val">${digit}</span>
+                    </div>
+                `;
+                
+                currentDivisor *= 10;
+                tempN = Math.floor(tempN / 10);
+            }
+
+            resBox.innerHTML = html;
+        }
+
+        // --- 3. Swap (Размяна) ---
+        let swapStep = 0;
+        let origA = 5, origB = 9;
+        
+        function resetSwap() {
+            swapStep = 0;
+            document.getElementById('val-a').innerText = origA;
+            document.getElementById('val-b').innerText = origB;
+            document.getElementById('val-t').innerText = "-";
+            
+            document.getElementById('box-a').classList.remove('active');
+            document.getElementById('box-b').classList.remove('active');
+            document.getElementById('box-t').classList.remove('active');
+            
+            document.getElementById('btn-step-swap').innerText = "Стъпка 1: t = a;";
+            document.getElementById('btn-step-swap').disabled = false;
+            document.getElementById('swap-log').innerText = "Готови за старт.";
+        }
+
+        function nextSwapStep() {
+            const valA = document.getElementById('val-a');
+            const valB = document.getElementById('val-b');
+            const valT = document.getElementById('val-t');
+            const btn = document.getElementById('btn-step-swap');
+            const log = document.getElementById('swap-log');
+
+            // Изчистване на активния клас
+            document.querySelectorAll('.var-box').forEach(box => box.classList.remove('active'));
+
+            if (swapStep === 0) {
+                valT.innerText = valA.innerText;
+                document.getElementById('box-t').classList.add('active');
+                document.getElementById('box-a').classList.add('active');
+                log.innerHTML = "Копираме стойността на <code>a</code> във временната променлива <code>t</code>.";
+                btn.innerText = "Стъпка 2: a = b;";
+                swapStep++;
+            } else if (swapStep === 1) {
+                valA.innerText = valB.innerText;
+                document.getElementById('box-a').classList.add('active');
+                document.getElementById('box-b').classList.add('active');
+                log.innerHTML = "Записваме стойността на <code>b</code> върху <code>a</code>. (Затова ни трябваше t!)";
+                btn.innerText = "Стъпка 3: b = t;";
+                swapStep++;
+            } else if (swapStep === 2) {
+                valB.innerText = valT.innerText;
+                document.getElementById('box-b').classList.add('active');
+                document.getElementById('box-t').classList.add('active');
+                log.innerHTML = "Връщаме запазената първоначална стойност от <code>t</code> в <code>b</code>. Готово!";
+                btn.innerText = "Размяната е успешна";
+                btn.disabled = true;
+                swapStep++;
+            }
+        }
+        
+        // Initial calculations
+        calculateDivMod();
+        extractDigits();
+    </script>
+
+</body>
+</html>

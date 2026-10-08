@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 4: Математика и Цели числа</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Променено от 1.2 на 1 за точно 50/50 разделяне */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .note-box h4 { color: #ef4444; margin-bottom: 0.5rem; font-size: 1.1rem;}
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before { content: '⚡'; }
+        
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100px;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover { background-color: var(--accent-hover); color: #fff;}
+        button:disabled { background-color: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        .result-box {
+            background-color: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            font-family: monospace;
+            font-size: 1.05rem;
+        }
+
+        .sum-vis-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+        
+        .sum-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--code-bg);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            flex-direction: column;
+        }
+        
+        .sum-circle span {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: normal;
+            margin-bottom: -5px;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Математика: Цели числа и алгоритми</h1>
+                
+                <h2>1. Целочислени типове данни и препълване (Overflow)</h2>
+                <p>Изборът на правилния тип е ключов, за да избегнете грешки, наречени <strong>препълване (overflow)</strong>, когато резултатът от изчисление надхвърли капацитета на типа в паметта:</p>
+                <ul>
+                    <li><code>int</code>: Най-често използваният тип. Побира числа от около -2 &middot; 10<sup>9</sup> до 2 &middot; 10<sup>9</sup>.</li>
+                    <li><code>long long</code>: Най-добрият ви приятел в състезателното програмиране! Може да съхранява числа от -9 &middot; 10<sup>18</sup> до 9 &middot; 10<sup>18</sup>.</li>
+                    <li><code>unsigned long long</code>: Само за положителни числа.</li>
+                </ul>
+
+                <div class="note-box">
+                    <h4>Внимание: Опасност от препълване!</h4>
+                    <p>Умножението на два <code>int</code>-a може лесно да доведе до препълване. Ако умножавате две числа, които са около 10<sup>5</sup>, резултатът ще бъде 10<sup>10</sup>, което <strong>не се побира</strong> в <code>int</code> и ще доведе до грешен резултат (отрязан или отрицателен). <em>👉 Вижте симулатора вдясно!</em></p>
+                </div>
+                <p><em>Съвет:</em> Винаги използвайте <code>long long</code> за променливи в състезателни задачи, освен ако не сте напълно сигурни, че <code>int</code> е достатъчен.</p>
+
+                <h2>2. Остатък при деление (Модул, %) и отрицателни числа</h2>
+                <p>При отрицателни числа знакът на резултата от <code>a % m</code> в C++ е същият като знака на делимото <code>a</code>. Например: <code>-10 % 3</code> е <code>-1</code>.</p>
+                <p>За да получите <strong>винаги положителен остатък</strong> (математически коректен), използвайте следната формула:</p>
+                <pre>int result = (a % m + m) % m;</pre>
+
+                <h2>3. Задача: Сума на цифрите на число</h2>
+                <p>Да се напише програма, която намира сумата на цифрите на дадено положително цяло число N.</p>
+                <p><strong>Алгоритъм:</strong> Извличаме последната цифра с операцията <code>% 10</code>. Добавяме я към сумата. След това я премахваме от числото чрез целочислено деление <code>/ 10</code>. Повтаряме, докато числото стане 0.</p>
+<pre>long long n;
+cin &gt;&gt; n;
+int sum = 0;
+
+while (n &gt; 0) {
+    sum += n % 10;
+    n /= 10;
+}
+cout &lt;&lt; sum &lt;&lt; endl;</pre>
+                <p><em>👉 Пуснете аниматора вдясно, за да видите стъпките!</em></p>
+
+                <h2>4. Задача: Броене на четни и нечетни</h2>
+                <p>Дадени са n на брой цели числа. Пребройте колко от тях са четни и колко са нечетни.</p>
+<pre>int n; 
+cin &gt;&gt; n;
+int even = 0, odd = 0;
+
+for(int i = 0; i &lt; n; i++) {
+    int num; 
+    cin &gt;&gt; num;
+    if(num % 2 == 0) {
+        even++;
+    } else {
+        odd++;
+    }
+}
+cout &lt;&lt; even &lt;&lt; endl;
+cout &lt;&lt; odd &lt;&lt; endl;</pre>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+            
+            <!-- Визуализатор 1: Overflow -->
+            <div class="vis-card">
+                <div class="vis-title">Симулатор на препълване (Overflow)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Въведете две големи числа (напр. 100000). Вижте какво се случва, когато се умножат в 32-битов <code>int</code> спрямо 64-битов <code>long long</code>.
+                </p>
+                
+                <div class="input-group">
+                    <input type="number" id="of-a" value="100000">
+                    <span style="color: white; font-weight: bold;">&times;</span>
+                    <input type="number" id="of-b" value="100000">
+                    <button onclick="simOverflow()">Умножи</button>
+                </div>
+
+                <div class="result-box" id="of-result">
+                    Натиснете "Умножи", за да видите резултата.
+                </div>
+            </div>
+
+            <!-- Визуализатор 2: Modulo -->
+            <div class="vis-card">
+                <div class="vis-title">Модул с отрицателни числа</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Вижте разликата между стандартния оператор <code>%</code> и формулата за положителен математически остатък.
+                </p>
+
+                <div class="input-group">
+                    <input type="number" id="mod-a" value="-10" placeholder="Число (a)">
+                    <span style="color: white; font-weight: bold;">%</span>
+                    <input type="number" id="mod-m" value="3" placeholder="Модул (m)">
+                    <button onclick="simModulo()">Пресметни</button>
+                </div>
+
+                <div class="result-box" id="mod-result">
+                    Натиснете "Пресметни", за да видите резултата.
+                </div>
+            </div>
+
+            <!-- Визуализатор 3: Digit Sum -->
+            <div class="vis-card">
+                <div class="vis-title">Алгоритъм: Сума от цифри</div>
+                
+                <div class="input-group" style="justify-content: center;">
+                    <input type="number" id="ds-n" value="735" style="width: 120px;" placeholder="Въведи N">
+                    <button onclick="initDigitSum()">Зареди число</button>
+                </div>
+
+                <div class="sum-vis-container">
+                    <div class="sum-circle" style="border-color: #3b82f6; color: #3b82f6;">
+                        <span>Число N</span>
+                        <div id="ds-current-n">-</div>
+                    </div>
+                    <div class="sum-circle">
+                        <span>Сума (sum)</span>
+                        <div id="ds-sum">-</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <button id="ds-btn-step" onclick="stepDigitSum()" disabled>Стъпка напред &rarr;</button>
+                </div>
+                
+                <div class="result-box" id="ds-log" style="text-align: center; font-size: 0.95rem; min-height: 50px;">
+                    Въведете число и натиснете "Зареди число".
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // 1. Overflow Simulator
+        function simOverflow() {
+            const a = parseInt(document.getElementById('of-a').value);
+            const b = parseInt(document.getElementById('of-b').value);
+            const resBox = document.getElementById('of-result');
+            if(isNaN(a) || isNaN(b)) return;
+
+            // Math.imul simulates C-like 32-bit signed integer multiplication in JS
+            const intRes = Math.imul(a, b); 
+            // BigInt allows exact large number arithmetic
+            const llRes = BigInt(a) * BigInt(b);
+
+            const isOverflow = intRes.toString() !== llRes.toString();
+
+            resBox.innerHTML = '<div>В <code>int</code> (32-bit): <span style="color:' + (isOverflow ? '#ef4444' : '#10b981') + '">' + intRes + '</span>' + (isOverflow ? ' ⚠️ ПРЕПЪЛВАНЕ!' : '') + '</div>' +
+                               '<div style="margin-top: 0.5rem;">В <code>long long</code> (64-bit): <span style="color:#3b82f6">' + llRes.toString() + '</span></div>';
+        }
+
+        // 2. Modulo Simulator
+        function simModulo() {
+            const a = parseInt(document.getElementById('mod-a').value);
+            const m = parseInt(document.getElementById('mod-m').value);
+            const resBox = document.getElementById('mod-result');
+            if(isNaN(a) || isNaN(m) || m === 0) {
+                resBox.innerText = "Невалидни данни (m не може да е 0).";
+                return;
+            }
+
+            const cppMod = a % m;
+            const safeMod = ((a % m) + m) % m;
+
+            resBox.innerHTML = '<div>Стандартно <code>' + a + ' % ' + m + '</code> = <span style="color:#ef4444">' + cppMod + '</span></div>' +
+                               '<div style="margin-top: 0.5rem;">Коригирано <code>(' + a + ' % ' + m + ' + ' + m + ') % ' + m + '</code> = <span style="color:#10b981">' + safeMod + '</span></div>';
+        }
+
+        // 3. Digit Sum Animator
+        let digitN = 0;
+        let currentSum = 0;
+        let sumStep = 0;
+
+        function initDigitSum() {
+            digitN = parseInt(document.getElementById('ds-n').value);
+            currentSum = 0;
+            sumStep = 0;
+            if(isNaN(digitN) || digitN <= 0) return;
+
+            document.getElementById('ds-current-n').innerText = digitN;
+            document.getElementById('ds-sum').innerText = currentSum;
+            document.getElementById('ds-log').innerText = "Готови за начало.";
+            document.getElementById('ds-btn-step').disabled = false;
+        }
+
+        function stepDigitSum() {
+            if(digitN <= 0) {
+                document.getElementById('ds-log').innerText = "Край! Крайната сума е " + currentSum;
+                document.getElementById('ds-btn-step').disabled = true;
+                return;
+            }
+
+            const log = document.getElementById('ds-log');
+            if(sumStep === 0) {
+                const d = digitN % 10;
+                log.innerHTML = "Извличаме последната цифра: <code>" + digitN + " % 10 = <span style='color:var(--accent)'>" + d + "</span></code>";
+                sumStep = 1;
+            } else if (sumStep === 1) {
+                const d = digitN % 10;
+                currentSum += d;
+                document.getElementById('ds-sum').innerText = currentSum;
+                log.innerHTML = "Добавяме я към сумата: <code>sum = " + currentSum + "</code>";
+                sumStep = 2;
+            } else if (sumStep === 2) {
+                digitN = Math.floor(digitN / 10);
+                document.getElementById('ds-current-n').innerText = digitN;
+                log.innerHTML = "Премахваме цифрата: <code>n / 10 = " + digitN + "</code>";
+                sumStep = 0;
+            }
+        }
+
+        // Init examples
+        simOverflow();
+        simModulo();
+    </script>
+</body>
+</html>

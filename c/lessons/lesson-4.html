@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 4: Основни задачи с побитови операции (Маски)</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981;
+            /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        table.logic-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.logic-table th,
+        table.logic-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.logic-table th {
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--text-main);
+        }
+
+        table.logic-table td {
+            font-family: monospace;
+        }
+
+        table.logic-table td:first-child {
+            color: var(--text-muted);
+        }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vis-title::before {
+            content: '⚡';
+        }
+
+        /* Mask Animator Controls */
+        .mask-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+
+        .mask-btn {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .mask-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .mask-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Bit Array Vis */
+        .bit-array {
+            display: flex;
+            gap: 2px;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .bit-box {
+            width: 25px;
+            height: 35px;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--text-muted);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .bit-box.one {
+            color: #38bdf8;
+        }
+
+        .bit-box.mask-one {
+            color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: var(--accent);
+        }
+
+        .bit-box.mask-zero {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .bit-box.changed {
+            animation: pulse-bit 0.5s ease-out;
+        }
+
+        @keyframes pulse-bit {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+                background-color: var(--accent);
+                color: #000;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .bit-index {
+            position: absolute;
+            bottom: -15px;
+            font-size: 0.6rem;
+            color: var(--border);
+        }
+
+        .row-label {
+            font-family: monospace;
+            color: var(--text-muted);
+            width: 50px;
+            text-align: right;
+            padding-right: 10px;
+            align-self: center;
+            font-size: 0.8rem;
+        }
+
+        .vis-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px dashed var(--border);
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="number"] {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 60px;
+            text-align: center;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Основни задачи с побитови маски</h1>
+
+                <p>Едно от най-мощните приложения на побитовите операции е възможността да променяме <strong>точно
+                        определени битове</strong> (на позиция <code>p</code>) в дадено число <code>x</code>, без да
+                    засягаме останалите. Позициите се броят от дясно наляво, започвайки от 0 (или от 1, според
+                    условието).</p>
+
+                <h2>1. Присвояване на 1 (Включване на бит)</h2>
+                <p>Ако искаме битът на позиция <code>p</code> да стане <code>1</code>, използваме побитово <strong>ИЛИ
+                        (|)</strong>. Свойството <code>X | 1 = 1</code> ни гарантира, че битът ще стане 1, а
+                    <code>X | 0 = X</code> гарантира, че останалите битове няма да се променят.
+                </p>
+                <p><strong>Маска:</strong> Трябва ни число, което има <code>1</code> само на позиция <code>p</code>.
+                    Това число е точно <code>1 &lt;&lt; p</code> (ако броим позициите от 0).</p>
+                <pre>x = x | (1 &lt;&lt; p);</pre>
+
+                <h2>2. Присвояване на 0 (Изключване на бит)</h2>
+                <p>За да направим бита <code>0</code>, използваме побитово <strong>И (&amp;)</strong>. Свойството
+                    <code>X &amp; 0 = 0</code> нулира бита, а <code>X &amp; 1 = X</code> запазва останалите.
+                </p>
+                <p><strong>Маска:</strong> Трябва ни число, което има <code>0</code> само на позиция <code>p</code>, а
+                    навсякъде другаде е <code>1</code>. Това е побитовото отрицание на горната маска:
+                    <code>~(1 &lt;&lt; p)</code>.
+                </p>
+                <pre>x = x &amp; ~(1 &lt;&lt; p);</pre>
+
+                <h2>3. Инвертиране (Обръщане на бит)</h2>
+                <p>Ако искаме 0 да стане 1, а 1 да стане 0, използваме <strong>Изключващо ИЛИ (^)</strong>. Знаем, че
+                    <code>X ^ 1 = ~X</code> (обръща бита), а <code>X ^ 0 = X</code> (запазва го).
+                </p>
+                <pre>x = x ^ (1 &lt;&lt; p);</pre>
+
+                <h2>4. Промяна на поредица от битове (от 0 до p-1)</h2>
+                <p>Какво правим, ако искаме да променим <strong>всички битове</strong> от най-младшия до позиция
+                    <code>p-1</code> едновременно?
+                </p>
+                <p>Трябва ни маска от вида <code>000...01111</code>. Математически, ако от число, което е точна степен
+                    на двойката (напр. <code>16 = 10000</code>), извадим <code>1</code>, получаваме точно такава
+                    поредица (<code>16 - 1 = 15 = 01111</code>).</p>
+                <p><strong>Формула за маската:</strong> <code>(1 &lt;&lt; p) - 1</code></p>
+
+                <table class="logic-table">
+                    <thead>
+                        <tr>
+                            <th>Действие за битове [0 .. p-1]</th>
+                            <th>Формула</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Запис на 1</td>
+                            <td><code>x = x | ((1 &lt;&lt; p) - 1);</code></td>
+                        </tr>
+                        <tr>
+                            <td>Запис на 0</td>
+                            <td><code>x = x &amp; ~((1 &lt;&lt; p) - 1);</code></td>
+                        </tr>
+                        <tr>
+                            <td>Инвертиране</td>
+                            <td><code>x = x ^ ((1 &lt;&lt; p) - 1);</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="note-box">
+                    Това са класически задачи, наричани <strong>задачи с побитови маски (bitmasks)</strong>.
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+
+            <div class="vis-card">
+                <div class="vis-title">Интерактивна лаборатория за маски</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem; text-align: center;">
+                    Въведете стартово число, изберете позиция на бита <code>p</code> и тествайте трите основни операции
+                    за манипулация.
+                </p>
+
+                <div class="input-group">
+                    <div>
+                        <span style="color:var(--text-muted); font-size:0.8rem;">Число x</span><br>
+                        <input type="number" id="mask-x" value="138" min="0" max="65535" onchange="resetVis()">
+                    </div>
+                    <div>
+                        <span style="color:var(--text-muted); font-size:0.8rem;">Позиция p</span><br>
+                        <input type="number" id="mask-p" value="2" min="0" max="15" onchange="resetVis()">
+                    </div>
+                </div>
+
+                <div class="mask-controls">
+                    <div class="mask-btn active" id="btn-set1" onclick="applyMask('set1')">Сложи 1 ( | )</div>
+                    <div class="mask-btn" id="btn-set0" onclick="applyMask('set0')">Сложи 0 ( &amp; )</div>
+                    <div class="mask-btn" id="btn-flip" onclick="applyMask('flip')">Обърни ( ^ )</div>
+                </div>
+
+                <div
+                    style="background: var(--bg-primary); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+
+                    <div class="vis-row">
+                        <div class="row-label">Число x</div>
+                        <div class="bit-array" id="arr-x"></div>
+                    </div>
+
+                    <div class="vis-row">
+                        <div class="row-label" id="lbl-op"
+                            style="color: var(--accent); font-weight: bold; font-size: 1rem;">| Маска</div>
+                        <div class="bit-array" id="arr-mask"></div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border); margin: 0.5rem 0; width: 100%;"></div>
+
+                    <div class="vis-row">
+                        <div class="row-label" style="color: #f8fafc;">Резултат</div>
+                        <div class="bit-array" id="arr-res"></div>
+                    </div>
+                </div>
+
+                <div class="result-box" id="mask-result">
+                    Изберете операция...
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        let currentMode = 'set1';
+
+        function toBin16(num) {
+            return num.toString(2).padStart(16, '0').split('');
+        }
+
+        function renderArray(containerId, bits, highlightIdx = -1, isMask = false, op = '') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            bits.forEach((b, i) => {
+                const box = document.createElement('div');
+                box.className = 'bit-box';
+
+                const realIdx = 15 - i; // reverse index
+
+                if (b === '1') box.classList.add('one');
+
+                if (isMask) {
+                    if (op === 'set0') {
+                        if (realIdx === highlightIdx) box.classList.add('mask-zero');
+                        else box.style.color = '#94a3b8'; // normal 1s
+                    } else {
+                        if (realIdx === highlightIdx) box.classList.add('mask-one');
+                    }
+                }
+
+                box.innerText = b;
+
+                // Add small index labels below the mask
+                if (isMask && (realIdx % 4 === 0 || realIdx === highlightIdx)) {
+                    const idxLabel = document.createElement('div');
+                    idxLabel.className = 'bit-index';
+                    idxLabel.innerText = realIdx;
+                    box.appendChild(idxLabel);
+                }
+
+                container.appendChild(box);
+            });
+        }
+
+        function resetVis() {
+            applyMask(currentMode);
+        }
+
+        function applyMask(mode) {
+            currentMode = mode;
+
+            // Update UI buttons
+            document.getElementById('btn-set1').classList.remove('active');
+            document.getElementById('btn-set0').classList.remove('active');
+            document.getElementById('btn-flip').classList.remove('active');
+            document.getElementById('btn-' + mode).classList.add('active');
+
+            let x = parseInt(document.getElementById('mask-x').value);
+            let p = parseInt(document.getElementById('mask-p').value);
+
+            if (isNaN(x) || x < 0) x = 0;
+            if (x > 65535) x = 65535;
+            if (isNaN(p) || p < 0) p = 0;
+            if (p > 15) p = 15;
+
+            document.getElementById('mask-x').value = x;
+            document.getElementById('mask-p').value = p;
+
+            let mask = 0;
+            let res = 0;
+            let opSymbol = '';
+            let formula = '';
+
+            if (mode === 'set1') {
+                mask = 1 << p;
+                res = x | mask;
+                opSymbol = '|';
+                formula = `x = x | (1 << ${p})`;
+            } else if (mode === 'set0') {
+                mask = ~(1 << p) & 65535; // keep it 16 bit
+                res = x & mask;
+                opSymbol = '&';
+                formula = `x = x & ~(1 << ${p})`;
+            } else if (mode === 'flip') {
+                mask = 1 << p;
+                res = x ^ mask;
+                opSymbol = '^';
+                formula = `x = x ^ (1 << ${p})`;
+            }
+
+            document.getElementById('lbl-op').innerText = opSymbol + ' Маска';
+
+            renderArray('arr-x', toBin16(x));
+            renderArray('arr-mask', toBin16(mask), p, true, mode);
+
+            const resBits = toBin16(res);
+            renderArray('arr-res', resBits);
+
+            // Animate changed bit
+            const resContainer = document.getElementById('arr-res');
+            const changedBox = resContainer.children[15 - p];
+            if (changedBox) changedBox.classList.add('changed');
+
+            document.getElementById('mask-result').innerHTML = `Формула: <code>${formula}</code><br>Нова стойност: <span style="color:var(--accent); font-weight:bold;">${res}</span>`;
+        }
+
+        // Init
+        applyMask('set1');
+    </script>
+</body>
+
+</html>

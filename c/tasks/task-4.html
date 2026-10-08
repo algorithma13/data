@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C4: Съвместимост</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачи */
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .limits { color: var(--text-muted); font-size: 0.95rem; display: flex; gap: 1rem; }
+        
+        h2 { font-size: 1.25rem; color: var(--text-main); margin-top: 2rem; margin-bottom: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .constraints {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            color: #60a5fa;
+            margin-bottom: 1.5rem;
+        }
+
+        table.examples {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.examples th, table.examples td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.examples th { background-color: rgba(15, 23, 42, 0.8); color: var(--text-main); font-weight: 600; }
+        table.examples td { font-family: monospace; color: #38bdf8; vertical-align: top; }
+
+        /* Десен панел стилове */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hint-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .hint-box h4 { color: #10b981; margin-bottom: 0.5rem; }
+        .hint-box ul { padding-left: 1.2rem; color: var(--text-main); font-size: 0.95rem; }
+        .hint-box li { margin-bottom: 0.5rem; }
+        .hint-box code { background-color: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; color: #10b981;}
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+
+        /* Alphabet Grid */
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .letter-box {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 0.25rem 0;
+            text-transform: lowercase;
+            transition: all 0.2s;
+        }
+
+        .letter-box.active {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        
+        .letter-box.common {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .system-row {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .system-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .system-title span {
+            color: #38bdf8;
+            font-family: monospace;
+        }
+
+        .final-result {
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed #10b981;
+            text-align: center;
+        }
+
+        .final-str {
+            font-family: monospace;
+            font-size: 2rem;
+            color: #10b981;
+            letter-spacing: 4px;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА C4: Съвместимост</h1>
+                <div class="limits">
+                    <span>⏱️ Време: 0.18 с.</span>
+                    <span>💾 Памет: 256 MB</span>
+                    <span>🏢 Школа МГ</span>
+                </div>
+            </div>
+            
+            <p>Екип в ІТ компания трябва да разработи нов софтуерен модул, който ще се използва от <strong>n</strong> различни клиентски системи.</p>
+            <p>Всяка клиентска система има свой собствен набор от софтуерни библиотеки (dependencies), от които зависи. За да може вашият нов модул да работи на всички клиентски системи безпроблемно, той трябва да използва <strong>само онези библиотеки, които са налични във всяка една</strong> от тези n системи.</p>
+            <p>Да се напише програма <code>compatibility.cpp</code>, която по даден брой на системите и списъците им с библиотеки определя кои от тях са общи за абсолютно всички системи. Всяка библиотека е представена с уникален идентификатор - малка латинска буква ('a'-'z').</p>
+
+            <h2>Вход</h2>
+            <p>На първия ред на стандартния вход ще се въведе едно цяло число <strong>n</strong> - броят на клиентските системи.</p>
+            <p>На следващите n реда ще се въведе по един низ, представляващ списък с наличните библиотеки за съответната система.</p>
+
+            <h2>Изход</h2>
+            <p>На един ред на изхода се извежда низ, съдържащ идентификаторите на всички общи библиотеки, <strong>сортирани по азбучен ред</strong>.</p>
+            <p>Ако няма нито една обща библиотека, програмата да извежда празен ред.</p>
+
+            <h2>Ограничения</h2>
+            <div class="constraints">
+                1 &le; n &le; 50000<br>
+                Дължината на всеки низ е между 1 и 1000 символа.
+            </div>
+
+            <h2>Пример</h2>
+            <table class="examples">
+                <thead>
+                    <tr>
+                        <th>Примерен вход</th>
+                        <th>Изход за примера</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>3<br>authentication<br>authorization<br>auditing</td>
+                        <td>aintu</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="background-color: var(--code-bg); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); margin-top: 1rem;">
+                <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Обяснение на примера</h3>
+                <ul style="color: var(--text-muted); font-size: 0.95rem; padding-left: 1.2rem; margin-bottom: 0.5rem;">
+                    <li>Библиотеки в система 1 {a, u, t, h, e, n, i, c, o}</li>
+                    <li>Библиотеки в система 2 {a, u, t, h, o, r, i, z, n}</li>
+                    <li>Библиотеки в система 3 {a, u, d, i, t, n, g}</li>
+                </ul>
+                <p style="font-size: 0.95rem; margin-bottom: 0;">След сравняване, единствените библиотеки, налични в трите системи са {a, i, n, t, u}. Подредени по азбучен ред, те образуват резултата <strong>"aintu"</strong>.</p>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Подсказки и Визуализатор -->
+        <div class="right-panel">
+            
+            <div class="vis-card">
+                <div class="vis-title">💡 Указания: Букви като битове (Bitmasks)</div>
+                <div class="hint-box">
+                    <h4>Защо да правим масиви, когато имаме маски?</h4>
+                    <ul>
+                        <li>Английската азбука съдържа точно 26 малки букви ('a' до 'z'). Това означава, че 26 бита са напълно достатъчни! Те се побират идеално в стандартен 32-битов <code>int</code>. Няма нужда дори от <code>long long</code>.</li>
+                        <li><strong>Трансформация:</strong> За да превърнете буква <code>c</code> в номер на бит (индекс), просто извадете ASCII кода на 'a' от нея: <code>int bit = c - 'a';</code>. Така 'a' става 0-ви бит, 'b' е 1-ви и т.н.</li>
+                        <li>Създайте маска за всяка система: <code>mask |= (1 &lt;&lt; (c - 'a'))</code>.</li>
+                        <li>Намерете общите библиотеки чрез <strong>побитово И (&amp;)</strong> на маските на всички системи.</li>
+                        <li><strong>Бонус: Автоматично сортиране!</strong> Тъй като битовете в <code>int</code> променливата са физически подредени (от 0 до 25), ако накрая обходите крайния резултат и отпечатате активните битове като символи <code>char('a' + i)</code>, те ще излязат автоматично сортирани по азбучен ред!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="vis-card">
+                <div class="vis-title">🔤 Симулатор на съвместимост</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Въведете списъците с библиотеки (по един на ред). Симулаторът превръща всяка дума в 26-битова маска и намира сечението.
+                </p>
+
+                <textarea id="sim-words" spellcheck="false">authentication
+authorization
+auditing</textarea>
+
+                <button onclick="runCompatSim()">Намери съвместимостта</button>
+
+                <div id="sim-results" style="margin-top: 1.5rem;">
+                    <!-- Резултатите се генерират тук -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+
+        function createAlphabetGrid(activeMask, isFinal = false) {
+            let html = '<div class="alphabet-grid">';
+            for(let i = 0; i < 26; i++) {
+                const isActive = (activeMask & (1 << i)) !== 0;
+                let cssClass = 'letter-box';
+                if (isActive) {
+                    cssClass += isFinal ? ' common' : ' active';
+                }
+                html += `<div class="${cssClass}">${ALPHABET[i]}</div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function runCompatSim() {
+            const rawText = document.getElementById('sim-words').value;
+            const words = rawText.split('\n').map(w => w.trim()).filter(w => w.length > 0);
+            const resContainer = document.getElementById('sim-results');
+
+            if (words.length === 0) {
+                resContainer.innerHTML = '<div style="color:#ef4444; text-align:center;">Моля, въведете поне една дума.</div>';
+                return;
+            }
+
+            let finalMask = (1 << 26) - 1; // All 26 bits set to 1
+            let html = '';
+
+            words.forEach((word, index) => {
+                let currentMask = 0;
+                // Generate mask for current word
+                for (let i = 0; i < word.length; i++) {
+                    const c = word[i].toLowerCase();
+                    if (c >= 'a' && c <= 'z') {
+                        const bitIndex = c.charCodeAt(0) - 97; // 'a' is 97
+                        currentMask |= (1 << bitIndex);
+                    }
+                }
+                
+                finalMask &= currentMask; // Intersect
+
+                html += `
+                    <div class="system-row">
+                        <div class="system-title">
+                            Система ${index + 1}: <span>"${word}"</span>
+                        </div>
+                        ${createAlphabetGrid(currentMask)}
+                    </div>
+                `;
+            });
+
+            // Reconstruct final string from finalMask
+            let finalStr = '';
+            for(let i = 0; i < 26; i++) {
+                if ((finalMask & (1 << i)) !== 0) {
+                    finalStr += ALPHABET[i];
+                }
+            }
+
+            if (finalStr === '') finalStr = '< Празна >';
+
+            html += `
+                <div class="final-result">
+                    <div style="color:var(--text-muted); font-size:0.9rem;">Общи библиотеки (Автоматично сортирани):</div>
+                    ${createAlphabetGrid(finalMask, true)}
+                    <div class="final-str">${finalStr}</div>
+                </div>
+            `;
+
+            resContainer.innerHTML = html;
+        }
+
+        // Init
+        runCompatSim();
+    </script>
+</body>
+</html>

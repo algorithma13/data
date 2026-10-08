@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C1: Скакалец</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачи */
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .limits { color: var(--text-muted); font-size: 0.95rem; display: flex; gap: 1rem; }
+        
+        h2 { font-size: 1.25rem; color: var(--text-main); margin-top: 2rem; margin-bottom: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .constraints {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            color: #60a5fa;
+            margin-bottom: 1.5rem;
+        }
+
+        table.examples {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.examples th, table.examples td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.examples th { background-color: rgba(15, 23, 42, 0.8); color: var(--text-main); font-weight: 600; }
+        table.examples td { font-family: monospace; color: #38bdf8; vertical-align: top; }
+
+        /* Десен панел стилове */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hint-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .hint-box h4 { color: #10b981; margin-bottom: 0.5rem; }
+        .hint-box ul { padding-left: 1.2rem; color: var(--text-main); font-size: 0.95rem; }
+        .hint-box li { margin-bottom: 0.5rem; }
+        .hint-box code { background-color: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; color: #10b981;}
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            text-align: left;
+            border: 1px dashed var(--border);
+        }
+
+        .bit-calc-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .bit-calc-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА C1: Скакалец</h1>
+                <div class="limits">
+                    <span>⏱️ Време: 2 с.</span>
+                    <span>💾 Памет: 512 MB</span>
+                    <span>🏢 Школа МГ</span>
+                </div>
+            </div>
+            
+            <p>Един скакалец се намира в началото на редица от номерирани листа, започващи от 0. Скакалецът може да прави само един вид скок: напред с точно <strong>S</strong> листа.</p>
+            <p>Той започва от листо 0 и прави неограничен брой скокове.</p>
+            <p>В далечината обаче има капан, поставен от програмистите на миналото. Капанът се активира на всеки <strong>N</strong> листа, където <strong>N винаги е степен на 2</strong> (N = 2<sup>k</sup>). Това означава, че капани има на листа с номера 0, N, 2N, 3N и т.н.</p>
+            <p>Вие сте пазител на скакалеца и трябва да предвидите на кое листо ще падне той след своя първи скок, за да го предупредите. Но вашият калкулатор може да изпълнява <strong>само побитови операции</strong>, а не модулно деление.</p>
+            <p>Напишете програма <code>grasshopper</code>, която намира номера на листото, на което скакалецът ще се приземи, спрямо началото на последния цикъл от капани. С други думи, ако скакалецът скочи на листо S, какъв е остатъкът при деление на S на N?</p>
+
+            <h2>Вход</h2>
+            <p>На първия ред на стандартния вход ще бъдат зададени положителните цели числа <strong>S</strong> и <strong>N</strong> от описанието на задачата, разделени с интервал.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на стандартния изход се извежда едно цяло число - номерът на целевото листо в рамките на цикъла [0, N - 1].</p>
+
+            <h2>Ограничения</h2>
+            <div class="constraints">
+                0 &le; S &le; 10<sup>9</sup><br>
+                2 &le; N &le; 2<sup>30</sup> и N е степен на 2.
+            </div>
+
+            <h2>Примери</h2>
+            <table class="examples">
+                <thead>
+                    <tr>
+                        <th>Примерен вход</th>
+                        <th>Изход за примера</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>13 8</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td>25 16</td>
+                        <td>9</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Подсказки и Визуализатор -->
+        <div class="right-panel">
+            
+            <div class="vis-card">
+                <div class="vis-title">💡 Указания: Модул чрез побитово И (&amp;)</div>
+                <div class="hint-box">
+                    <h4>Тайната на степените на двойката</h4>
+                    <ul>
+                        <li>Ако N е степен на 2 (напр. 8), то в двоична бройна система N е <code>1000</code>.</li>
+                        <li>Тогава числото N-1 в двоична система е <code>0111</code> (само единици, на позицията на нулите на N).</li>
+                        <li><strong>Супер бързият трик:</strong> Операцията <code>S % N</code> е математически и побитово <strong>напълно еквивалентна</strong> на <code>S &amp; (N - 1)</code>. Този трик работи <strong>САМО</strong> когато N е степен на 2 и е любим на процесорите (и създателите на задачи)!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="vis-card">
+                <div class="vis-title">🧮 Визуализатор на Побитов Модул</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Въведете S и N (уверете се, че N е степен на 2, напр. 2, 4, 8, 16, 32...). Симулаторът ще покаже как работи трикът.</p>
+                
+                <div class="input-group">
+                    <div class="input-row">
+                        <input type="number" id="sim-s" placeholder="S (скок)" value="13">
+                        <input type="number" id="sim-n" placeholder="N (модул)" value="8">
+                    </div>
+                    <button onclick="simulateBitwiseMod()">Виж побитовото изчисление</button>
+                </div>
+
+                <div id="bit-result" class="result-box">
+                    <div style="text-align:center; color: var(--text-muted);">Резултатът ще се появи тук.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        function toBinPad(num, pad) {
+            return num.toString(2).padStart(pad, '0');
+        }
+
+        function isPowerOfTwo(n) {
+            return n > 0 && (n & (n - 1)) === 0;
+        }
+
+        function simulateBitwiseMod() {
+            const s = parseInt(document.getElementById('sim-s').value);
+            const n = parseInt(document.getElementById('sim-n').value);
+            const res = document.getElementById('bit-result');
+
+            if (isNaN(s) || isNaN(n) || s < 0 || n <= 0) {
+                res.innerHTML = '<div style="color: #ef4444; width: 100%; text-align: center;">Моля, въведете валидни числа.</div>';
+                return;
+            }
+
+            if (!isPowerOfTwo(n)) {
+                res.innerHTML = '<div style="color: #ef4444; width: 100%; text-align: center;">Внимание: Този побитов трик работи <strong>САМО когато N е степен на 2</strong>! Числото ' + n + ' не е степен на 2.</div>';
+                return;
+            }
+
+            const nMinus1 = n - 1;
+            const ans = s & nMinus1;
+            
+            // Намираме дължината за подравняване (за да е красиво)
+            const padLen = Math.max(s.toString(2).length, n.toString(2).length) + 1;
+
+            let html = `
+                <div style="margin-bottom: 1rem; color: #10b981; font-weight: bold; text-align: center;">
+                    Отговор: ${ans}
+                </div>
+                
+                <div class="bit-calc-row">
+                    <span><code>S = ${s}</code></span>
+                    <span style="color: var(--text-muted);">${toBinPad(s, padLen)}</span>
+                </div>
+                
+                <div class="bit-calc-row">
+                    <span><code>N-1 = ${nMinus1}</code></span>
+                    <span style="color: var(--text-muted);">${toBinPad(nMinus1, padLen)}</span>
+                </div>
+                
+                <div class="bit-calc-row" style="border-bottom: 2px solid var(--border);">
+                    <span style="color: var(--accent);">&amp; (Побитово И)</span>
+                </div>
+                
+                <div class="bit-calc-row">
+                    <span><code>Резултат:</code></span>
+                    <span>${toBinPad(ans, padLen)}</span>
+                </div>
+                
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+                    Тъй като (N-1) има единици само на най-младшите позиции, операцията <code>&amp;</code> ефективно "отрязва" всички по-старши битове на S, което е точно дефиницията за остатък при деление на N (ако N e 2<sup>k</sup>).
+                </div>
+            `;
+
+            res.innerHTML = html;
+        }
+        
+        // Initial sim
+        simulateBitwiseMod();
+    </script>
+</body>
+</html>

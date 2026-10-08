@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача D2: Остатъци</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .limits { color: var(--text-muted); font-size: 0.95rem; display: flex; gap: 1rem; }
+        
+        h2 { font-size: 1.25rem; color: var(--text-main); margin-top: 2rem; margin-bottom: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .constraints {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            color: #60a5fa;
+            margin-bottom: 1.5rem;
+        }
+
+        table.examples {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.examples th, table.examples td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.examples th { background-color: rgba(15, 23, 42, 0.8); color: var(--text-main); font-weight: 600; }
+        table.examples td { font-family: monospace; color: #38bdf8; vertical-align: top; }
+
+        /* Десен панел стилове */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hint-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .hint-box h4 { color: #f59e0b; margin-bottom: 0.5rem; }
+        .hint-box ul { padding-left: 1.2rem; color: var(--text-main); font-size: 0.95rem; }
+        .hint-box li { margin-bottom: 0.5rem; }
+        .hint-box code { background-color: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; color: #fbbf24;}
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+
+        .result-box {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            color: #38bdf8;
+            border: 1px dashed var(--border);
+        }
+
+        .rem-box {
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА D2: Остатъци</h1>
+                <div class="limits">
+                    <span>⏱️ Време: 1 с.</span>
+                    <span>💾 Памет: 64 MB</span>
+                </div>
+            </div>
+            
+            <p>За дадено цяло число <strong>N</strong> и цяло число <strong>d</strong>, напишете програма <code>remainders</code>, която определя в кой интервал се намира остатъкът от делението на N на d.</p>
+
+            <h2>Вход</h2>
+            <p>На един ред на стандартния вход ще бъдат зададени целите числа <strong>N</strong> и <strong>d</strong>, разделени с интервал.</p>
+
+            <h2>Изход</h2>
+            <p>Програмата трябва да изведе на един ред на стандартния изход интервала, в който се намира остатъкът от делението на N на d.</p>
+            <p>Интервалът се задава във вида <code>[a; b]</code>, където <strong>a</strong> е долната граница на интервала, а <strong>b</strong> е горната граница.</p>
+
+            <h2>Ограничения</h2>
+            <div class="constraints">
+                0 &le; N &le; 10<sup>18</sup><br>
+                1 &le; d &le; 10<sup>9</sup>
+            </div>
+
+            <h2>Примери</h2>
+            <table class="examples">
+                <thead>
+                    <tr>
+                        <th>Примерен вход</th>
+                        <th>Изход за примера</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>13 5</td>
+                        <td>[0; 4]</td>
+                    </tr>
+                    <tr>
+                        <td>25 7</td>
+                        <td>[0; 6]</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Подсказки и Визуализатор -->
+        <div class="right-panel">
+            
+            <div class="vis-card">
+                <div class="vis-title">💡 Указания (Подсказки)</div>
+                <div class="hint-box">
+                    <h4>Класическа състезателна уловка!</h4>
+                    <ul>
+                        <li><strong>Какво е остатък?</strong> Когато делим което и да е число на <code>d</code>, остатъкът винаги може да бъде от <code>0</code> (при точно деление) до най-много <code>d - 1</code>.</li>
+                        <li><strong>Защо ни дават N?</strong> Числото <code>N</code> е дадено във входа, за да ви обърка! Търси се "интервалът, в който се намира остатъкът", а не самият остатък. Този интервал е <strong>винаги</strong> от 0 до d-1, независимо колко е голямо N.</li>
+                        <li><strong>Формат на изхода:</strong> Трябва стриктно да отпечатате скобите и точката и запетаята. Например: <code>cout << "[" << 0 << "; " << d - 1 << "]" << endl;</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="vis-card">
+                <div class="vis-title">🧮 Визуализатор на остатъци</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Въведете N и d. Симулаторът ще покаже интервала на всички възможни остатъци и къде точно попада вашият.</p>
+                
+                <div class="input-group">
+                    <div class="input-row">
+                        <input type="number" id="sim-n" placeholder="Число N (напр. 13)" value="13">
+                        <input type="number" id="sim-d" placeholder="Делител d (напр. 5)" value="5">
+                    </div>
+                    <button onclick="simulateRemainders()">Виж интервала</button>
+                </div>
+
+                <div id="interval-result" class="result-box" style="margin-bottom: 1rem;">
+                    Изходен интервал: -
+                </div>
+
+                <div id="remainders-vis" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.5rem; justify-content: center;">
+                    <!-- Кутийките се генерират тук -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        function simulateRemainders() {
+            const n = parseInt(document.getElementById('sim-n').value);
+            const d = parseInt(document.getElementById('sim-d').value);
+            const vis = document.getElementById('remainders-vis');
+            const res = document.getElementById('interval-result');
+
+            if (isNaN(n) || isNaN(d) || n < 0 || d <= 0) {
+                vis.innerHTML = '<div style="color: #ef4444; width: 100%; text-align: center;">Моля, въведете валидни числа (N &ge; 0, d &gt; 0).</div>';
+                res.innerHTML = 'Грешка в данните';
+                return;
+            }
+
+            const exactRemainder = n % d;
+            
+            // Форматиране на отговора така, както се иска в задачата
+            res.innerHTML = `Отговор на програмата:<br><span style="color: white; font-size: 1.5rem; letter-spacing: 2px;">[0; ${d - 1}]</span>`;
+
+            vis.innerHTML = '';
+            
+            // Генериране на кутийки за възможните остатъци (ограничено до 20 за визуално удобство)
+            const limit = Math.min(d, 20);
+            
+            for (let i = 0; i < limit; i++) {
+                const box = document.createElement('div');
+                box.className = 'rem-box';
+                
+                if (i === exactRemainder) {
+                    box.style.backgroundColor = '#f59e0b';
+                    box.style.color = '#000';
+                    box.style.border = '2px solid #fff';
+                    box.style.transform = 'scale(1.1)';
+                    box.style.fontWeight = '800';
+                    box.innerHTML = `${i}<br><small style="font-size: 0.7em;">N % d</small>`;
+                } else {
+                    box.style.backgroundColor = 'rgba(15, 23, 42, 0.7)';
+                    box.style.color = '#38bdf8';
+                    box.style.border = '1px solid #334155';
+                    box.innerHTML = `${i}`;
+                }
+                
+                vis.appendChild(box);
+            }
+
+            // Ако d е много голямо, добавяме "..." и последната стойност
+            if (d > 20) {
+                const dots = document.createElement('div');
+                dots.style.padding = '10px';
+                dots.style.color = '#94a3b8';
+                dots.style.alignSelf = 'center';
+                dots.innerText = '...';
+                vis.appendChild(dots);
+                
+                const lastBox = document.createElement('div');
+                lastBox.className = 'rem-box';
+                lastBox.style.backgroundColor = 'rgba(15, 23, 42, 0.7)';
+                lastBox.style.color = '#38bdf8';
+                lastBox.style.border = '1px solid #334155';
+                lastBox.innerHTML = `${d - 1}<br><small style="font-size: 0.7em;">max</small>`;
+                vis.appendChild(lastBox);
+            }
+        }
+        
+        // Initial sim
+        simulateRemainders();
+    </script>
+</body>
+</html>

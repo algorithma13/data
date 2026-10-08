@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача D1: Аквариум</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачи */
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* НОВО ЛОГО ALGORITHMA 13 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+        }
+
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .limits { color: var(--text-muted); font-size: 0.95rem; display: flex; gap: 1rem; }
+        
+        h2 { font-size: 1.25rem; color: var(--text-main); margin-top: 2rem; margin-bottom: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .constraints {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            color: #60a5fa;
+            margin-bottom: 1.5rem;
+        }
+
+        table.examples {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.examples th, table.examples td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.examples th {
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        table.examples td {
+            font-family: monospace;
+            color: #38bdf8;
+            vertical-align: top;
+        }
+
+        /* Интерактивни елементи (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hint-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .hint-box h4 {
+            color: #f59e0b;
+            margin-bottom: 0.5rem;
+        }
+
+        .hint-box ul {
+            padding-left: 1.2rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .hint-box li { margin-bottom: 0.25rem; }
+        .hint-box code { background-color: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; color: #fbbf24;}
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .aquarium-container {
+            margin-top: 1rem;
+            background-color: rgba(14, 165, 233, 0.1);
+            border: 2px solid #0ea5e9;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            min-height: 150px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-content: flex-start;
+        }
+
+        .fish {
+            font-size: 1.5rem;
+            animation: swim 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes swim {
+            0% { transform: translateY(0px) rotate(-5deg); }
+            100% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        .water-left {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА D1: Аквариум</h1>
+                <div class="limits">
+                    <span>⏱️ Време: 1 с.</span>
+                    <span>💾 Памет: 64 MB</span>
+                </div>
+            </div>
+            
+            <p>За нормалното отглеждане на златни рибки в аквариум е необходимо да има поне <strong>M</strong> литра вода за всяка рибка.</p>
+            <p>Напишете програма, която определя колко рибки може да пуснем в аквариум с обем <strong>V</strong> литра без да е „пренаселен".</p>
+            <p>Аквариумът се счита за „пренаселен", ако в него има повече рибки, отколкото е допустимо според правилото за минимално необходимо количество вода на рибка.</p>
+
+            <h2>Вход</h2>
+            <p>На един ред на стандартния вход ще бъдат зададени целите числа <strong>V</strong> и <strong>M</strong>, разделени с интервал.</p>
+
+            <h2>Изход</h2>
+            <p>Програмата трябва да изведе на един ред на стандартния изход броя <strong>N</strong> на рибките, които можем да пуснем в аквариума, без да е пренаселен, и колко литра е излишната вода в аквариума, ако сме пуснали в него N рибки.</p>
+
+            <h2>Ограничения</h2>
+            <div class="constraints">
+                1 &le; V &le; 10<sup>18</sup><br>
+                1 &le; M &le; 10
+            </div>
+
+            <h2>Примери</h2>
+            <table class="examples">
+                <thead>
+                    <tr>
+                        <th>Примерен вход</th>
+                        <th>Изход за примера</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>12 3</td>
+                        <td>4 0</td>
+                    </tr>
+                    <tr>
+                        <td>128 10</td>
+                        <td>12 8</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Подсказки и Визуализатор -->
+        <div class="right-panel">
+            
+            <div class="vis-card">
+                <div class="vis-title">💡 Указания (Подсказки)</div>
+                <div class="hint-box">
+                    <h4>Как да намерим резултата?</h4>
+                    <ul>
+                        <li>Максималният брой рибки е точно броят пъти, в които M се събира в V. Това е <strong>целочислено деление</strong>: <code>V / M</code>.</li>
+                        <li>Излишната вода е остатъкът, който не стига за още една рибка. Това е <strong>остатък от деление</strong>: <code>V % M</code>.</li>
+                    </ul>
+                </div>
+                <div class="hint-box" style="border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+                    <h4 style="color: #ef4444;">Внимание за типовете данни!</h4>
+                    <ul>
+                        <li>Погледнете ограниченията: V достига до 10<sup>18</sup>.</li>
+                        <li>Стандартният тип <code>int</code> може да съхранява числа само до около 2 милиарда (2 &times; 10<sup>9</sup>).</li>
+                        <li>Ако използвате <code>int</code>, ще получите грешен отговор (Wrong Answer) за големи тестове. <strong>Задължително използвайте <code>long long</code></strong> за променливите V и M.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="vis-card">
+                <div class="vis-title">🐟 Симулатор на Аквариума</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Въведете V и M, за да визуализирате логиката (за демонстрация рибките са ограничени до 100).</p>
+                
+                <div class="input-group">
+                    <div class="input-row">
+                        <input type="number" id="sim-v" placeholder="Обем V (напр. 128)" value="128">
+                        <input type="number" id="sim-m" placeholder="Литър/рибка M (напр. 10)" value="10">
+                    </div>
+                    <button onclick="simulateAquarium()">Симулирай</button>
+                </div>
+
+                <div class="aquarium-container" id="aquarium">
+                    <!-- Рибките се добавят тук -->
+                    <div style="color: rgba(255,255,255,0.3); width: 100%; text-align: center; margin-top: 2rem;">Аквариумът е празен</div>
+                </div>
+                <div class="water-left" id="water-left">
+                    Остатък: - литра
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        function simulateAquarium() {
+            const v = parseInt(document.getElementById('sim-v').value);
+            const m = parseInt(document.getElementById('sim-m').value);
+            const aquarium = document.getElementById('aquarium');
+            const waterLeft = document.getElementById('water-left');
+
+            if (isNaN(v) || isNaN(m) || v <= 0 || m <= 0) {
+                aquarium.innerHTML = '<div style="color: #ef4444; width: 100%; text-align: center; margin-top: 2rem;">Моля, въведете валидни положителни числа.</div>';
+                waterLeft.innerText = "Грешка в данните";
+                return;
+            }
+
+            const numFish = Math.floor(v / m);
+            const remainder = v % m;
+
+            // Изчистване на аквариума
+            aquarium.innerHTML = '';
+            
+            // Защита от забиване на браузъра при огромни числа
+            const displayLimit = Math.min(numFish, 100);
+            
+            for (let i = 0; i < displayLimit; i++) {
+                const fish = document.createElement('div');
+                fish.className = 'fish';
+                fish.innerText = '🐟';
+                // Леко забавяне на анимацията за да не се движат абсолютно синхронно
+                fish.style.animationDelay = `${Math.random() * 2}s`;
+                aquarium.appendChild(fish);
+            }
+
+            if (numFish > 100) {
+                const plusMore = document.createElement('div');
+                plusMore.style.color = '#38bdf8';
+                plusMore.style.display = 'flex';
+                plusMore.style.alignItems = 'center';
+                plusMore.style.fontWeight = 'bold';
+                plusMore.innerText = `... и още ${numFish - 100} рибки`;
+                aquarium.appendChild(plusMore);
+            } else if (numFish === 0) {
+                aquarium.innerHTML = '<div style="color: #ef4444; width: 100%; text-align: center; margin-top: 2rem;">Няма достатъчно вода дори за 1 рибка!</div>';
+            }
+
+            waterLeft.innerHTML = `Брой рибки (N): <span style="color: white;">${numFish}</span> &nbsp;|&nbsp; Излишна вода: <span style="color: white;">${remainder}</span> литра`;
+        }
+        
+        // Initial sim
+        simulateAquarium();
+    </script>
+</body>
+</html>
