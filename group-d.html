@@ -165,6 +165,10 @@
             display: none;
         }
 
+        .module-container.collapsed .curious-link-container {
+            display: none; /* Скрива линка, ако модулът е затворен */
+        }
+
         .module-header h2 {
             font-size: 2.25rem;
             color: var(--text-main);
@@ -315,8 +319,6 @@
             text-decoration: none;
             font-weight: 600;
             transition: color 0.2s;
-            display: block;
-            margin-bottom: 0.25rem;
         }
 
         .task-ref a:hover {
@@ -354,6 +356,42 @@
             color: #fff;
         }
 
+        /* СТИЛОВЕ ЗА ЛИНКА "ЗА ЛЮБОЗНАТЕЛНИТЕ" */
+        .curious-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .curious-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #a855f7; /* Специфичен лилав цвят, за да изпъква като нещо допълнително/мистериозно */
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .curious-link:hover {
+            background: rgba(168, 85, 247, 0.2);
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+        }
+
+        .curious-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -371,13 +409,16 @@
 
         /* FOOTER */
         footer {
+            background-color: rgba(11, 17, 32, 0.5);
             border-top: 1px solid var(--border);
-            padding: 2.5rem 2rem;
+            padding: 0.75rem;
             text-align: center;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.65rem;
+            opacity: 0.8;
             margin-top: auto;
-            background: rgba(11, 17, 32, 0.5);
+            flex-shrink: 0;
+            z-index: 100;
         }
         
         @media (max-width: 480px) {
@@ -392,15 +433,7 @@
         }
     </style>
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-5E409LEYXB');
-</script>
 <body>
 
     <!-- НАВИГАЦИЯ -->
@@ -451,7 +484,7 @@
                             <br><a href="#task-2">Задача D2: Остатъци</a>
                             <br><a href="#task-3">Задача D3: Най-близките кратни</a>
                         </div>
-                        <a href="d/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <a href="D/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
                     </div>
 
                     <div class="item-card">
@@ -462,7 +495,7 @@
                         <h3>Техники на програмиране</h3>
                         <p>Логически операции (И, ИЛИ, НЕ), работа с цикли (for, while, do-while), функции. Въведение в
                             едномерните масиви и намиране на min/max елемент.</p>
-                        <a href="d/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <a href="D/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
                     </div>
 
                     <div class="item-card">
@@ -473,7 +506,7 @@
                         <h3>Структури от данни: Вектори</h3>
                         <p>Въведение в динамичните масиви <code>std::vector</code>. Инициализация, достъп до елементи,
                             добавяне и премахване, както и сортиране.</p>
-                        <a href="d/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <a href="D/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
                     </div>
 
                     <div class="item-card">
@@ -484,13 +517,13 @@
                         <h3>Математика: Цели числа и алгоритми</h3>
                         <p>Избор на типове данни (int vs long long), избягване на препълване, модулна аритметика с
                             отрицателни числа и сума на цифри.</p>
-                        <a href="d/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <a href="D/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
                     </div>
 
                 </div>
             </section>
 
-            <section class="section-container" id="tasks">
+            <section class="section-container" id="tasks" style="margin-bottom: 0;">
                 <h3 class="section-title" style="color: #60a5fa;">Тематични задачи</h3>
                 <div class="cards-grid">
 
@@ -502,7 +535,7 @@
                         <h3>Аквариум</h3>
                         <p>Определете колко рибки могат да се пуснат в аквариум с даден обем V и изискуема вода на рибка
                             M, както и колко излишна вода ще остане.</p>
-                        <a href="d/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <a href="D/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
                     </div>
 
                     <div class="item-card task-card" id="task-2">
@@ -513,7 +546,7 @@
                         <h3>Остатъци</h3>
                         <p>Определяне на математическия интервал, в който винаги попада остатъкът от делението на
                             числото N на числото d.</p>
-                        <a href="d/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <a href="D/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
                     </div>
 
                     <div class="item-card task-card" id="task-3">
@@ -524,11 +557,20 @@
                         <h3>Най-близките кратни</h3>
                         <p>Намиране на най-малкото кратно, по-голямо или равно на N, и най-голямото кратно, по-малко или
                             равно на N.</p>
-                        <a href="d/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <a href="D/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
                     </div>
 
                 </div>
             </section>
+
+            <!-- ЛИНК "ЗА ЛЮБОЗНАТЕЛНИТЕ" (Показва се само когато модулът е отворен) -->
+            <div class="curious-link-container">
+                <a href="d/extra/numeral-systems.html" class="curious-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    За любознателните: Бройни системи
+                </a>
+            </div>
+            
         </div>
 
     </main>
