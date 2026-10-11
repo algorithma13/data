@@ -165,6 +165,10 @@
             display: none;
         }
 
+        .module-container.collapsed .curious-link-container {
+            display: none; /* Скрива линка, ако модулът е затворен */
+        }
+
         .module-header h2 {
             font-size: 2.25rem;
             color: var(--text-main);
@@ -396,6 +400,42 @@
             color: #fff;
         }
 
+        /* СТИЛОВЕ ЗА ЛИНКА "НОВОТО ЗА ВАС" */
+        .curious-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .curious-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #a855f7; /* Специфичен лилав цвят, за да изпъква като нещо допълнително/ново */
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .curious-link:hover {
+            background: rgba(168, 85, 247, 0.2);
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+        }
+
+        .curious-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -413,13 +453,16 @@
 
         /* FOOTER */
         footer {
+            background-color: rgba(11, 17, 32, 0.5);
             border-top: 1px solid var(--border);
-            padding: 2.5rem 2rem;
+            padding: 0.75rem;
             text-align: center;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.65rem;
+            opacity: 0.8;
             margin-top: auto;
-            background: rgba(11, 17, 32, 0.5);
+            flex-shrink: 0;
+            z-index: 100;
         }
         
         @media (max-width: 480px) {
@@ -434,6 +477,7 @@
         }
     </style>
 </head>
+
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
 <script>
@@ -443,6 +487,7 @@
 
   gtag('config', 'G-5E409LEYXB');
 </script>
+
 <body>
 
     <!-- НАВИГАЦИЯ -->
@@ -535,7 +580,7 @@
                 </div>
             </section>
 
-            <section class="section-container" id="tasks">
+            <section class="section-container" id="tasks" style="margin-bottom: 0;">
                 <h3 class="section-title" style="color: #60a5fa;">Тематични задачи</h3>
                 <div class="cards-grid">
 
@@ -601,6 +646,15 @@
 
                 </div>
             </section>
+
+            <!-- ЛИНК "НОВОТО ЗА ВАС" (Показва се само когато модулът е отворен) -->
+            <div class="curious-link-container">
+                <a href="c/extra/sets.html" class="curious-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Новото за вас: Множества, функции и операции
+                </a>
+            </div>
+
         </div>
 
     </main>
