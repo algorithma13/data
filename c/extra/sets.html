@@ -115,6 +115,34 @@
         table.logic-table td { color: var(--text-muted); font-size: 0.95rem; }
         table.logic-table td:nth-child(2) { font-family: monospace; color: #38bdf8; }
 
+        /* СТИЛОВЕ ЗА ВЪНШНИЯ ЛИНК КЪМ ЗАДАЧАТА */
+        .external-task-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background-color: rgba(139, 92, 246, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .external-task-link:hover {
+            background-color: var(--accent);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .external-task-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
         /* ДЕСЕН ПАНЕЛ */
         .right-panel {
             flex: 1; /* Центриране 50/50 */
@@ -248,12 +276,12 @@
             font-family: 'Consolas', monospace;
             padding: 10px 0;
             border-radius: 8px;
-            font-size: 13.5px; /* Леко увеличен шрифт */
+            font-size: 13.5px;
             line-height: 1.5;
             overflow-y: auto;
             border: 1px solid var(--border);
-            flex: 2; /* Даваме повече място на кода */
-            min-height: 250px; /* Гарантирана минимална височина */
+            flex: 2;
+            min-height: 250px;
         }
         
         .code-line { display: block; padding: 2px 15px; white-space: pre; border-left: 4px solid transparent; }
@@ -266,7 +294,7 @@
             padding: 15px;
             border-radius: 8px;
             border: 1px solid var(--border);
-            height: 220px; /* Значително по-голям панел за конзолата */
+            height: 220px;
             overflow-y: auto;
             font-size: 14px;
             flex-shrink: 0;
@@ -299,7 +327,6 @@
 
   gtag('config', 'G-5E409LEYXB');
 </script>
-
 <body>
 
     <header>
@@ -399,6 +426,12 @@
                 <strong>Двата подхода:</strong><br>
                 Подход 1 използва стандартната библиотека (<code>set_union</code>, <code>set_intersection</code>). Подход 2 използва побитови маски (<code>|</code>, <code>&</code>), което е критично за задачи, изискващи пълно изчерпване на подмножества.
             </div>
+
+            <!-- ЛИНК КЪМ ЗАДАЧАТА -->
+            <a href="https://arena.olimpiici.com/#/catalog/151/problem/100356" target="_blank" class="external-task-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                Тествай знанията си: Задача в Арена Олимпиици
+            </a>
         </div>
 
         <!-- ДЕСЕН ПАНЕЛ: ВИЗУАЛИЗАЦИИ И КОД -->
