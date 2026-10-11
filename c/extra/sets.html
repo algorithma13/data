@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок: Множества и функции - Algorithma 13</title>
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #8b5cf6; /* Лилава тема за дискретни структури */
+            --accent-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --highlight: #fcd34d;
+            --keyword: #c678dd;
+            --type: #e5c07b;
+            --method: #61afef;
+            --variable: #e06c75;
+            --number: #d19a66;
+            --string: #98c379;
+            --comment: #5c6370;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(11, 17, 32, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 600; margin-left: 1.5rem; transition: color 0.2s; }
+        .nav-controls a:hover { color: var(--accent); }
+
+        .lesson-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* ЛЯВ ПАНЕЛ (ТЕОРИЯ) */
+        .left-panel {
+            flex: 1; /* Центриране 50/50 */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .left-panel::-webkit-scrollbar { width: 8px; }
+        .left-panel::-webkit-scrollbar-track { background: var(--bg-primary); }
+        .left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .left-panel::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .task-header { margin-bottom: 1.5rem; border-bottom: 1px dashed var(--border); padding-bottom: 1rem; }
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 0.5rem; }
+        
+        h2 { color: var(--text-main); font-size: 1.4rem; margin-top: 2.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        h2::before { content: ''; display: inline-block; width: 4px; height: 20px; background-color: var(--accent); border-radius: 2px; }
+        h3 { color: var(--text-main); font-size: 1.2rem; margin-top: 1.5rem; margin-bottom: 0.8rem; }
+
+        p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1rem; text-align: justify; }
+        ul { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+
+        .info-box {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-left: 4px solid var(--accent);
+            color: var(--text-muted);
+            margin: 1.5rem 0;
+            font-size: 1.05rem;
+        }
+
+        table.logic-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; background-color: var(--code-bg); border-radius: 0.5rem; overflow: hidden; border: 1px solid var(--border); }
+        table.logic-table th, table.logic-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+        table.logic-table th { background-color: rgba(15, 23, 42, 0.8); color: var(--text-main); }
+        table.logic-table td { color: var(--text-muted); font-size: 0.95rem; }
+        table.logic-table td:nth-child(2) { font-family: monospace; color: #38bdf8; }
+
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel {
+            flex: 1; /* Центриране 50/50 */
+            background-color: var(--panel-bg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            width: 100%;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .tab-btn:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.02); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--card-bg); }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .tab-content.active { display: flex; }
+        .tab-content::-webkit-scrollbar { width: 6px; }
+        .tab-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* ВИЗУАЛИЗАЦИИ SVG */
+        .diagram-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            min-height: 250px;
+            justify-content: center;
+        }
+
+        .svg-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .svg-btn {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .svg-btn.active { background-color: var(--accent); border-color: var(--accent); color: white; }
+
+        .venn-svg { width: 300px; height: 200px; overflow: visible; }
+        .venn-text { fill: var(--text-main); font-size: 24px; font-weight: bold; font-family: sans-serif; pointer-events: none;}
+        
+        .func-svg { width: 300px; height: 250px; overflow: visible; }
+        .func-set { fill: rgba(59, 130, 246, 0.1); stroke: #3b82f6; stroke-width: 2; }
+        .func-set-y { fill: rgba(16, 185, 129, 0.1); stroke: #10b981; }
+        .func-dot { fill: var(--text-main); }
+        .func-arrow { stroke: var(--text-muted); stroke-width: 2; marker-end: url(#arrowhead); transition: all 0.4s ease; }
+        .func-arrow.active { stroke: var(--highlight); }
+
+        /* CODE STEPPER */
+        .stepper-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        button.btn-step { background: var(--accent); color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button.btn-step:hover:not(:disabled) { background: var(--accent-hover); }
+        button.btn-reset { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .split-code-view {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            font-family: 'Consolas', monospace;
+            padding: 10px 0;
+            border-radius: 8px;
+            font-size: 13.5px; /* Леко увеличен шрифт */
+            line-height: 1.5;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            flex: 2; /* Даваме повече място на кода */
+            min-height: 250px; /* Гарантирана минимална височина */
+        }
+        
+        .code-line { display: block; padding: 2px 15px; white-space: pre; border-left: 4px solid transparent; }
+        .code-line.active { background: rgba(139, 92, 246, 0.2); border-left-color: var(--accent); color: #fff; }
+        
+        .output-box {
+            background: #000;
+            color: #10b981;
+            font-family: monospace;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            height: 220px; /* Значително по-голям панел за конзолата */
+            overflow-y: auto;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* FOOTER ЗА АВТОРСКИ ПРАВА */
+        footer {
+            background-color: rgba(11, 17, 32, 0.5);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+        footer p { 
+            font-size: 0.65rem; 
+            color: var(--text-muted);
+            text-align: center;
+            margin: 0; 
+            opacity: 0.6; 
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Множества, функции и операции</h1>
+                <p>Дискретни структури в състезателната информатика.</p>
+            </div>
+            
+            <h2>Теория на множествата</h2>
+            <p>Множеството е съвкупност от уникални елементи. Основните понятия включват:</p>
+            <ul>
+                <li><strong>Празно множество (∅):</strong> Множество без елементи.</li>
+                <li><strong>Кардиналност (|A|):</strong> Броят елементи в множеството.</li>
+                <li><strong>Подмножества (B ⊆ A):</strong> Множество B се съдържа изцяло в A.</li>
+            </ul>
+
+            <h2>Операции с множества</h2>
+            <table class="logic-table">
+                <thead>
+                    <tr>
+                        <th>Операция</th>
+                        <th>Символ</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Обединение</td>
+                        <td>∪</td>
+                        <td>Елементи, които са в поне едно от двете множества.</td>
+                    </tr>
+                    <tr>
+                        <td>Сечение</td>
+                        <td>∩</td>
+                        <td>Елементи, които присъстват едновременно и в двете.</td>
+                    </tr>
+                    <tr>
+                        <td>Разлика</td>
+                        <td>\</td>
+                        <td>Елементи, които са в първото, но не и във второто.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><em>👉 Тествайте интерактивната диаграма на Вен вдясно.</em></p>
+
+            <h2>Функции и релации</h2>
+            <p>Функциите имат дефиниционна област и множество на стойностите. Специфични видове:</p>
+            <ul>
+                <li><strong>Инекция (One-to-one):</strong> Всеки елемент от дефиниционната област има уникален образ.</li>
+                <li><strong>Сюрекция (Onto):</strong> Образът на функцията покрива цялото множество на стойностите.</li>
+                <li><strong>Биекция:</strong> Взаимно еднозначно съответствие (Инекция + Сюрекция).</li>
+            </ul>
+            <p>Тези концепции са ключови при решаването на задачи за броене и хеширане.</p>
+
+            <h2>Представяне в C++</h2>
+            <table class="logic-table">
+                <thead>
+                    <tr>
+                        <th>Структура</th>
+                        <th>Времева сложност</th>
+                        <th>Кога се използва</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>set</td>
+                        <td>O(log n)</td>
+                        <td>Пази елементите сортирани. Подходящо за големи числа или стрингове.</td>
+                    </tr>
+                    <tr>
+                        <td>unordered_set</td>
+                        <td>O(1)</td>
+                        <td>Не са сортирани. Когато наредбата не е важна, но се търси скорост.</td>
+                    </tr>
+                    <tr>
+                        <td>Битови маски</td>
+                        <td>O(1)</td>
+                        <td>За подмножества с до 64 елемента. Най-бързият възможен подход.</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="info-box">
+                <strong>Двата подхода:</strong><br>
+                Подход 1 използва стандартната библиотека (<code>set_union</code>, <code>set_intersection</code>). Подход 2 използва побитови маски (<code>|</code>, <code>&</code>), което е критично за задачи, изискващи пълно изчерпване на подмножества.
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ВИЗУАЛИЗАЦИИ И КОД -->
+        <div class="right-panel">
+            <div class="vis-card">
+                
+                <div class="tabs">
+                    <button class="tab-btn active" id="tab-btn-vis" onclick="switchTab('vis')">Визуализации</button>
+                    <button class="tab-btn" id="tab-btn-demo1" onclick="switchTab('demo1')">Код: STL (demo1)</button>
+                    <button class="tab-btn" id="tab-btn-demo2" onclick="switchTab('demo2')">Код: Маски (demo2)</button>
+                </div>
+
+                <!-- ТАБ 1: ВИЗУАЛИЗАЦИИ -->
+                <div id="tab-vis" class="tab-content active">
+                    
+                    <h3 style="margin-top: 0; color: var(--text-main); text-align: center;">Диаграми на Вен</h3>
+                    <div class="svg-controls" id="venn-controls">
+                        <button class="svg-btn active" onclick="setVenn('union', this)">A &cup; B (Обединение)</button>
+                        <button class="svg-btn" onclick="setVenn('intersect', this)">A &cap; B (Сечение)</button>
+                        <button class="svg-btn" onclick="setVenn('diff', this)">A \ B (Разлика)</button>
+                    </div>
+                    <div class="diagram-container">
+                        <svg class="venn-svg" viewBox="0 0 300 200">
+                            <defs>
+                                <clipPath id="clip-a">
+                                    <circle cx="110" cy="100" r="70" />
+                                </clipPath>
+                                <mask id="mask-diff">
+                                    <rect width="300" height="200" fill="white" />
+                                    <circle cx="190" cy="100" r="70" fill="black" />
+                                </mask>
+                            </defs>
+                            
+                            <g id="venn-state-union">
+                                <circle cx="110" cy="100" r="70" fill="rgba(59, 130, 246, 0.8)"></circle>
+                                <circle cx="190" cy="100" r="70" fill="rgba(59, 130, 246, 0.8)"></circle>
+                            </g>
+
+                            <g id="venn-state-intersect" style="display: none;">
+                                <circle cx="190" cy="100" r="70" fill="rgba(59, 130, 246, 0.8)" clip-path="url(#clip-a)"></circle>
+                            </g>
+
+                            <g id="venn-state-diff" style="display: none;">
+                                <circle cx="110" cy="100" r="70" fill="rgba(59, 130, 246, 0.8)" mask="url(#mask-diff)"></circle>
+                            </g>
+                            
+                            <circle cx="110" cy="100" r="70" fill="none" stroke="var(--text-main)" stroke-width="2"></circle>
+                            <circle cx="190" cy="100" r="70" fill="none" stroke="var(--text-main)" stroke-width="2"></circle>
+                            
+                            <text x="70" y="105" class="venn-text">A</text>
+                            <text x="215" y="105" class="venn-text">B</text>
+                        </svg>
+                    </div>
+
+                    <h3 style="color: var(--text-main); text-align: center;">Видове Функции</h3>
+                    <div class="svg-controls" id="func-controls">
+                        <button class="svg-btn active" onclick="setFunc('injective', this)">Инекция</button>
+                        <button class="svg-btn" onclick="setFunc('surjective', this)">Сюрекция</button>
+                        <button class="svg-btn" onclick="setFunc('bijective', this)">Биекция</button>
+                    </div>
+                    <div class="diagram-container">
+                        <svg class="func-svg" viewBox="0 0 300 250">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                  <polygon points="0 0, 10 3.5, 0 7" fill="var(--text-muted)" />
+                                </marker>
+                            </defs>
+                            <ellipse cx="70" cy="125" rx="40" ry="100" class="func-set"></ellipse>
+                            <text x="65" y="15" fill="var(--text-main)" font-weight="bold">X</text>
+                            
+                            <ellipse cx="230" cy="125" rx="40" ry="100" class="func-set-y"></ellipse>
+                            <text x="225" y="15" fill="var(--text-main)" font-weight="bold">Y</text>
+
+                            <circle cx="70" cy="60" r="5" class="func-dot"></circle>
+                            <circle cx="70" cy="100" r="5" class="func-dot"></circle>
+                            <circle cx="70" cy="140" r="5" class="func-dot"></circle>
+                            <circle cx="70" cy="180" r="5" class="func-dot" id="dot-x-4" style="display: none;"></circle>
+
+                            <circle cx="230" cy="60" r="5" class="func-dot"></circle>
+                            <circle cx="230" cy="100" r="5" class="func-dot"></circle>
+                            <circle cx="230" cy="140" r="5" class="func-dot"></circle>
+                            <circle cx="230" cy="180" r="5" class="func-dot" id="dot-y-4" style="display: block;"></circle>
+
+                            <line x1="75" y1="60" x2="220" y2="60" class="func-arrow" id="line-1"></line>
+                            <line x1="75" y1="100" x2="220" y2="140" class="func-arrow" id="line-2"></line>
+                            <line x1="75" y1="140" x2="220" y2="100" class="func-arrow" id="line-3"></line>
+                            <line x1="75" y1="180" x2="220" y2="140" class="func-arrow" id="line-4" style="display: none;"></line>
+                        </svg>
+                    </div>
+
+                </div>
+
+                <!-- ТАБ 2: DEMO 1 (STL) -->
+                <div id="tab-demo1" class="tab-content">
+                    <div class="stepper-controls">
+                        <button class="btn-step" id="btn-step-d1" onclick="stepDemo1()">Следваща стъпка</button>
+                        <button class="btn-reset" onclick="resetDemo1()">Рестарт</button>
+                    </div>
+                    <div class="split-code-view">
+                        <div class="code-block">
+<span id="d1-1" class="code-line"><span class="kwd">int</span> <span class="mth">main</span>() {</span>
+<span id="d1-2" class="code-line">    <span class="typ">set</span>&lt;<span class="typ">int</span>&gt; A = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};</span>
+<span id="d1-3" class="code-line">    <span class="typ">set</span>&lt;<span class="typ">int</span>&gt; B = {<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>};</span>
+<span id="d1-4" class="code-line">    <span class="mth">print</span>(A); <span class="mth">print</span>(B);</span>
+<span id="d1-5" class="code-line">    A.<span class="mth">insert</span>(<span class="num">8</span>);</span>
+<span id="d1-6" class="code-line">    A.<span class="mth">erase</span>(<span class="num">1</span>);</span>
+<span id="d1-8" class="code-line">    <span class="typ">set</span>&lt;<span class="typ">int</span>&gt; union_set;</span>
+<span id="d1-9" class="code-line">    <span class="mth">set_union</span>(A.<span class="mth">begin</span>(), A.<span class="mth">end</span>(), B.<span class="mth">begin</span>(), B.<span class="mth">end</span>(), <span class="mth">inserter</span>(union_set, union_set.<span class="mth">begin</span>()));</span>
+<span id="d1-10" class="code-line">    <span class="mth">print</span>(union_set);</span>
+<span id="d1-12" class="code-line">    <span class="typ">set</span>&lt;<span class="typ">int</span>&gt; intersection;</span>
+<span id="d1-13" class="code-line">    <span class="mth">set_intersection</span>(A.<span class="mth">begin</span>(), A.<span class="mth">end</span>(), B.<span class="mth">begin</span>(), B.<span class="mth">end</span>(), <span class="mth">inserter</span>(intersection, intersection.<span class="mth">begin</span>()));</span>
+<span id="d1-14" class="code-line">    <span class="mth">print</span>(intersection);</span>
+<span id="d1-15" class="code-line">}</span>
+                        </div>
+                        <div class="output-box" id="out-d1">Изход от конзолата:<br></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: DEMO 2 (Маски) -->
+                <div id="tab-demo2" class="tab-content">
+                    <div class="stepper-controls">
+                        <button class="btn-step" id="btn-step-d2" onclick="stepDemo2()">Следваща стъпка</button>
+                        <button class="btn-reset" onclick="resetDemo2()">Рестарт</button>
+                    </div>
+                    <div class="split-code-view">
+                        <div class="code-block">
+<span id="d2-1" class="code-line"><span class="kwd">int</span> <span class="mth">main</span>() {</span>
+<span id="d2-2" class="code-line">    <span class="typ">int</span> max_elements = <span class="num">5</span>; <span class="comment">// {0, 1, 2, 3, 4}</span></span>
+<span id="d2-3" class="code-line">    <span class="typ">int</span> A = (<span class="num">1</span> &lt;&lt; <span class="num">0</span>) | (<span class="num">1</span> &lt;&lt; <span class="num">2</span>) | (<span class="num">1</span> &lt;&lt; <span class="num">3</span>);</span>
+<span id="d2-4" class="code-line">    <span class="typ">int</span> B = (<span class="num">1</span> &lt;&lt; <span class="num">2</span>) | (<span class="num">1</span> &lt;&lt; <span class="num">3</span>) | (<span class="num">1</span> &lt;&lt; <span class="num">4</span>);</span>
+<span id="d2-5" class="code-line">    <span class="mth">print</span>(A); <span class="mth">print</span>(B);</span>
+<span id="d2-7" class="code-line">    <span class="typ">int</span> union_mask = A | B;</span>
+<span id="d2-8" class="code-line">    <span class="mth">print</span>(union_mask);</span>
+<span id="d2-10" class="code-line">    <span class="typ">int</span> intersect_mask = A &amp; B;</span>
+<span id="d2-11" class="code-line">    <span class="mth">print</span>(intersect_mask);</span>
+<span id="d2-13" class="code-line">    A |= (<span class="num">1</span> &lt;&lt; <span class="num">1</span>);</span>
+<span id="d2-14" class="code-line">    A &amp;= ~(<span class="num">1</span> &lt;&lt; <span class="num">2</span>);</span>
+<span id="d2-15" class="code-line">    <span class="mth">print</span>(A);</span>
+<span id="d2-16" class="code-line">}</span>
+                        </div>
+                        <div class="output-box" id="out-d2">Изход от конзолата:<br></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // --- ТАБОВЕ ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.getElementById('tab-btn-' + tab).classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+
+        // --- ВИЗУАЛИЗАЦИИ: ВЕН ---
+        function setVenn(op, btn) {
+            document.querySelectorAll('#venn-controls .svg-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            document.getElementById('venn-state-union').style.display = 'none';
+            document.getElementById('venn-state-intersect').style.display = 'none';
+            document.getElementById('venn-state-diff').style.display = 'none';
+
+            document.getElementById('venn-state-' + op).style.display = 'block';
+        }
+
+        // --- ВИЗУАЛИЗАЦИИ: ФУНКЦИИ ---
+        function setFunc(type, btn) {
+            document.querySelectorAll('#func-controls .svg-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            const l1 = document.getElementById('line-1');
+            const l2 = document.getElementById('line-2');
+            const l3 = document.getElementById('line-3');
+            const l4 = document.getElementById('line-4');
+            const dotX4 = document.getElementById('dot-x-4');
+            const dotY4 = document.getElementById('dot-y-4');
+
+            if (type === 'injective') {
+                dotX4.style.display = 'none';
+                dotY4.style.display = 'block';
+                l1.setAttribute('y2', '60');
+                l2.setAttribute('y2', '140');
+                l3.setAttribute('y2', '100');
+                l4.style.display = 'none';
+            } else if (type === 'surjective') {
+                dotX4.style.display = 'block';
+                dotY4.style.display = 'none';
+                l1.setAttribute('y2', '60');
+                l2.setAttribute('y2', '140');
+                l3.setAttribute('y2', '100');
+                l4.style.display = 'block';
+                l4.setAttribute('y2', '100'); 
+            } else if (type === 'bijective') {
+                dotX4.style.display = 'block';
+                dotY4.style.display = 'block';
+                l1.setAttribute('y2', '60');
+                l2.setAttribute('y2', '140');
+                l3.setAttribute('y2', '100');
+                l4.style.display = 'block';
+                l4.setAttribute('y2', '180'); 
+            }
+        }
+
+        // --- CODE STEPPER UTILS ---
+        function hlLine(prefix, num) {
+            document.querySelectorAll(`[id^="${prefix}-"]`).forEach(el => el.classList.remove('active'));
+            if(num) {
+                const el = document.getElementById(`${prefix}-${num}`);
+                if(el) {
+                    el.classList.add('active');
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+
+        function appendOut(id, text) {
+            const out = document.getElementById(id);
+            out.innerHTML += text + "<br>";
+            out.scrollTop = out.scrollHeight;
+        }
+
+        // --- DEMO 1 (STL) ---
+        const d1_steps = [
+            { line: 2, out: "> A инициализирано: {1, 2, 3, 4, 5}" },
+            { line: 3, out: "> B инициализирано: {4, 5, 6, 7}" },
+            { line: 4, out: "1 2 3 4 5<br>4 5 6 7" },
+            { line: 5, out: "> A.insert(8)" },
+            { line: 6, out: "> A.erase(1)<br>> Текущо A: {2, 3, 4, 5, 8}" },
+            { line: 9, out: "> Пресмятане на Обединение (A &cup; B)..." },
+            { line: 10, out: "2 3 4 5 6 7 8" },
+            { line: 13, out: "> Пресмятане на Сечение (A &cap; B)..." },
+            { line: 14, out: "4 5" }
+        ];
+        let d1_idx = 0;
+
+        function stepDemo1() {
+            if (d1_idx >= d1_steps.length) {
+                document.getElementById('btn-step-d1').disabled = true;
+                hlLine('d1', null);
+                return;
+            }
+            const step = d1_steps[d1_idx];
+            hlLine('d1', step.line);
+            if(step.out) appendOut('out-d1', step.out);
+            d1_idx++;
+        }
+
+        function resetDemo1() {
+            d1_idx = 0;
+            document.getElementById('btn-step-d1').disabled = false;
+            document.getElementById('out-d1').innerHTML = "Изход от конзолата:<br>";
+            hlLine('d1', null);
+        }
+
+        // --- DEMO 2 (MASKS) ---
+        const d2_steps = [
+            { line: 3, out: "> A = 13 (в двоична: 01101)" },
+            { line: 4, out: "> B = 28 (в двоична: 11100)" },
+            { line: 5, out: "0 2 3<br>2 3 4" },
+            { line: 7, out: "> union_mask = 13 | 28 = 29 (11101)" },
+            { line: 8, out: "0 2 3 4" },
+            { line: 10, out: "> intersect_mask = 13 & 28 = 12 (01100)" },
+            { line: 11, out: "2 3" },
+            { line: 13, out: "> Добавяне (ИЛИ) на бит 1: A |= 2" },
+            { line: 14, out: "> Премахване (И) на бит 2: A &= ~4<br>> A става 11 (01011)" },
+            { line: 15, out: "0 1 3" }
+        ];
+        let d2_idx = 0;
+
+        function stepDemo2() {
+            if (d2_idx >= d2_steps.length) {
+                document.getElementById('btn-step-d2').disabled = true;
+                hlLine('d2', null);
+                return;
+            }
+            const step = d2_steps[d2_idx];
+            hlLine('d2', step.line);
+            if(step.out) appendOut('out-d2', step.out);
+            d2_idx++;
+        }
+
+        function resetDemo2() {
+            d2_idx = 0;
+            document.getElementById('btn-step-d2').disabled = false;
+            document.getElementById('out-d2').innerHTML = "Изход от конзолата:<br>";
+            hlLine('d2', null);
+        }
+
+    </script>
+</body>
+</html>
