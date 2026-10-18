@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивна Визуализация: Префиксни суми (Prefix Sums)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --highlight: #fef08a;
+            --keyword: #569cd6;
+            --type: #4ec9b0;
+            --method: #dcdcaa;
+            --variable: #9cdcfe;
+            --string: #ce9178;
+            --number: #b5cea8;
+            --comment: #6a9955;
+            --header-bg: #0f172a;
+            --header-text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--header-text);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            color: #3b82f6;
+        }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: #d97706;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 24px;
+            margin-top: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            font-family: 'Consolas', monospace;
+        }
+
+        #input-array {
+            width: 220px;
+        }
+
+        #input-queries {
+            width: 250px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-start {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-next {
+            background: var(--success);
+            color: white;
+            font-size: 16px;
+        }
+
+        .btn-next:hover {
+            background: #059669;
+        }
+
+        .btn-reset {
+            background: #64748b;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .explanation-banner {
+            background: #fffbeb;
+            border-left: 5px solid var(--accent);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 17px;
+            font-style: italic;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            color: #3f3f46;
+            line-height: 1.5;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            font-size: 18px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', monospace;
+            padding: 15px 0;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: block;
+            padding: 2px 15px;
+            white-space: pre;
+            border-left: 4px solid transparent;
+        }
+
+        .code-line.active {
+            background: #333333;
+            border-left-color: var(--accent);
+            color: var(--highlight);
+            font-weight: bold;
+        }
+
+        .kw {
+            color: var(--keyword);
+        }
+
+        .typ {
+            color: var(--string);
+        }
+
+        .mth {
+            color: var(--method);
+        }
+
+        .var {
+            color: var(--variable);
+        }
+
+        .num {
+            color: var(--number);
+        }
+
+        .com {
+            color: var(--comment);
+        }
+
+        #screen {
+            background: #0f172a;
+            color: #38bdf8;
+            font-family: 'Consolas', monospace;
+            padding: 15px;
+            border-radius: 6px;
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 20px;
+            line-height: 1.6;
+            min-height: 150px;
+            max-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 2px;
+            white-space: pre-wrap;
+        }
+
+        .state-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+
+        .state-table th,
+        .state-table td {
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .state-table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .val-highlight {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 18px;
+            font-family: 'Consolas', monospace;
+        }
+
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 10px;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+
+        .array-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .array-label {
+            font-weight: bold;
+            width: 120px;
+            flex-shrink: 0;
+            font-family: 'Consolas', monospace;
+            color: #334155;
+        }
+
+        .array-cells {
+            display: flex;
+            gap: 8px;
+        }
+
+        .arr-cell {
+            width: 45px;
+            height: 50px;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            color: #475569;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .arr-cell .idx {
+            position: absolute;
+            bottom: -22px;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+
+        .cell-empty {
+            background: #f8fafc;
+            border-style: dashed;
+            color: transparent;
+        }
+
+        .cell-zero {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #64748b;
+        }
+
+        .cell-active {
+            background: var(--highlight);
+            border-color: #ca8a04;
+            color: #000;
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .cell-prev-read {
+            background: #d1fae5;
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+        .cell-query-r {
+            background: #dbeafe;
+            border-color: var(--primary);
+            color: #1e3a8a;
+            transform: scale(1.05);
+        }
+
+        .cell-query-l {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #7f1d1d;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../lessons/lesson-5-prefix-sums.html">&larr; Обратно към Урока</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Визуализация: Префиксни суми</h1>
+
+        <div class="controls">
+            <label for="input-array">Масив (разделен с интервали):</label>
+            <input type="text" id="input-array" value="3 1 4 1 5">
+
+            <label for="input-queries">Заявки L,R (разделени с ;):</label>
+            <input type="text" id="input-queries" value="1,3; 2,4; 3,3">
+
+            <span style="border-left: 2px solid #cbd5e1; height: 30px; margin: 0 10px;"></span>
+
+            <button id="start-btn" class="btn-start">Зареди алгоритъма</button>
+            <button id="next-btn" class="btn-next" disabled>Изпълни стъпка</button>
+            <button id="reset-btn" class="btn-reset">Рестарт</button>
+        </div>
+
+        <div id="explanation-banner" class="explanation-banner">
+            <strong>Подготовка:</strong> Въведете стойности за базовия масив (напр. цени на стоки) и заявки за суми в
+            интервал (от индекс L до индекс R). След това стартирайте визуализацията, за да проследите как работи
+            алгоритъмът стъпка по стъпка.
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h3>Код на алгоритъма (C++)</h3>
+                <div class="code-container">
+<span id="line-1" class="code-line"><span class="kw">#include</span> &lt;bits/stdc++.h&gt;</span>
+<span id="line-2" class="code-line"><span class="kw">using namespace</span> std;</span>
+<span id="line-3" class="code-line"></span>
+<span id="line-4" class="code-line"><span class="kw">const int</span> <span class="var">MAXN</span> = <span class="num">100005</span>;</span>
+<span id="line-5" class="code-line"><span class="kw">long long</span> a[MAXN];</span>
+<span id="line-6" class="code-line"><span class="kw">long long</span> prefix[MAXN];</span>
+<span id="line-7" class="code-line"></span>
+<span id="line-8" class="code-line"><span class="kw">int</span> <span class="mth">main</span>()</span>
+<span id="line-9" class="code-line">{</span>
+<span id="line-10" class="code-line">    <span class="kw">int</span> n, q;</span>
+<span id="line-11" class="code-line">    <span class="kw">cin</span> &gt;&gt; n &gt;&gt; q;</span>
+<span id="line-12" class="code-line">    <span class="kw">for</span>(<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= n; i++)</span>
+<span id="line-13" class="code-line">    {</span>
+<span id="line-14" class="code-line">        <span class="kw">cin</span> &gt;&gt; a[i];</span>
+<span id="line-15" class="code-line">        prefix[i] = prefix[i-<span class="num">1</span>] + a[i];</span>
+<span id="line-16" class="code-line">    }</span>
+<span id="line-17" class="code-line">    <span class="kw">for</span>(<span class="kw">int</span> i = <span class="num">0</span>; i &lt; q; i++)</span>
+<span id="line-18" class="code-line">    {</span>
+<span id="line-19" class="code-line">        <span class="kw">int</span> L, R;</span>
+<span id="line-20" class="code-line">        <span class="kw">cin</span> &gt;&gt; L &gt;&gt; R; <span class="com">// L и R са 1-базирани</span></span>
+<span id="line-21" class="code-line">        <span class="kw">cout</span> &lt;&lt; prefix[R] - prefix[L-<span class="num">1</span>] &lt;&lt; <span class="typ">"\n"</span>;</span>
+<span id="line-22" class="code-line">    }</span>
+<span id="line-23" class="code-line">}</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Памет: Масиви (1-базирани)</h3>
+                <div class="arrays-container" id="arrays-container">
+                </div>
+                <div style="margin-top: 25px; font-size: 13px; color: #64748b; text-align: center;">
+                    Легенда: [Сиво: Глобална нула] | [Жълто: Текущ запис] | [Зелено: Четене при запис] | [Светлосиньо:
+                    prefix[R]] | [Червено: prefix[L-1]]
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Състояние на променливите</h3>
+                <table class="state-table">
+                    <thead>
+                        <tr>
+                            <th>Индекс (i)</th>
+                            <th>a[i] / prefix[i]</th>
+                            <th>L (Начало)</th>
+                            <th>R (Край)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="val-i" class="val-highlight">-</td>
+                            <td id="val-val" class="val-highlight">-</td>
+                            <td id="val-l" class="val-highlight">-</td>
+                            <td id="val-r" class="val-highlight">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div
+                    style="margin-top: auto; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 14px;">
+                    <strong>💡 Ключов момент:</strong> Глобалните масиви (ред 4-6) се инициализират с нули. Затова
+                    <code>prefix[0] = 0</code>, което предотвратява грешки при заявка с <code>L = 1</code>.
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Конзола (Стандартен изход)</h3>
+                <div id="screen"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let stepQueue = [];
+            let currentStepIdx = 0;
+            let n = 0;
+
+            const screen = document.getElementById('screen');
+            const explanationBanner = document.getElementById('explanation-banner');
+            const startBtn = document.getElementById('start-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const arraysContainer = document.getElementById('arrays-container');
+
+            function drawArrays(step) {
+                arraysContainer.innerHTML = '';
+                if (n === 0) return;
+
+                const createRow = (label, dataArr, hlConfig, arrType) => {
+                    let wrapper = document.createElement('div');
+                    wrapper.className = 'array-wrapper';
+
+                    let lbl = document.createElement('div');
+                    lbl.className = 'array-label';
+                    lbl.textContent = label;
+                    wrapper.appendChild(lbl);
+
+                    let cellsDiv = document.createElement('div');
+                    cellsDiv.className = 'array-cells';
+
+                    for (let i = 0; i <= n; i++) {
+                        let cell = document.createElement('div');
+                        cell.className = 'arr-cell';
+
+                        let val = dataArr[i];
+                        if (val !== null && val !== undefined && val !== '') {
+                            cell.textContent = val;
+                            if (i === 0) cell.classList.add('cell-zero');
+                        } else {
+                            cell.classList.add('cell-empty');
+                            cell.textContent = '0';
+                        }
+
+                        let idxLabel = document.createElement('div');
+                        idxLabel.className = 'idx';
+                        idxLabel.textContent = i;
+                        cell.appendChild(idxLabel);
+
+                        if (step && hlConfig) {
+                            if (arrType === 'a') {
+                                if (hlConfig.active_a === i) cell.classList.add('cell-active');
+                                if (hlConfig.read_a === i) cell.classList.add('cell-prev-read');
+                            } else if (arrType === 'pref') {
+                                if (hlConfig.active_p === i) cell.classList.add('cell-active');
+                                if (hlConfig.read_p === i) cell.classList.add('cell-prev-read');
+                                if (hlConfig.query_r === i) cell.classList.add('cell-query-r');
+                                if (hlConfig.query_l_minus_1 === i) cell.classList.add('cell-query-l');
+                            }
+                        }
+
+                        cellsDiv.appendChild(cell);
+                    }
+                    wrapper.appendChild(cellsDiv);
+                    arraysContainer.appendChild(wrapper);
+                };
+
+                createRow('long long a[]', step ? step.arr_a : Array(n + 1).fill(''), step ? step.hl : null, 'a');
+                createRow('long long prefix[]', step ? step.arr_pref : Array(n + 1).fill(''), step ? step.hl : null, 'pref');
+            }
+
+            function simulateAlgorithm() {
+                let arrInputRaw = document.getElementById('input-array').value.trim();
+                let qInputRaw = document.getElementById('input-queries').value.trim();
+
+                let arrInput = arrInputRaw.split(/\s+/).map(Number);
+                let qInput = qInputRaw.split(';').map(s => {
+                    let parts = s.trim().split(/\s*,\s*|\s+/).map(Number);
+                    return parts.length === 2 ? parts : [1, 1];
+                });
+
+                n = arrInput.length;
+                let q = qInput.length;
+
+                let snap_a = Array(n + 1).fill('');
+                let snap_pref = Array(n + 1).fill('');
+                snap_a[0] = 0;
+                snap_pref[0] = 0;
+
+                let outputAcc = "";
+
+                stepQueue.push({
+                    line: 11,
+                    text: `Първо програмата прочита колко числа има в масива (n = ${n}) и на колко заявки ще трябва да отговори (q = ${q}).`,
+                    state: {i: '-', val: '-', L: '-', R: '-'},
+                    arr_a: [...snap_a], arr_pref: [...snap_pref],
+                    hl: {},
+                    output: outputAcc
+                });
+
+                for (let i = 1; i <= n; i++) {
+                    let val_a = arrInput[i - 1];
+
+                    stepQueue.push({
+                        line: 12,
+                        text: `Влизаме в цикъла за предварителна обработка. На стъпка i = ${i}, компютърът се подготвя да прочете числото.`,
+                        state: {i: i, val: '-', L: '-', R: '-'},
+                        arr_a: [...snap_a], arr_pref: [...snap_pref],
+                        hl: {},
+                        output: outputAcc
+                    });
+
+                    snap_a[i] = val_a;
+                    stepQueue.push({
+                        line: 14,
+                        text: `Прочитаме числото от конзолата и го записваме: a[${i}] = ${val_a}. (Жълтата клетка в паметта)`,
+                        state: {i: i, val: `a[${i}]=${val_a}`, L: '-', R: '-'},
+                        arr_a: [...snap_a], arr_pref: [...snap_pref],
+                        hl: {active_a: i},
+                        output: outputAcc
+                    });
+
+                    let prev_pref = snap_pref[i - 1];
+                    snap_pref[i] = prev_pref + val_a;
+                    stepQueue.push({
+                        line: 15,
+                        text: `Изчисляваме префиксната сума до позиция ${i}: Взимаме предишната сума (prefix[${i - 1}] = ${prev_pref}) и добавяме новото число (a[${i}] = ${val_a}). Резултат: ${prev_pref} + ${val_a} = ${snap_pref[i]}.`,
+                        state: {i: i, val: `pref[${i}]=${snap_pref[i]}`, L: '-', R: '-'},
+                        arr_a: [...snap_a], arr_pref: [...snap_pref],
+                        hl: {active_p: i, read_p: i - 1, read_a: i},
+                        output: outputAcc
+                    });
+                }
+
+                for (let k = 0; k < q; k++) {
+                    let L = qInput[k][0];
+                    let R = qInput[k][1];
+
+                    stepQueue.push({
+                        line: 17,
+                        text: `Масивите са готови! Започваме да отговаряме на заявките. Обработваме заявка номер ${k + 1}.`,
+                        state: {i: k, val: '-', L: '-', R: '-'},
+                        arr_a: [...snap_a], arr_pref: [...snap_pref],
+                        hl: {},
+                        output: outputAcc
+                    });
+
+                    stepQueue.push({
+                        line: 20,
+                        text: `Търсим сумата на числата от позиция ${L} до позиция ${R}. Записваме тези граници в L и R.`,
+                        state: {i: k, val: '-', L: L, R: R},
+                        arr_a: [...snap_a], arr_pref: [...snap_pref],
+                        hl: {},
+                        output: outputAcc
+                    });
+
+                    let res = 0;
+                    let valid = (L >= 1 && R <= n && L <= R);
+                    if (valid) res = snap_pref[R] - snap_pref[L - 1];
+
+                    outputAcc += (valid ? res : "Грешка") + "\n";
+
+                    stepQueue.push({
+                        line: 21,
+                        text: valid ? `Изчисляваме отговора моментално (O(1)): Взимаме сумата до края (prefix[${R}] = ${snap_pref[R]}) и вадим излишната сума преди началото (prefix[${L - 1}] = ${snap_pref[L - 1]}). Резултат: ${snap_pref[R]} - ${snap_pref[L - 1]} = ${res}.`
+                            : `Грешка: Невалидни граници на интервала!`,
+                        state: {i: k, val: `res=${res}`, L: L, R: R},
+                        arr_a: [...snap_a], arr_pref: [...snap_pref],
+                        hl: {query_r: R, query_l_minus_1: L - 1},
+                        output: outputAcc
+                    });
+                }
+
+                stepQueue.push({
+                    line: 23,
+                    text: `Програмата приключи успешно! Всички заявки бяха обработени светкавично.`,
+                    state: {i: '-', val: '-', L: '-', R: '-'},
+                    arr_a: [...snap_a], arr_pref: [...snap_pref],
+                    hl: {},
+                    output: outputAcc
+                });
+            }
+
+            function renderState(step) {
+                document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                if (step.line) {
+                    const lineEl = document.getElementById(`line-${step.line}`);
+                    if (lineEl) lineEl.classList.add('active');
+                }
+
+                document.getElementById('val-i').textContent = step.state.i;
+                document.getElementById('val-val').textContent = step.state.val;
+                document.getElementById('val-l').textContent = step.state.L;
+                document.getElementById('val-r').textContent = step.state.R;
+
+                explanationBanner.innerHTML = `<strong>Стъпка ${currentStepIdx + 1}:</strong> ${step.text}`;
+                drawArrays(step);
+                screen.textContent = step.output;
+            }
+
+            startBtn.addEventListener('click', () => {
+                if (document.getElementById('input-array').value.trim() === "") {
+                    alert("Моля, въведете стойности за масива.");
+                    return;
+                }
+
+                stepQueue = [];
+                currentStepIdx = 0;
+                simulateAlgorithm();
+
+                startBtn.disabled = true;
+                document.getElementById('input-array').disabled = true;
+                document.getElementById('input-queries').disabled = true;
+                nextBtn.disabled = false;
+
+                if (stepQueue.length > 0) renderState(stepQueue[0]);
+            });
+
+            nextBtn.addEventListener('click', () => {
+                currentStepIdx++;
+                if (currentStepIdx < stepQueue.length) {
+                    renderState(stepQueue[currentStepIdx]);
+                } else {
+                    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                    explanationBanner.innerHTML = "<strong>Изпълнението приключи!</strong> Можете да натиснете 'Рестарт', за да опитате с други числа или заявки.";
+                    nextBtn.disabled = true;
+                }
+            });
+
+            resetBtn.addEventListener('click', () => location.reload());
+
+            n = document.getElementById('input-array').value.trim().split(/\s+/).length;
+            drawArrays(null);
+        });
+    </script>
+
+</body>
+
+</html>
