@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача D6: Кравата ми изяде домашното - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #fef08a;
+            --eaten-color: #64748b; /* Цвят за изядените задачи */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+
+        /* Примерен вход/изход */
+        .io-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+            font-style: italic;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Визуализация на масиви */
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .array-label {
+            width: 80px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            text-align: right;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+
+        .cell-group { display: flex; gap: 8px; }
+
+        .arr-cell {
+            width: 45px;
+            height: 45px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .arr-cell.idx-cell {
+            height: 20px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+        
+        .arr-cell.global-zero {
+            background: rgba(255,255,255,0.02);
+            color: #475569;
+            border-style: dashed;
+        }
+
+        /* Специфични състояния на клетките */
+        .cell-eaten {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #334155;
+            color: #475569;
+            text-decoration: line-through;
+            transform: scale(0.95);
+        }
+
+        .cell-eaten::after {
+            content: 'Изяден';
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.65rem;
+            color: var(--danger);
+            text-decoration: none;
+            font-family: sans-serif;
+            font-weight: bold;
+        }
+
+        .cell-min {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+            text-decoration: line-through;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .cell-min::after {
+            content: 'Премахнат';
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.65rem;
+            color: var(--danger);
+            text-decoration: none;
+            font-family: sans-serif;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .cell-valid {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        /* Управление */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-next { background: var(--accent); color: white; }
+        .btn-next:hover { background: var(--accent-hover); }
+        .btn-reset { background: #64748b; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-top: 1rem;
+        }
+
+        /* Инфо табла за резултата */
+        .stats-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-box h4 {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stat-val.highlight {
+            color: var(--success);
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Задача D6: Кравата ми изяде домашното</h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1.0 с.</div>
+                    <div>💾 <strong>Памет:</strong> 64 MB</div>
+                    <div>🏆 <strong>Източник:</strong> USACO 2017 Silver</div>
+                </div>
+            </div>
+
+            <p>В часа по история на говедата ви е дадено доста дълго домашно с <strong>N</strong> въпроса, всеки от които е оценен с цяло число. Както често е прието, вашият учител планира да оформи крайната оценка, като пренебрегне въпроса, на който сте получили най-ниска оценка, и след това усредни останалите. За съжаление, вашата домашна крава Беси току що е изяла отговорите ви на първите <strong>K</strong> въпроса!</p>
+            
+            <p>След подробни обяснения, учителят най-накрая повярвал на историята ви и се съгласил да оцени останалата, неизядена част от домашното по същия начин както преди – като премахне въпроса с най-ниската оценка (или един от тях, в случай на равенство) и усредни останалите.</p>
+
+            <p>Да се напише програма <code>homework</code>, която отпечатва всички стойности на <strong>K</strong>, които биха ви донесли <strong>максимална възможна оценка</strong> според тази система за оценяване, сортирани във възходящ ред.</p>
+
+            <h2>Вход</h2>
+            <p>Първият ред на входа въвежда едно цяло число <strong>N</strong> – брой въпроси.</p>
+            <p>Следват <strong>N</strong> цели числа, оценките на N-те въпроса от домашното. Числата са разделени с един интервал.</p>
+
+            <h2>Изход</h2>
+            <p>Програмата да отпечатва по една стойност на ред, всички стойности на <strong>K</strong>, които биха ви донесли максималната възможна оценка.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>3 &le; <strong>N</strong> &le; 100 000</li>
+                <li>0 &le; <strong>оценка</strong> &le; 10 000</li>
+                <li>1 &le; <strong>K</strong> &le; N - 2</li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Вход (homework.in):</div>
+                    <pre>5
+3 1 9 2 7</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход (homework.out):</div>
+                    <pre>2</pre>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Обяснение на примера:</strong> Ако Беси изяде първите два въпроса (K=2) тогава останалите оценки са 9, 2 и 7. Като премахнем минималната оценка (2) и усредним останалите, получаваме крайна оценка 8, която е възможно най-високата.
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: Усредняване на суфикси</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Проследете какво се случва, когато Беси изяде първите <strong>K</strong> въпроса. Програмата разглежда оставащия "суфикс" (края на редицата), премахва най-слабата оценка от него и смята средния успех.
+                </p>
+
+                <!-- Контроли за Стъпки -->
+                <div class="controls">
+                    <button id="btn-next" class="btn-next" onclick="nextStep()">Следващо K</button>
+                    <button id="btn-reset" class="btn-reset" onclick="resetSim()">Рестарт</button>
+                    <span id="step-counter" style="margin-left: auto; font-family: monospace; color: var(--accent);">Тестваме K = 1</span>
+                </div>
+
+                <!-- Масиви -->
+                <div class="arrays-container">
+                    <div class="array-row">
+                        <div class="array-label">Индекс (Въпрос)</div>
+                        <div class="cell-group" id="arr-idx">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                    <div class="array-row" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                        <div class="array-label" style="color: #fff;">Оценки:</div>
+                        <div class="cell-group" id="arr-main">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок с логиката -->
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Следващо K", за да започнете симулацията.
+                </div>
+                
+                <!-- Табла със статистики -->
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <h4>Текущо K</h4>
+                        <div class="stat-val" id="stat-curr-k" style="color: var(--accent);">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4>Текущ Среден Успех</h4>
+                        <div class="stat-val" id="stat-curr-avg">-</div>
+                    </div>
+                    <div class="stat-box" style="border-color: var(--success); background: rgba(16, 185, 129, 0.05);">
+                        <h4 style="color: var(--success);">Максимален Успех</h4>
+                        <div class="stat-val highlight" id="stat-max-avg">0.00</div>
+                        <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;" id="stat-best-k">Най-добри K: []</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Входни данни за симулатора (Примерът от задачата)
+        const scores = [3, 1, 9, 2, 7];
+        const N = 5;
+        // K може да бъде от 1 до N-2 (тоест 1, 2, 3)
+        const maxK = N - 2;
+        
+        let currentK = 0;
+        let maxAvgFound = -1;
+        let bestKList = [];
+
+        function buildInitialArray() {
+            const rowIdx = document.getElementById('arr-idx');
+            const rowMain = document.getElementById('arr-main');
+            
+            rowIdx.innerHTML = '';
+            rowMain.innerHTML = '';
+
+            for (let i = 0; i < N; i++) {
+                // IDX
+                let cIdx = document.createElement('div');
+                cIdx.className = 'arr-cell idx-cell';
+                cIdx.textContent = i + 1; // 1-базиран визуален индекс
+                rowIdx.appendChild(cIdx);
+
+                // MAIN
+                let cMain = document.createElement('div');
+                cMain.className = 'arr-cell';
+                cMain.id = `cell-${i}`;
+                cMain.textContent = scores[i];
+                rowMain.appendChild(cMain);
+            }
+        }
+
+        function updateUI() {
+            if (currentK === 0) return;
+
+            // Определяме суфикса (останалите елементи след първите K)
+            let suffix = scores.slice(currentK);
+            
+            // Намираме най-слабата оценка в суфикса
+            let minVal = Math.min(...suffix);
+            
+            // Намираме индекса на тази най-слаба оценка в оригиналния масив
+            // (Търсим само в остатъка!)
+            let minOriginalIdx = -1;
+            for(let i = currentK; i < N; i++) {
+                if(scores[i] === minVal) {
+                    minOriginalIdx = i;
+                    break;
+                }
+            }
+
+            // Изчисляваме сумата и средния успех
+            let sumRest = 0;
+            let countRest = 0;
+            let validElementsStr = [];
+
+            // Оцветяваме клетките
+            for(let i = 0; i < N; i++) {
+                let cell = document.getElementById(`cell-${i}`);
+                cell.className = 'arr-cell'; // Reset
+
+                if (i < currentK) {
+                    // Изядени от Беси
+                    cell.classList.add('cell-eaten');
+                } else if (i === minOriginalIdx) {
+                    // Премахнат от учителя (минимумът)
+                    cell.classList.add('cell-min');
+                } else {
+                    // Валидни за усредняване
+                    cell.classList.add('cell-valid');
+                    sumRest += scores[i];
+                    countRest++;
+                    validElementsStr.push(scores[i]);
+                }
+            }
+
+            let currentAvg = sumRest / countRest;
+            let currentAvgFormatted = currentAvg.toFixed(2);
+
+            // Проверка за нов максимум
+            if (currentAvg > maxAvgFound) {
+                maxAvgFound = currentAvg;
+                bestKList = [currentK];
+            } else if (currentAvg === maxAvgFound) {
+                bestKList.push(currentK);
+            }
+
+            // Обновяване на логическия панел
+            document.getElementById('logic-display').innerHTML = `
+                <span style="color:var(--text-muted);">// Тестваме какво става, ако Беси изяде <strong>K = ${currentK}</strong> въпроса.</span><br>
+                Оставащи въпроси (суфикс): [${suffix.join(', ')}]<br>
+                Най-ниска оценка за премахване: <strong style="color:var(--danger);">${minVal}</strong><br>
+                Оценки за усредняване: <strong style="color:var(--success);">${validElementsStr.join(' + ')}</strong><br><br>
+                Среден успех: <span style="font-family:monospace; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">${sumRest} / ${countRest}</span> = <strong style="color:var(--text-main); font-size:1.1rem;">${currentAvgFormatted}</strong>
+            `;
+
+            // Обновяване на статистиките
+            document.getElementById('stat-curr-k').textContent = currentK;
+            document.getElementById('stat-curr-avg').textContent = currentAvgFormatted;
+            document.getElementById('stat-max-avg').textContent = maxAvgFound.toFixed(2);
+            document.getElementById('stat-best-k').textContent = `Най-добри K: [${bestKList.join(', ')}]`;
+
+            document.getElementById('step-counter').textContent = `Тестваме K = ${currentK}`;
+
+            if (currentK === maxK) {
+                document.getElementById('btn-next').disabled = true;
+                document.getElementById('logic-display').innerHTML += `<br><br><strong style="color:var(--success);">Симулацията приключи! Отговорът за този тест е K = ${bestKList.join(', ')}.</strong>`;
+            }
+        }
+
+        function nextStep() {
+            if (currentK < maxK) {
+                currentK++;
+                updateUI();
+            }
+        }
+
+        function resetSim() {
+            currentK = 0;
+            maxAvgFound = -1;
+            bestKList = [];
+            
+            buildInitialArray();
+
+            document.getElementById('btn-next').disabled = false;
+            document.getElementById('logic-display').innerHTML = `Натиснете "Следващо K", за да започнете симулацията.`;
+            
+            document.getElementById('stat-curr-k').textContent = '-';
+            document.getElementById('stat-curr-avg').textContent = '-';
+            document.getElementById('stat-max-avg').textContent = '0.00';
+            document.getElementById('stat-best-k').textContent = `Най-добри K: []`;
+            document.getElementById('step-counter').textContent = `Готов за старт`;
+        }
+
+        // Инициализация при зареждане
+        resetSim();
+    </script>
+</body>
+
+</html>
