@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение D4: Броене на породи - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            --success: #10b981;
+            --danger: #ef4444;
+            --highlight: #fef08a;
+
+            --cow-1: #10b981; /* Холщайн */
+            --cow-2: #f59e0b; /* Гърнси */
+            --cow-3: #8b5cf6; /* Джърси */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Решение) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        /* Code Block Styling */
+        .code-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', monospace;
+            padding: 1.5rem 0;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+
+        .code-line {
+            display: block;
+            padding: 2px 1.5rem;
+            white-space: pre;
+            border-left: 4px solid transparent;
+        }
+
+        .code-line.active {
+            background: #333333;
+            border-left-color: var(--accent);
+            color: var(--highlight);
+            font-weight: bold;
+        }
+
+        .kw { color: #569cd6; }
+        .typ { color: #ce9178; }
+        .mth { color: #dcdcaa; }
+        .var { color: #9cdcfe; }
+        .num { color: #b5cea8; }
+        .com { color: #6a9955; }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Управление (КОРИГИРАНО ДА Е НА 1 РЕД) */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            align-items: center;
+            flex-wrap: nowrap; /* Забранява падането на нов ред */
+            overflow-x: auto;  /* Добавя скрол, ако екранът е прекалено тесен */
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap; /* Държи текста и инпута залепени */
+        }
+
+        input {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="text"] { font-family: 'Consolas', monospace; }
+        #input-array { width: 130px; }
+        #input-queries { width: 140px; }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-start { background: var(--accent); color: white; }
+        .btn-start:hover { background: var(--accent-hover); }
+        .btn-next { background: var(--success); color: white; }
+        .btn-next:hover { background: #059669; }
+        .btn-reset { background: #64748b; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .explanation-banner {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 5px solid var(--cow-2);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            border-radius: 0 6px 6px 0;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* Визуализация на масиви */
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            background: rgba(15, 23, 42, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .array-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .array-label {
+            width: 90px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .array-cells { display: flex; gap: 6px; }
+
+        .arr-cell {
+            width: 40px;
+            height: 40px;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            color: #64748b;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .arr-cell .idx {
+            position: absolute;
+            bottom: -18px;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: normal;
+        }
+
+        .cell-empty { background: transparent; border-style: dashed; color: transparent; }
+        .cell-zero { background: rgba(255,255,255,0.05); color: #475569; }
+
+        /* Highlighting Logic */
+        .cell-active { background: var(--highlight); border-color: #ca8a04; color: #000; transform: scale(1.1); z-index: 10; }
+        .cell-prev-read { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); }
+        .cell-query-r { background: rgba(59, 130, 246, 0.2); border-color: var(--accent); color: var(--accent); transform: scale(1.05); }
+        .cell-query-l { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: var(--danger); transform: scale(1.05); }
+
+        /* Конзола */
+        #screen {
+            background: #000;
+            color: #a3e635;
+            font-family: 'Consolas', monospace;
+            padding: 15px;
+            border-radius: 6px;
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 120px;
+            letter-spacing: 1px;
+            white-space: pre-wrap;
+            border: 1px solid var(--border);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Оптимално Решение -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Решение D4: Броене на породи</h1>
+                <div class="task-meta">
+                    <div>Школа МГ</div>
+                    <div>Тема: Префиксни суми</div>
+                    <div>C++ Оптимално Решение</div>
+                </div>
+            </div>
+
+            <p>Това е пълното решение, което отговаря на заявките за време <code>O(1)</code> и минава всички тестове. Поддържат се три отделни глобални масива за всяка от трите породи крави.</p>
+
+            <div class="code-container">
+<span id="line-1" class="code-line"><span class="kw">#include</span> &lt;iostream&gt;</span>
+<span id="line-2" class="code-line"><span class="kw">using namespace</span> std;</span>
+<span id="line-3" class="code-line"></span>
+<span id="line-4" class="code-line"><span class="kw">const int</span> MAXN = <span class="num">100005</span>;</span>
+<span id="line-5" class="code-line"><span class="kw">int</span> pref1[MAXN];</span>
+<span id="line-6" class="code-line"><span class="kw">int</span> pref2[MAXN];</span>
+<span id="line-7" class="code-line"><span class="kw">int</span> pref3[MAXN];</span>
+<span id="line-8" class="code-line"></span>
+<span id="line-9" class="code-line"><span class="kw">int</span> <span class="mth">main</span>()</span>
+<span id="line-10" class="code-line">{</span>
+<span id="line-11" class="code-line">    ios_base::sync_with_stdio(<span class="kw">false</span>);</span>
+<span id="line-12" class="code-line">    cin.tie(NULL);</span>
+<span id="line-13" class="code-line"></span>
+<span id="line-14" class="code-line">    <span class="kw">int</span> n, q;</span>
+<span id="line-15" class="code-line">    cin &gt;&gt; n &gt;&gt; q;</span>
+<span id="line-16" class="code-line"></span>
+<span id="line-17" class="code-line">    <span class="kw">for</span>(<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= n; i++)</span>
+<span id="line-18" class="code-line">    {</span>
+<span id="line-19" class="code-line">        <span class="kw">int</span> curr;</span>
+<span id="line-20" class="code-line">        cin &gt;&gt; curr;</span>
+<span id="line-21" class="code-line">        pref1[i] = pref1[i - <span class="num">1</span>];</span>
+<span id="line-22" class="code-line">        pref2[i] = pref2[i - <span class="num">1</span>];</span>
+<span id="line-23" class="code-line">        pref3[i] = pref3[i - <span class="num">1</span>];</span>
+<span id="line-24" class="code-line"></span>
+<span id="line-25" class="code-line">        pref1[i] += (curr == <span class="num">1</span>);</span>
+<span id="line-26" class="code-line">        pref2[i] += (curr == <span class="num">2</span>);</span>
+<span id="line-27" class="code-line">        pref3[i] += (curr == <span class="num">3</span>);</span>
+<span id="line-28" class="code-line">    }</span>
+<span id="line-29" class="code-line"></span>
+<span id="line-30" class="code-line">    <span class="kw">for</span>(<span class="kw">int</span> i = <span class="num">0</span>; i &lt; q; i++)</span>
+<span id="line-31" class="code-line">    {</span>
+<span id="line-32" class="code-line">        <span class="kw">int</span> a, b;</span>
+<span id="line-33" class="code-line">        cin &gt;&gt; a &gt;&gt; b;</span>
+<span id="line-34" class="code-line">        cout &lt;&lt; (pref1[b] - pref1[a - <span class="num">1</span>]) &lt;&lt; <span class="typ">" "</span></span>
+<span id="line-35" class="code-line">             &lt;&lt; (pref2[b] - pref2[a - <span class="num">1</span>]) &lt;&lt; <span class="typ">" "</span></span>
+<span id="line-36" class="code-line">             &lt;&lt; (pref3[b] - pref3[a - <span class="num">1</span>]) &lt;&lt; <span class="typ">"\n"</span>;</span>
+<span id="line-37" class="code-line">    }</span>
+<span id="line-38" class="code-line">}</span>
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор на решението</div>
+
+                <!-- КОРИГИРАНА ЛЕНТА С КОНТРОЛИ -->
+                <div class="controls">
+                    <div class="controls-group">
+                        <label style="color:var(--text-muted);">Масив:</label>
+                        <input type="text" id="input-array" value="2 1 1 3 2 1">
+                    </div>
+                    
+                    <div class="controls-group">
+                        <label style="color:var(--text-muted);">Заявки a,b:</label>
+                        <input type="text" id="input-queries" value="1,6; 3,3; 2,4">
+                    </div>
+
+                    <!-- Бутоните са избутани вдясно чрез margin-left: auto -->
+                    <div class="controls-group" style="margin-left: auto;">
+                        <button id="start-btn" class="btn-start">Зареди</button>
+                        <button id="next-btn" class="btn-next" disabled>Стъпка</button>
+                        <button id="reset-btn" class="btn-reset">Рестарт</button>
+                    </div>
+                </div>
+
+                <div id="explanation-banner" class="explanation-banner">
+                    <strong>Подготовка:</strong> Въведете номера на породи (1, 2, 3) и заявки, след което стартирайте симулацията.
+                </div>
+
+                <div class="arrays-container" id="arrays-container">
+                    <!-- Генерира се динамично -->
+                </div>
+
+                <h3 style="margin-top: 1rem; color: var(--text-main); font-size:1rem;">Конзола (Изход)</h3>
+                <div id="screen"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let stepQueue = [];
+            let currentStepIdx = 0;
+            let n = 0;
+
+            const screen = document.getElementById('screen');
+            const explanationBanner = document.getElementById('explanation-banner');
+            const startBtn = document.getElementById('start-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const arraysContainer = document.getElementById('arrays-container');
+
+            function drawArrays(step) {
+                arraysContainer.innerHTML = '';
+                if (n === 0) return;
+
+                const createRow = (label, dataArr, hlConfig, arrType, colorLabel) => {
+                    let wrapper = document.createElement('div');
+                    wrapper.className = 'array-wrapper';
+
+                    let lbl = document.createElement('div');
+                    lbl.className = 'array-label';
+                    if(colorLabel) lbl.style.color = colorLabel;
+                    lbl.textContent = label;
+                    wrapper.appendChild(lbl);
+
+                    let cellsDiv = document.createElement('div');
+                    cellsDiv.className = 'array-cells';
+
+                    for (let i = 0; i <= n; i++) {
+                        let cell = document.createElement('div');
+                        cell.className = 'arr-cell';
+
+                        let val = dataArr[i];
+                        if (val !== null && val !== undefined && val !== '') {
+                            cell.textContent = val;
+                            if (i === 0) cell.classList.add('cell-zero');
+                        } else {
+                            cell.classList.add('cell-empty');
+                            cell.textContent = '0';
+                        }
+
+                        let idxLabel = document.createElement('div');
+                        idxLabel.className = 'idx';
+                        idxLabel.textContent = i;
+                        cell.appendChild(idxLabel);
+
+                        // Оцветяване
+                        if (step && hlConfig) {
+                            if (arrType === 'curr') {
+                                if (hlConfig.active_curr === i) cell.classList.add('cell-active');
+                            } else {
+                                if (hlConfig.active_p === i) cell.classList.add('cell-active');
+                                if (hlConfig.read_p === i) cell.classList.add('cell-prev-read');
+                                if (hlConfig.query_r === i) cell.classList.add('cell-query-r');
+                                if (hlConfig.query_l_minus_1 === i) cell.classList.add('cell-query-l');
+                            }
+                        }
+
+                        cellsDiv.appendChild(cell);
+                    }
+                    wrapper.appendChild(cellsDiv);
+                    arraysContainer.appendChild(wrapper);
+                };
+
+                createRow('curr[]', step ? step.arr_c : Array(n + 1).fill(''), step ? step.hl : null, 'curr', '#f8fafc');
+                createRow('pref1[]', step ? step.arr_p1 : Array(n + 1).fill(''), step ? step.hl : null, 'p1', '#10b981');
+                createRow('pref2[]', step ? step.arr_p2 : Array(n + 1).fill(''), step ? step.hl : null, 'p2', '#f59e0b');
+                createRow('pref3[]', step ? step.arr_p3 : Array(n + 1).fill(''), step ? step.hl : null, 'p3', '#8b5cf6');
+            }
+
+            function simulateAlgorithm() {
+                let arrInputRaw = document.getElementById('input-array').value.trim();
+                let qInputRaw = document.getElementById('input-queries').value.trim();
+
+                let arrInput = arrInputRaw.split(/\s+/).map(Number);
+                let qInput = qInputRaw.split(';').map(s => {
+                    let parts = s.trim().split(/\s*,\s*|\s+/).map(Number);
+                    return parts.length === 2 ? parts : [1, 1];
+                });
+
+                n = arrInput.length;
+                let q = qInput.length;
+
+                let snap_c = Array(n + 1).fill('');
+                let snap_p1 = Array(n + 1).fill('');
+                let snap_p2 = Array(n + 1).fill('');
+                let snap_p3 = Array(n + 1).fill('');
+                
+                snap_c[0] = '-';
+                snap_p1[0] = 0;
+                snap_p2[0] = 0;
+                snap_p3[0] = 0;
+
+                let outputAcc = "";
+
+                stepQueue.push({
+                    line: 15,
+                    text: `Четене на входните данни: <strong>n = ${n}</strong> крави и <strong>q = ${q}</strong> заявки.`,
+                    arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                    hl: {}, output: outputAcc
+                });
+
+                for (let i = 1; i <= n; i++) {
+                    let curr = arrInput[i - 1];
+                    snap_c[i] = curr;
+
+                    stepQueue.push({
+                        line: 20,
+                        text: `Стъпка <strong>i = ${i}</strong>: Прочитаме текущата крава: <strong>curr = ${curr}</strong>.`,
+                        arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                        hl: {active_curr: i}, output: outputAcc
+                    });
+
+                    snap_p1[i] = snap_p1[i - 1];
+                    snap_p2[i] = snap_p2[i - 1];
+                    snap_p3[i] = snap_p3[i - 1];
+
+                    stepQueue.push({
+                        line: 21,
+                        text: `Копираме натрупаните суми от предишната позиция (i-1).`,
+                        arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                        hl: {active_p: i, read_p: i - 1}, output: outputAcc
+                    });
+
+                    snap_p1[i] += (curr === 1 ? 1 : 0);
+                    snap_p2[i] += (curr === 2 ? 1 : 0);
+                    snap_p3[i] += (curr === 3 ? 1 : 0);
+
+                    stepQueue.push({
+                        line: 25,
+                        text: `Чрез булевите изрази добавяме 1 <strong>само</strong> към масива на порода ${curr}. Останалите остават непроменени.`,
+                        arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                        hl: {active_p: i}, output: outputAcc
+                    });
+                }
+
+                for (let k = 0; k < q; k++) {
+                    let a = qInput[k][0];
+                    let b = qInput[k][1];
+
+                    stepQueue.push({
+                        line: 33,
+                        text: `<strong>Заявка ${k + 1}:</strong> Търсим броя крави в интервала <strong>[${a}, ${b}]</strong>.`,
+                        arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                        hl: {}, output: outputAcc
+                    });
+
+                    let r1 = snap_p1[b] - snap_p1[a - 1];
+                    let r2 = snap_p2[b] - snap_p2[a - 1];
+                    let r3 = snap_p3[b] - snap_p3[a - 1];
+
+                    outputAcc += `${r1} ${r2} ${r3}\n`;
+
+                    stepQueue.push({
+                        line: 34,
+                        text: `Прилагаме формулата: <strong>prefix[${b}] - prefix[${a - 1}]</strong> за всяка порода. <br>Резултат: ${r1} Холщайн, ${r2} Гърнси, ${r3} Джърси.`,
+                        arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                        hl: {query_r: b, query_l_minus_1: a - 1}, output: outputAcc
+                    });
+                }
+
+                stepQueue.push({
+                    line: 38,
+                    text: `<strong>Готово!</strong> Програмата завърши успешно за време O(N + Q).`,
+                    arr_c: [...snap_c], arr_p1: [...snap_p1], arr_p2: [...snap_p2], arr_p3: [...snap_p3],
+                    hl: {}, output: outputAcc
+                });
+            }
+
+            function renderState(step) {
+                document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                if (step.line) {
+                    const lineEl = document.getElementById(`line-${step.line}`);
+                    if (lineEl) {
+                        lineEl.classList.add('active');
+                        lineEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                }
+
+                explanationBanner.innerHTML = `<strong>Стъпка ${currentStepIdx + 1}:</strong> ${step.text}`;
+                drawArrays(step);
+                screen.textContent = step.output;
+            }
+
+            startBtn.addEventListener('click', () => {
+                if (document.getElementById('input-array').value.trim() === "") {
+                    alert("Моля, въведете стойности за масива.");
+                    return;
+                }
+
+                stepQueue = [];
+                currentStepIdx = 0;
+                simulateAlgorithm();
+
+                startBtn.disabled = true;
+                document.getElementById('input-array').disabled = true;
+                document.getElementById('input-queries').disabled = true;
+                nextBtn.disabled = false;
+
+                if (stepQueue.length > 0) renderState(stepQueue[0]);
+            });
+
+            nextBtn.addEventListener('click', () => {
+                currentStepIdx++;
+                if (currentStepIdx < stepQueue.length) {
+                    renderState(stepQueue[currentStepIdx]);
+                } else {
+                    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                    explanationBanner.innerHTML = "<strong>Изпълнението приключи!</strong> Можете да натиснете 'Рестарт'.";
+                    nextBtn.disabled = true;
+                }
+            });
+
+            resetBtn.addEventListener('click', () => location.reload());
+
+            n = document.getElementById('input-array').value.trim().split(/\s+/).length;
+            drawArrays(null);
+        });
+    </script>
+
+</body>
+
+</html>
