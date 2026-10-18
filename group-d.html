@@ -326,6 +326,14 @@
             text-decoration: underline;
         }
 
+        /* БУТОНИ ЗА УРОЦИ/ВИЗУАЛИЗАЦИИ */
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+
         .btn-lesson {
             display: inline-block;
             text-align: center;
@@ -334,15 +342,28 @@
             font-weight: 600;
             text-decoration: none;
             transition: all 0.3s;
-            margin-top: auto;
             background-color: rgba(245, 158, 11, 0.1); 
             color: var(--group-d);
             border: 1px solid rgba(245, 158, 11, 0.2);
+            width: 100%;
         }
 
         .btn-lesson:hover {
             background-color: var(--group-d);
             color: #fff;
+        }
+        
+        /* Вторичен бутон (за визуализации и анализи) */
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: var(--text-muted);
         }
         
         .task-card .btn-lesson {
@@ -354,6 +375,18 @@
         .task-card .btn-lesson:hover {
             background-color: var(--accent);
             color: #fff;
+        }
+
+        .task-card .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .task-card .btn-secondary:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            color: var(--text-main);
+            border-color: rgba(59, 130, 246, 0.5);
         }
 
         /* СТИЛОВЕ ЗА ЛИНКА "ЗА ЛЮБОЗНАТЕЛНИТЕ" */
@@ -433,7 +466,15 @@
         }
     </style>
 </head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'G-5E409LEYXB');
+</script>
 <body>
 
     <!-- НАВИГАЦИЯ -->
@@ -484,7 +525,9 @@
                             <br><a href="#task-2">Задача D2: Остатъци</a>
                             <br><a href="#task-3">Задача D3: Най-близките кратни</a>
                         </div>
-                        <a href="d/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card">
@@ -495,7 +538,9 @@
                         <h3>Техники на програмиране</h3>
                         <p>Логически операции (И, ИЛИ, НЕ), работа с цикли (for, while, do-while), функции. Въведение в
                             едномерните масиви и намиране на min/max елемент.</p>
-                        <a href="d/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card">
@@ -506,7 +551,9 @@
                         <h3>Структури от данни: Вектори</h3>
                         <p>Въведение в динамичните масиви <code>std::vector</code>. Инициализация, достъп до елементи,
                             добавяне и премахване, както и сортиране.</p>
-                        <a href="d/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card">
@@ -517,7 +564,9 @@
                         <h3>Математика: Цели числа и алгоритми</h3>
                         <p>Избор на типове данни (int vs long long), избягване на препълване, модулна аритметика с
                             отрицателни числа и сума на цифри.</p>
-                        <a href="d/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                 </div>
@@ -535,7 +584,9 @@
                         <h3>Аквариум</h3>
                         <p>Определете колко рибки могат да се пуснат в аквариум с даден обем V и изискуема вода на рибка
                             M, както и колко излишна вода ще остане.</p>
-                        <a href="d/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/tasks/task-1.html" class="btn-lesson">Към условието &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card task-card" id="task-2">
@@ -546,7 +597,9 @@
                         <h3>Остатъци</h3>
                         <p>Определяне на математическия интервал, в който винаги попада остатъкът от делението на
                             числото N на числото d.</p>
-                        <a href="d/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/tasks/task-2.html" class="btn-lesson">Към условието &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card task-card" id="task-3">
@@ -557,7 +610,9 @@
                         <h3>Най-близките кратни</h3>
                         <p>Намиране на най-малкото кратно, по-голямо или равно на N, и най-голямото кратно, по-малко или
                             равно на N.</p>
-                        <a href="d/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="D/tasks/task-3.html" class="btn-lesson">Към условието &rarr;</a>
+                        </div>
                     </div>
 
                 </div>
@@ -571,6 +626,90 @@
                 </a>
             </div>
             
+        </div>
+
+        <!-- ==========================================
+             РАЗДЕЛ II: Префиксни суми
+        =========================================== -->
+        <div class="module-container collapsed" id="module-2">
+            <div class="module-header">
+                <h2>Раздел II: <span>Префиксни суми</span></h2>
+                <p>Бързо изчисляване на суми в подмасиви, оптимизация на заявки и интерактивен визуализатор.</p>
+            </div>
+
+            <section class="section-container">
+                <h3 class="section-title">Теоретични уроци</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 1</span>
+                            <span class="read-time">⏱️ 45 мин</span>
+                        </div>
+                        <h3>Префиксни суми - теория</h3>
+                        <p>Разбиране на концепцията за префиксни суми (Prefix Sums). Как да намалим времето за изпълнение на заявки от O(N) на O(1).</p>
+                        
+                        <!-- Блок за бутоните -->
+                        <div class="card-actions">
+                            <a href="d/lessons/lesson-5-prefix-sums.html" class="btn-lesson">Започни урока &rarr;</a>
+                            <a href="d/viz/prefix_viz.html" class="btn-lesson btn-secondary">Виж визуализацията &rarr;</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            
+            <!-- НОВ РАЗДЕЛ ЗА ЗАДАЧИ КЪМ ПРЕФИКСНИ СУМИ -->
+            <section class="section-container" id="tasks-prefix" style="margin-bottom: 0;">
+                <h3 class="section-title" style="color: #60a5fa;">Тематични задачи</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card task-card" id="task-4">
+                        <div class="card-header">
+                            <span class="badge">Задача D4</span>
+                            <span class="read-time">Време: 1.0s | Памет: 64MB</span>
+                        </div>
+                        <h3>Броене на породи (USACO)</h3>
+                        <p>Имаме редица от крави с различни породи. Отговорете светкавично на Q заявки: "Колко крави от всяка порода има в даден интервал?".</p>
+                        
+                        <div class="card-actions">
+                            <a href="d/tasks/task-4.html" class="btn-lesson">Към условието &rarr;</a>
+                            <a href="d/analysis/task-4-analysis.html" class="btn-lesson btn-secondary">Към анализа &rarr;</a>
+                            <a href="d/sol/task-4-solution.html" class="btn-lesson btn-secondary">Към решението &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div class="item-card task-card" id="task-5">
+                        <div class="card-header">
+                            <span class="badge">Задача D5</span>
+                            <span class="read-time">Време: 1.0s | Памет: 64MB</span>
+                        </div>
+                        <h3>Поредици със суми, кратни на 7 (USACO)</h3>
+                        <p>Намерете размера на най-дългата непрекъсната група от крави, чиято сума от идентификационни номера се дели точно на 7.</p>
+                        
+                        <div class="card-actions">
+                            <a href="d/tasks/task-5.html" class="btn-lesson">Към условието &rarr;</a>
+                            <a href="d/analysis/task-5-analysis.html" class="btn-lesson btn-secondary">Към анализа &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- НОВАТА КАРТА ЗА ЗАДАЧА D6 -->
+                    <div class="item-card task-card" id="task-6">
+                        <div class="card-header">
+                            <span class="badge">Задача D6</span>
+                            <span class="read-time">Време: 1.0s | Памет: 64MB</span>
+                        </div>
+                        <h3>Кравата ми изяде домашното (USACO)</h3>
+                        <p>Намерете при колко премахнати въпроса от началото на теста ще се получи максимална средна оценка от оставащите задачи.</p>
+                        
+                        <div class="card-actions">
+                            <a href="d/tasks/task-6.html" class="btn-lesson">Към условието &rarr;</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
         </div>
 
     </main>
