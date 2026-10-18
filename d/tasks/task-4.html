@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача D4: Броене на породи - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Цветова палитра (Тема: Задачи - Синьо) */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            /* Специфични за визуализацията */
+            --cow-1: #10b981; /* Холщайн (зелено) */
+            --cow-2: #f59e0b; /* Гърнси (оранжево) */
+            --cow-3: #8b5cf6; /* Джърси (лилаво) */
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+
+        /* Примерен вход/изход */
+        .io-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Визуализация на масиви */
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .array-label {
+            width: 80px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            text-align: right;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .cell-group { display: flex; gap: 4px; }
+
+        .arr-cell {
+            width: 38px;
+            height: 38px;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            border-radius: 0.25rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .arr-cell.idx-cell {
+            height: 20px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: normal;
+        }
+        
+        .arr-cell.global-zero {
+            background: rgba(255,255,255,0.02);
+            color: #475569;
+            border-style: dashed;
+        }
+
+        /* Цветове за породите */
+        .color-h { color: var(--cow-1); }
+        .color-g { color: var(--cow-2); }
+        .color-j { color: var(--cow-3); }
+
+        .bg-h { background-color: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--text-main); }
+        .bg-g { background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: var(--text-main); }
+        .bg-j { background-color: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); color: var(--text-main); }
+
+        /* Оцветяване при заявка */
+        .highlight-r { 
+            transform: scale(1.1); 
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            border-color: var(--accent) !important;
+            color: var(--text-main) !important;
+            z-index: 10;
+        }
+        .highlight-l { 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+            border-color: var(--danger) !important;
+            color: var(--text-main) !important;
+            z-index: 10;
+        }
+
+        /* Управление */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        select {
+            background: var(--bg-primary);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .formula-display {
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            line-height: 1.8;
+        }
+
+        .res-box {
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            margin: 0 0.2rem;
+        }
+        
+        .explanation {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Задача D4: Броене на породи</h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1.0 с.</div>
+                    <div>💾 <strong>Памет:</strong> 64 MB</div>
+                    <div>🏆 <strong>Източник:</strong> USACO 2015 Silver</div>
+                </div>
+            </div>
+
+            <p>Всички <strong>N</strong> крави на фермера Джон, удобно номерирани от 1 до <strong>N</strong>, са се наредили в една редица. Всяка крава има идентификатор (ID) на породата: 1 за <strong>Холщайн</strong>, 2 за <strong>Гърнси</strong> и 3 за <strong>Джърси</strong>.</p>
+            
+            <p>Да се напише програма <code>bcount</code>, която да преброи колко крави от всяка порода се намират в определени интервали от редицата.</p>
+
+            <h2>Вход</h2>
+            <p>От първия ред на стандартния вход се въвеждат две цели числа <strong>N</strong> – броят на кравите и <strong>Q</strong> – броят на заявките.</p>
+            <p>На следващия ред се въвеждат <strong>N</strong> цели числа: 1, 2 или 3. Числата показват породата на поредната крава в редицата.</p>
+            <p>Следващите <strong>Q</strong> реда описват заявка под формата на две цели числа <strong>a</strong> и <strong>b</strong> (където <code>a &le; b</code>).</p>
+            <p><em>Всички числа са разделени с един интервал.</em></p>
+
+            <h2>Изход</h2>
+            <p>За всяка от <strong>Q</strong> заявки (a, b), програмата да отпечатва ред, съдържащ три числа, разделени с един интервал: броя на кравите от позиция <strong>a</strong> до <strong>b</strong> (включително), които са Холщайн (порода 1), Гърнси (порода 2) и Джърси (порода 3).</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <strong>N</strong> &le; 100 000</li>
+                <li>1 &le; <strong>Q</strong> &le; 100 000</li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Вход:</div>
+                    <pre>6 3
+2 1 1 3 2 1
+1 6
+3 3
+2 4</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход:</div>
+                    <pre>3 2 1
+1 0 0
+2 0 1</pre>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: 3 глобални префиксни масива</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Вижте как се формират префиксните масиви за примерния вход <code>[2, 1, 1, 3, 2, 1]</code>. 
+                    Изберете граници за заявката [a, b], за да пресметнете O(1) отговора.
+                </p>
+
+                <!-- Масиви -->
+                <div class="arrays-container">
+                    <!-- Индекси -->
+                    <div class="array-row">
+                        <div class="array-label">idx</div>
+                        <div class="cell-group">
+                            <div class="arr-cell idx-cell">0</div>
+                            <div class="arr-cell idx-cell">1</div>
+                            <div class="arr-cell idx-cell">2</div>
+                            <div class="arr-cell idx-cell">3</div>
+                            <div class="arr-cell idx-cell">4</div>
+                            <div class="arr-cell idx-cell">5</div>
+                            <div class="arr-cell idx-cell">6</div>
+                        </div>
+                    </div>
+                    <!-- Оригинален Масив -->
+                    <div class="array-row" style="margin-bottom: 0.5rem;">
+                        <div class="array-label" style="color: var(--text-main);">Редица:</div>
+                        <div class="cell-group" id="arr-main">
+                            <div class="arr-cell global-zero">-</div>
+                            <div class="arr-cell">2</div>
+                            <div class="arr-cell">1</div>
+                            <div class="arr-cell">1</div>
+                            <div class="arr-cell">3</div>
+                            <div class="arr-cell">2</div>
+                            <div class="arr-cell">1</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pref 1 -->
+                    <div class="array-row">
+                        <div class="array-label color-h">pref1[]</div>
+                        <div class="cell-group" id="arr-p1">
+                            <div class="arr-cell global-zero">0</div>
+                            <div class="arr-cell bg-h">0</div>
+                            <div class="arr-cell bg-h">1</div>
+                            <div class="arr-cell bg-h">2</div>
+                            <div class="arr-cell bg-h">2</div>
+                            <div class="arr-cell bg-h">2</div>
+                            <div class="arr-cell bg-h">3</div>
+                        </div>
+                    </div>
+                    <!-- Pref 2 -->
+                    <div class="array-row">
+                        <div class="array-label color-g">pref2[]</div>
+                        <div class="cell-group" id="arr-p2">
+                            <div class="arr-cell global-zero">0</div>
+                            <div class="arr-cell bg-g">1</div>
+                            <div class="arr-cell bg-g">1</div>
+                            <div class="arr-cell bg-g">1</div>
+                            <div class="arr-cell bg-g">1</div>
+                            <div class="arr-cell bg-g">2</div>
+                            <div class="arr-cell bg-g">2</div>
+                        </div>
+                    </div>
+                    <!-- Pref 3 -->
+                    <div class="array-row">
+                        <div class="array-label color-j">pref3[]</div>
+                        <div class="cell-group" id="arr-p3">
+                            <div class="arr-cell global-zero">0</div>
+                            <div class="arr-cell bg-j">0</div>
+                            <div class="arr-cell bg-j">0</div>
+                            <div class="arr-cell bg-j">0</div>
+                            <div class="arr-cell bg-j">1</div>
+                            <div class="arr-cell bg-j">1</div>
+                            <div class="arr-cell bg-j">1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Контроли за Заявка -->
+                <div class="controls" style="margin-top: 1.5rem;">
+                    <label style="color: var(--text-muted); font-family: monospace;">Заявка [a, b]:</label>
+                    <select id="sel-a" onchange="processQuery()">
+                        <option value="1">a = 1</option>
+                        <option value="2">a = 2</option>
+                        <option value="3">a = 3</option>
+                        <option value="4">a = 4</option>
+                        <option value="5">a = 5</option>
+                        <option value="6">a = 6</option>
+                    </select>
+                    <select id="sel-b" onchange="processQuery()">
+                        <option value="1">b = 1</option>
+                        <option value="2">b = 2</option>
+                        <option value="3">b = 3</option>
+                        <option value="4">b = 4</option>
+                        <option value="5">b = 5</option>
+                        <option value="6" selected>b = 6</option>
+                    </select>
+                </div>
+
+                <!-- Резултат и Формули -->
+                <div class="formula-display" id="formula-result">
+                    <!-- Попълва се динамично чрез JS -->
+                </div>
+                
+                <div class="explanation" id="explanation-text">
+                    Изберете граници, за да видите изчисленията.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Хардкоднати префиксни масиви базирани на примера [2, 1, 1, 3, 2, 1]
+        const P1 = [0, 0, 1, 2, 2, 2, 3];
+        const P2 = [0, 1, 1, 1, 1, 2, 2];
+        const P3 = [0, 0, 0, 0, 1, 1, 1];
+
+        function processQuery() {
+            let a = parseInt(document.getElementById('sel-a').value);
+            let b = parseInt(document.getElementById('sel-b').value);
+
+            // Автоматична корекция, ако 'a' е след 'b'
+            if (a > b) {
+                document.getElementById('sel-a').value = b;
+                a = b;
+            }
+
+            // Изчистване на стари подсветки
+            const p1Cells = document.getElementById('arr-p1').children;
+            const p2Cells = document.getElementById('arr-p2').children;
+            const p3Cells = document.getElementById('arr-p3').children;
+
+            for (let i = 0; i <= 6; i++) {
+                p1Cells[i].classList.remove('highlight-r', 'highlight-l');
+                p2Cells[i].classList.remove('highlight-r', 'highlight-l');
+                p3Cells[i].classList.remove('highlight-r', 'highlight-l');
+            }
+
+            // Добавяне на нови подсветки (Индекс b в синьо, индекс a-1 в червено)
+            p1Cells[b].classList.add('highlight-r');
+            p2Cells[b].classList.add('highlight-r');
+            p3Cells[b].classList.add('highlight-r');
+
+            p1Cells[a - 1].classList.add('highlight-l');
+            p2Cells[a - 1].classList.add('highlight-l');
+            p3Cells[a - 1].classList.add('highlight-l');
+
+            // Изчисляване на резултати
+            let res1 = P1[b] - P1[a - 1];
+            let res2 = P2[b] - P2[a - 1];
+            let res3 = P3[b] - P3[a - 1];
+
+            // Обновяване на формулния блок
+            const formulaDiv = document.getElementById('formula-result');
+            formulaDiv.innerHTML = `
+                <span style="color: #64748b;">// Формула: prefix[b] - prefix[a-1]</span><br>
+                <span class="color-h">Холщайн (1):</span> pref1[${b}] - pref1[${a-1}] ➔ ${P1[b]} - ${P1[a-1]} = <span class="res-box" style="background: rgba(16, 185, 129, 0.2); color: var(--cow-1);">${res1}</span><br>
+                <span class="color-g">Гърнси  (2):</span> pref2[${b}] - pref2[${a-1}] ➔ ${P2[b]} - ${P2[a-1]} = <span class="res-box" style="background: rgba(245, 158, 11, 0.2); color: var(--cow-2);">${res2}</span><br>
+                <span class="color-j">Джърси  (3):</span> pref3[${b}] - pref3[${a-1}] ➔ ${P3[b]} - ${P3[a-1]} = <span class="res-box" style="background: rgba(139, 92, 246, 0.2); color: var(--cow-3);">${res3}</span><br>
+                <br>
+                <span style="color: #64748b;">Изход: </span> <strong style="color: #fff; font-size:1.2rem;">${res1} ${res2} ${res3}</strong>
+            `;
+            
+            // Обновяване на обяснението
+            const expDiv = document.getElementById('explanation-text');
+            expDiv.innerHTML = `
+                <strong>O(1) Заявка:</strong> За да намерим кравите в интервала [${a}, ${b}], взимаме натрупаната сума до края (индекс ${b}) и от нея изваждаме "излишната" сума, натрупана <em>преди</em> началото на интервала (индекс ${a-1}). 
+                <br><br>Благодарение на глобалната нула на индекс 0, ако <strong>a=1</strong>, програмата коректно вади 0 и не излиза извън масива!
+            `;
+        }
+
+        // Инициализация при зареждане
+        processQuery();
+
+    </script>
+</body>
+
+</html>
