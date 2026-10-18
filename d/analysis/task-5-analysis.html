@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ D5: Поредици със суми, кратни на 7 - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #fef08a;
+            --rem-color: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.35rem; color: var(--accent); margin: 2.5rem 0 1rem 0; }
+        h3 { font-size: 1.15rem; color: var(--text-main); margin: 1.5rem 0 0.5rem 0; border-left: 3px solid var(--group-d); padding-left: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .analysis-step {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .formula {
+            display: inline-block;
+            background: var(--code-bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            border: 1px solid var(--border);
+            margin: 0 0.2rem;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Управление */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        select {
+            background: var(--bg-primary);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Визуализация на масиви */
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+            background: rgba(15, 23, 42, 0.3);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .array-label {
+            width: 100px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        .array-cells { display: flex; gap: 6px; }
+
+        .arr-cell {
+            width: 40px;
+            height: 40px;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            color: #e2e8f0;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .arr-cell .idx {
+            position: absolute;
+            bottom: -18px;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: normal;
+        }
+
+        .cell-empty { background: transparent; border-style: dashed; color: transparent; }
+        .cell-zero { background: rgba(255,255,255,0.05); color: #475569; border-style: dashed; }
+
+        /* Highlighting Logic */
+        .cell-active { background: rgba(245, 158, 11, 0.2); border-color: var(--warning); color: var(--warning); }
+        .cell-query-r { background: rgba(59, 130, 246, 0.2); border-color: var(--accent); color: var(--accent); transform: scale(1.1); z-index:10; }
+        .cell-query-l { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: var(--danger); transform: scale(1.1); z-index:10; }
+        .cell-rem { color: #d8b4fe; }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-top: 1rem;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Анализ на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Анализ D5: Поредици със суми, кратни на 7</h1>
+                <div class="task-meta">
+                    <div>Школа МГ</div>
+                    <div>Тема: Префиксни суми & Модулна аритметика</div>
+                </div>
+            </div>
+
+            <h2>Дадено</h2>
+            <p>Първият ред на входа въвежда едно цяло число N – брой крави. Следват N цели числа, представляващи ID-тата на кравите. Числата са разделени с един интервал.</p>
+
+            <h2>Търси се</h2>
+            <p>На единствения ред на изхода се отпечатва едно цяло число – броят на кравите в най-голямата последователна група, чиято сума от ID-та е кратна на 7. Ако такава група не съществува, програмата да отпечатва 0.</p>
+
+            <h2>Анализ</h2>
+            
+            <h3>Математически модел</h3>
+            <div class="analysis-step">
+                <strong>Основно правило:</strong> Сумата в интервала от индекс <code>L</code> до индекс <code>R</code> се изчислява чрез изваждане на префиксните суми:<br>
+                <span class="formula">prefix[R] - prefix[L-1]</span>
+            </div>
+            <div class="analysis-step">
+                <strong>Условие за деление:</strong> Искаме тази сума да се дели точно на 7:<br>
+                <span class="formula">(prefix[R] - prefix[L-1]) % 7 == 0</span>
+            </div>
+            <div class="analysis-step" style="border-color: var(--success); background: rgba(16, 185, 129, 0.05);">
+                <strong>Ключов извод:</strong> Според правилата на модулната аритметика, разликата на две числа се дели на 7 тогава и само тогава, когато двете числа дават един и същ остатък при деление на 7. Тоест търсим места, където:<br>
+                <span class="formula" style="color: var(--success); font-weight: bold;">prefix[R] % 7 == prefix[L-1] % 7</span>
+            </div>
+
+            <h3>Алгоритъм за време O(N)</h3>
+            <p>Ако се използват вложени цикли, за да се проверяват всички възможни интервали, решението ще бъде O(N<sup>2</sup>) и ще отнеме твърде много време (50 000 &times; 50 000 = 2,5 &middot; 10<sup>9</sup> операции). С префиксни суми сложността се свежда до O(N).</p>
+
+            <ul style="font-size: 1.05rem; line-height: 1.8;">
+                <li><strong>Изчисляване на остатъците:</strong> Обхождаме редицата от крави и натрупваме префиксната сума. На всяка стъпка обаче ни интересува само какъв е остатъкът на тази сума при деление на 7 (винаги ще е число от 0 до 6).</li>
+                <li><strong>Запомняне на първото срещане:</strong> Създаваме си малък масив с размер 7, в който записваме на кой индекс за първи път сме срещнали всеки един от остатъците (0, 1, 2, 3, 4, 5, 6).</li>
+                <li><strong>Намиране на най-дългия интервал:</strong> Когато по-късно в редицата отново получим същия остатък на индекс <code>i</code>, знаем, че сумата между първото срещане на този остатък и текущия индекс <code>i</code> се дели на 7. Разликата между двата индекса ни дава броя на кравите.</li>
+                <li>Търсим максималната възможна разлика между последното и първото срещане за всеки от 7-те възможни остатъка.</li>
+            </ul>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Визуализация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: Защо работи трикът с остатъците?</div>
+                <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1.5rem;">
+                    Доказателство на математическия модел. Изберете граници за интервала <code>[L, R]</code> върху примерните данни, за да проверите дали сумата в него се дели на 7.
+                </p>
+
+                <!-- Контроли -->
+                <div class="controls">
+                    <div class="controls-group">
+                        <label style="color:var(--text-muted);">Интервал [L, R]:</label>
+                        <select id="sel-l" onchange="processQuery()">
+                            <option value="1">L = 1</option>
+                            <option value="2">L = 2</option>
+                            <option value="3">L = 3</option>
+                            <option value="4">L = 4</option>
+                            <option value="5">L = 5</option>
+                            <option value="6">L = 6</option>
+                            <option value="7">L = 7</option>
+                        </select>
+                        <select id="sel-r" onchange="processQuery()">
+                            <option value="1">R = 1</option>
+                            <option value="2">R = 2</option>
+                            <option value="3">R = 3</option>
+                            <option value="4">R = 4</option>
+                            <option value="5">R = 5</option>
+                            <option value="6" selected>R = 6</option>
+                            <option value="7">R = 7</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Масиви -->
+                <div class="arrays-container">
+                    <div class="array-row">
+                        <div class="array-label">idx</div>
+                        <div class="array-cells" id="arr-idx">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                    <div class="array-row" style="margin-bottom: 0.5rem;">
+                        <div class="array-label" style="color: #fff;">arr[]</div>
+                        <div class="array-cells" id="arr-main">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                    <div class="array-row">
+                        <div class="array-label" style="color: var(--accent);">prefix[]</div>
+                        <div class="array-cells" id="arr-pref">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                    <div class="array-row">
+                        <div class="array-label" style="color: var(--rem-color);">prefix % 7</div>
+                        <div class="array-cells" id="arr-rem">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок с логиката -->
+                <div class="logic-panel" id="logic-display">
+                    <!-- JS Generated -->
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Входни данни за симулатора (Примерът от задачата)
+        const A = [0, 3, 5, 1, 6, 2, 14, 10]; 
+        const P = [0, 3, 8, 9, 15, 17, 31, 41];
+        const R = [0, 3, 1, 2, 1, 3, 3, 6];
+        const N = 7;
+
+        function buildArrays() {
+            const rowIdx = document.getElementById('arr-idx');
+            const rowMain = document.getElementById('arr-main');
+            const rowPref = document.getElementById('arr-pref');
+            const rowRem = document.getElementById('arr-rem');
+
+            for (let i = 0; i <= N; i++) {
+                // IDX
+                let cIdx = document.createElement('div');
+                cIdx.className = 'arr-cell idx-cell';
+                cIdx.style.height = '20px';
+                cIdx.style.background = 'transparent';
+                cIdx.style.border = 'none';
+                cIdx.textContent = i;
+                rowIdx.appendChild(cIdx);
+
+                // MAIN
+                let cMain = document.createElement('div');
+                cMain.className = `arr-cell ${i === 0 ? 'global-zero' : ''}`;
+                cMain.id = `m-${i}`;
+                cMain.textContent = i === 0 ? '-' : A[i];
+                rowMain.appendChild(cMain);
+
+                // PREF
+                let cPref = document.createElement('div');
+                cPref.className = `arr-cell ${i === 0 ? 'global-zero' : ''}`;
+                cPref.id = `p-${i}`;
+                cPref.textContent = P[i];
+                rowPref.appendChild(cPref);
+
+                // REM
+                let cRem = document.createElement('div');
+                cRem.className = `arr-cell cell-rem ${i === 0 ? 'global-zero' : ''}`;
+                cRem.id = `r-${i}`;
+                cRem.textContent = R[i];
+                rowRem.appendChild(cRem);
+            }
+        }
+
+        function processQuery() {
+            let valL = parseInt(document.getElementById('sel-l').value);
+            let valR = parseInt(document.getElementById('sel-r').value);
+
+            if (valL > valR) {
+                document.getElementById('sel-l').value = valR;
+                valL = valR;
+            }
+
+            // Изчистване на стари класове
+            for(let i=0; i<=N; i++) {
+                document.getElementById(`m-${i}`).classList.remove('cell-active');
+                document.getElementById(`p-${i}`).classList.remove('cell-query-l', 'cell-query-r');
+                document.getElementById(`r-${i}`).classList.remove('cell-query-l', 'cell-query-r');
+            }
+
+            // Оцветяване на интервала в масива
+            for(let i=valL; i<=valR; i++) {
+                document.getElementById(`m-${i}`).classList.add('cell-active');
+            }
+
+            // Оцветяване на префикси и остатъци
+            document.getElementById(`p-${valR}`).classList.add('cell-query-r');
+            document.getElementById(`p-${valL-1}`).classList.add('cell-query-l');
+            
+            document.getElementById(`r-${valR}`).classList.add('cell-query-r');
+            document.getElementById(`r-${valL-1}`).classList.add('cell-query-l');
+
+            // Математика
+            let sum = P[valR] - P[valL-1];
+            let remS = sum % 7;
+            let isDiv = (remS === 0);
+            
+            let remR = R[valR];
+            let remL = R[valL-1];
+
+            // Генериране на текста в логическия панел
+            const logicDiv = document.getElementById('logic-display');
+            logicDiv.innerHTML = `
+                <span style="color:var(--text-muted);">// Анализ на интервала [${valL}, ${valR}]</span><br>
+                <strong>1. Сума на подредицата:</strong><br>
+                S = prefix[${valR}] - prefix[${valL-1}]<br>
+                S = <span style="color:var(--accent); font-weight:bold;">${P[valR]}</span> - <span style="color:var(--danger); font-weight:bold;">${P[valL-1]}</span> = <strong style="color:var(--text-main); font-size:1.15rem;">${sum}</strong><br><br>
+
+                <strong>2. Проверка за деление на 7:</strong><br>
+                ${sum} % 7 = <strong style="${isDiv ? 'color:var(--success);' : 'color:var(--danger);'}">${remS}</strong><br><br>
+
+                <strong>3. Трикът с остатъците:</strong><br>
+                Остатък в края: prefix[${valR}] % 7 = <strong style="color:var(--rem-color);">${remR}</strong><br>
+                Остатък преди началото: prefix[${valL-1}] % 7 = <strong style="color:var(--rem-color);">${remL}</strong><br><br>
+
+                <div style="background: ${isDiv ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'}; padding: 12px; border-left: 4px solid ${isDiv ? 'var(--success)' : 'var(--danger)'}; border-radius: 4px;">
+                    ${isDiv 
+                        ? `✅ Остатъците <strong>съвпадат</strong> (<span style="color:var(--rem-color);">${remR} == ${remL}</span>)!<br>Когато извадим две числа с еднакъв остатък, разликата им се дели точно на 7. Следователно сумата ${sum} е валидна.`
+                        : `❌ Остатъците <strong>НЕ съвпадат</strong> (<span style="color:var(--rem-color);">${remR} != ${remL}</span>)!<br>Следователно сумата ${sum} НЕ се дели на 7.`}
+                </div>
+            `;
+        }
+
+        // Инициализация
+        buildArrays();
+        processQuery(); // Run once for default values
+    </script>
+</body>
+
+</html>

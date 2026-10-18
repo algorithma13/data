@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ D4: Броене на породи - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            var(--bg-primary): #0f172a;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --cow-1: #10b981; /* Холщайн */
+            --cow-2: #f59e0b; /* Гърнси */
+            --cow-3: #8b5cf6; /* Джърси */
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        .analysis-step {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .kw { color: #569cd6; }
+        .typ { color: #4ec9b0; }
+        .num { color: #b5cea8; }
+        .com { color: #6a9955; }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Визуализация на масиви */
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .array-label {
+            width: 80px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            text-align: right;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .cell-group { display: flex; gap: 4px; }
+
+        .arr-cell {
+            width: 38px;
+            height: 38px;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            border-radius: 0.25rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .arr-cell.idx-cell {
+            height: 20px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: normal;
+        }
+        
+        .arr-cell.global-zero {
+            background: rgba(255,255,255,0.02);
+            color: #475569;
+            border-style: dashed;
+        }
+
+        .color-h { color: var(--cow-1); }
+        .color-g { color: var(--cow-2); }
+        .color-j { color: var(--cow-3); }
+
+        .bg-h { background-color: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--text-main); }
+        .bg-g { background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: var(--text-main); }
+        .bg-j { background-color: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); color: var(--text-main); }
+
+        .highlight-active { 
+            transform: scale(1.15); 
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+            border-color: var(--cow-2) !important;
+            color: #fff !important;
+            z-index: 10;
+        }
+
+        /* Управление */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+        }
+
+        button {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-next { background: var(--accent); color: white; }
+        .btn-next:hover { background: var(--accent-hover); }
+        .btn-reset { background: #64748b; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 2;
+        }
+
+        .bool-true { color: #10b981; font-weight: bold; }
+        .bool-false { color: #ef4444; }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Анализ на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Анализ D4: Броене на породи</h1>
+                <div class="task-meta">
+                    <div>Школа МГ</div>
+                    <div>Тема: Префиксни суми</div>
+                </div>
+            </div>
+
+            <p>За да решим задачата оптимално и да избегнем <em>Time Limit Exceeded</em>, използваме техниката с префиксни суми, но я адаптираме за 3 отделни породи.</p>
+
+            <div class="analysis-step">
+                <strong>1. Дефинираме три глобални едномерни префиксни масива.</strong><br>
+                Глобалните масиви автоматично се запълват с <code>0</code>, което ни спасява от грешки при заявки от позиция 1.
+            </div>
+
+            <div class="analysis-step">
+                <strong>2. Копираме натрупаната сума.</strong><br>
+                За всяка позиция първо презаписваме стойността от предишната позиция (от индекс <code>i-1</code>).
+            </div>
+
+            <div class="analysis-step">
+                <strong>3. Елегантно увеличаване чрез булеви изрази.</strong><br>
+                Изразите <code>(curr == 1)</code>, <code>(curr == 2)</code> и <code>(curr == 3)</code> се преобразуват автоматично в число: дават <code>1</code>, когато е истина, и <code>0</code>, когато е лъжа. Така увеличаваме само точния масив.
+            </div>
+
+            <div class="analysis-step">
+                <strong>4. Отговаряме на всяка заявка.</strong><br>
+                Използваме формулата за префиксни суми за всеки масив поотделно.
+            </div>
+
+            <h2>Ключов фрагмент от кода</h2>
+            <pre><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i <= n; i++) {
+    <span class="kw">int</span> curr;
+    cin >> curr;
+
+    <span class="com">// Копираме натрупаната сума от предишната позиция</span>
+    pref1[i] = pref1[i - <span class="num">1</span>];
+    pref2[i] = pref2[i - <span class="num">1</span>];
+    pref3[i] = pref3[i - <span class="num">1</span>];
+
+    <span class="com">// Булевите изрази дават 1 (true) или 0 (false)</span>
+    pref1[i] += (curr == <span class="num">1</span>);
+    pref2[i] += (curr == <span class="num">2</span>);
+    pref3[i] += (curr == <span class="num">3</span>);
+}</pre>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: Преобразуване на булев израз</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Проследете как компютърът превръща <code>(curr == X)</code> в <code>0</code> или <code>1</code>, за да обнови трите префиксни масива с минимален код.
+                </p>
+
+                <!-- Контроли за Стъпки -->
+                <div class="controls">
+                    <button id="btn-next" class="btn-next" onclick="nextStep()">Следваща крава (i++)</button>
+                    <button id="btn-reset" class="btn-reset" onclick="resetSim()">Рестарт</button>
+                    <span id="step-counter" style="margin-left: auto; font-family: monospace; color: var(--accent);">i = 0 / 6</span>
+                </div>
+
+                <!-- Масиви -->
+                <div class="arrays-container">
+                    <!-- Индекси -->
+                    <div class="array-row">
+                        <div class="array-label">idx</div>
+                        <div class="cell-group" id="arr-idx">
+                            <div class="arr-cell idx-cell">0</div><div class="arr-cell idx-cell">1</div>
+                            <div class="arr-cell idx-cell">2</div><div class="arr-cell idx-cell">3</div>
+                            <div class="arr-cell idx-cell">4</div><div class="arr-cell idx-cell">5</div>
+                            <div class="arr-cell idx-cell">6</div>
+                        </div>
+                    </div>
+                    <!-- Оригинален Масив -->
+                    <div class="array-row" style="margin-bottom: 0.5rem;">
+                        <div class="array-label" style="color: var(--text-main);">curr:</div>
+                        <div class="cell-group" id="arr-main">
+                            <div class="arr-cell global-zero">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pref 1 -->
+                    <div class="array-row">
+                        <div class="array-label color-h">pref1[]</div>
+                        <div class="cell-group" id="arr-p1">
+                            <div class="arr-cell global-zero">0</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                        </div>
+                    </div>
+                    <!-- Pref 2 -->
+                    <div class="array-row">
+                        <div class="array-label color-g">pref2[]</div>
+                        <div class="cell-group" id="arr-p2">
+                            <div class="arr-cell global-zero">0</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                        </div>
+                    </div>
+                    <!-- Pref 3 -->
+                    <div class="array-row">
+                        <div class="array-label color-j">pref3[]</div>
+                        <div class="cell-group" id="arr-p3">
+                            <div class="arr-cell global-zero">0</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                            <div class="arr-cell">-</div><div class="arr-cell">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок с логиката -->
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Следваща крава", за да започнете симулацията.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Входни данни за симулацията
+        const inputData = [0, 2, 1, 1, 3, 2, 1]; // индекс 0 е празен
+        
+        // Текущо състояние
+        let pref1 = [0, 0, 0, 0, 0, 0, 0];
+        let pref2 = [0, 0, 0, 0, 0, 0, 0];
+        let pref3 = [0, 0, 0, 0, 0, 0, 0];
+        let i = 0;
+        const N = 6;
+
+        function updateUI() {
+            // Обновяване на клетките
+            const mainCells = document.getElementById('arr-main').children;
+            const p1Cells = document.getElementById('arr-p1').children;
+            const p2Cells = document.getElementById('arr-p2').children;
+            const p3Cells = document.getElementById('arr-p3').children;
+
+            // Изчистване на стари подсветки
+            for (let j = 1; j <= N; j++) {
+                mainCells[j].classList.remove('highlight-active');
+            }
+
+            // Рендериране на стойностите до стъпка i
+            for (let j = 1; j <= i; j++) {
+                mainCells[j].textContent = inputData[j];
+                
+                p1Cells[j].textContent = pref1[j];
+                p1Cells[j].classList.add('bg-h');
+                
+                p2Cells[j].textContent = pref2[j];
+                p2Cells[j].classList.add('bg-g');
+                
+                p3Cells[j].textContent = pref3[j];
+                p3Cells[j].classList.add('bg-j');
+            }
+
+            if (i > 0 && i <= N) {
+                // Подсветка на текущата стъпка
+                mainCells[i].classList.add('highlight-active');
+                
+                let curr = inputData[i];
+                let b1 = (curr === 1);
+                let b2 = (curr === 2);
+                let b3 = (curr === 3);
+
+                // Форматиране на логиката в панела
+                document.getElementById('logic-display').innerHTML = `
+<span style="color:var(--text-muted);">// Стъпка i = ${i}, прочетена порода: <strong>curr = ${curr}</strong></span><br>
+<br>
+<span class="color-h">pref1[${i}]</span> += (curr == 1) ➔ (${curr} == 1) е <span class="${b1 ? 'bool-true' : 'bool-false'}">${b1}</span> ➔ добавяме ${b1 ? 1 : 0}<br>
+<span class="color-g">pref2[${i}]</span> += (curr == 2) ➔ (${curr} == 2) е <span class="${b2 ? 'bool-true' : 'bool-false'}">${b2}</span> ➔ добавяме ${b2 ? 1 : 0}<br>
+<span class="color-j">pref3[${i}]</span> += (curr == 3) ➔ (${curr} == 3) е <span class="${b3 ? 'bool-true' : 'bool-false'}">${b3}</span> ➔ добавяме ${b3 ? 1 : 0}<br>
+                `;
+            }
+
+            document.getElementById('step-counter').textContent = `i = ${i} / ${N}`;
+
+            if (i === N) {
+                document.getElementById('btn-next').disabled = true;
+                document.getElementById('logic-display').innerHTML += `<br><strong style="color:var(--accent);">Предварителната обработка приключи!</strong>`;
+            }
+        }
+
+        function nextStep() {
+            if (i < N) {
+                i++;
+                let curr = inputData[i];
+                
+                // Изчисляване според логиката
+                pref1[i] = pref1[i-1] + (curr === 1 ? 1 : 0);
+                pref2[i] = pref2[i-1] + (curr === 2 ? 1 : 0);
+                pref3[i] = pref3[i-1] + (curr === 3 ? 1 : 0);
+                
+                updateUI();
+            }
+        }
+
+        function resetSim() {
+            i = 0;
+            pref1 = [0, 0, 0, 0, 0, 0, 0];
+            pref2 = [0, 0, 0, 0, 0, 0, 0];
+            pref3 = [0, 0, 0, 0, 0, 0, 0];
+            
+            // Връщане на тиретата
+            const mainCells = document.getElementById('arr-main').children;
+            const p1Cells = document.getElementById('arr-p1').children;
+            const p2Cells = document.getElementById('arr-p2').children;
+            const p3Cells = document.getElementById('arr-p3').children;
+            
+            for (let j = 1; j <= N; j++) {
+                mainCells[j].textContent = '-';
+                mainCells[j].classList.remove('highlight-active');
+                
+                p1Cells[j].textContent = '-';
+                p1Cells[j].classList.remove('bg-h');
+                
+                p2Cells[j].textContent = '-';
+                p2Cells[j].classList.remove('bg-g');
+                
+                p3Cells[j].textContent = '-';
+                p3Cells[j].classList.remove('bg-j');
+            }
+
+            document.getElementById('btn-next').disabled = false;
+            document.getElementById('logic-display').innerHTML = `Натиснете "Следваща крава", за да започнете симулацията.`;
+            document.getElementById('step-counter').textContent = `i = 0 / ${N}`;
+        }
+
+        // Инициализация
+        resetSim();
+    </script>
+</body>
+
+</html>
