@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 5: Сложност и Префиксни суми - Algorithma</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            --error: #ef4444;
+            --blue: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* Лого в стила на началната страница (твърдо синьо) */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--accent); /* Оранжево за връзката назад */
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+            font-weight: 600;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* Двупанелен изглед с линия точно по средата */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; /* Точно 50% */
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border); /* Разделителната линия */
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1; /* Точно 50% */
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        /* Оранжево заглавие */
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 1.2rem; color: #38bdf8; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        table.logic-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        table.logic-table th, table.logic-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.logic-table th { background-color: rgba(15, 23, 42, 0.8); color: var(--text-main); }
+        table.logic-table td:nth-child(2) { color: var(--accent); font-weight: bold; }
+
+        .note-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .note-box.danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left-color: var(--error);
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .vis-title::before { content: '⚡'; }
+
+        /* CPU Predictor Styles */
+        .cpu-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .cpu-btn {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .cpu-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+        .slider-container { margin-bottom: 1.5rem; }
+        .slider-container input { width: 100%; margin-top: 0.5rem; accent-color: var(--accent); }
+        
+        .progress-bar-bg {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            height: 25px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent);
+            transition: width 0.3s, background-color 0.3s;
+        }
+        .progress-bar-fill.tle { background-color: var(--error); }
+        .progress-limit {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            border-left: 2px dashed #fff;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Prefix Sum Simulator Styles */
+        .array-vis-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .array-label {
+            width: 30px;
+            font-weight: bold;
+            color: var(--text-muted);
+            font-family: monospace;
+            text-align: right;
+        }
+        .cell-group {
+            display: flex;
+            gap: 2px;
+        }
+        .arr-cell {
+            width: 40px;
+            height: 40px;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            border-radius: 0.25rem;
+            position: relative;
+        }
+        .arr-cell.idx-cell {
+            height: 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .arr-cell.highlight-r { border-color: var(--blue); background-color: rgba(59, 130, 246, 0.2); color: var(--blue); }
+        .arr-cell.highlight-l { border-color: var(--error); background-color: rgba(239, 68, 68, 0.2); color: var(--error); }
+        .arr-cell.in-range { background-color: rgba(245, 158, 11, 0.2); border-color: var(--accent); color: var(--accent); }
+
+        .range-selectors {
+            display: flex;
+            justify-content: space-around;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .range-selectors select {
+            background: var(--bg-primary);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+        .formula-display {
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.2rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ (Учебник) -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Как да не „гръмнем“ по време? Префиксни суми</h1>
+
+                <h2>1. Сложност и предсказване скоростта на програма</h2>
+                <p>Ако сме готвачи и искаме да нарежем краставици, сложността (Big O нотация) показва как се променя времето за рязане, ако шефът донесе още един камион с краставици. Тук N е броят на краставиците.</p>
+
+                <ul>
+                    <li><strong>Константна сложност O(1) (Моментално):</strong> Действието отнема едно и също време и няма значение колко краставици има (например: дай ми първата краставица от кашона).</li>
+                    <li><strong>Линейна сложност O(N) (Пропорционално):</strong> Времето расте правопропорционално на броя на краставиците (например: нарежи всяка краставица в кашона).</li>
+                    <li><strong>Квадратична сложност O(N²):</strong> За всяка краставица, която хванем, правим нещо с всички останали. Времето расте главоломно.</li>
+                    <li><strong>Логаритмична сложност O(log N):</strong> Супер бързо. Случва се, когато на всяка стъпка изхвърлим половината от проблема. Аналогично е на търсене на дума в речник: отваряме по средата, виждаме накъде да търсим и игнорираме половината книга. Примери са двоично търсене, set, map.</li>
+                </ul>
+
+                <h2>2. Границата: Правилото на 1-та секунда</h2>
+                <p>В състезателното програмиране лимитът за време обикновено е 1 секунда. Един модерен процесор може да направи приблизително 100 000 000 (10⁸) прости операции за това време.</p>
+                
+                <table class="logic-table">
+                    <thead>
+                        <tr>
+                            <th>Ако N е до…</th>
+                            <th>Сложността ТРЯБВА да е…</th>
+                            <th>Пример за алгоритъм</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>20</td>
+                            <td>O(2^N), O(N!)</td>
+                            <td>Пълно изчерпване (Backtracking)</td>
+                        </tr>
+                        <tr>
+                            <td>2 000</td>
+                            <td>O(N²)</td>
+                            <td>Вложени цикли</td>
+                        </tr>
+                        <tr>
+                            <td>100 000 (10⁵) или 1 000 000 (10⁶)</td>
+                            <td>O(N), O(N log N)</td>
+                            <td>Един цикъл, сортиране</td>
+                        </tr>
+                        <tr>
+                            <td>> 10⁹</td>
+                            <td>O(log N), O(1)</td>
+                            <td>Формула, Binary Search</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="note-box danger">
+                    <strong>Пример за гарантирано TLE:</strong> Даден е масив с N = 100 000 числа и използваме решение с два вложени цикъла, което има сложност O(N²). Сметката показва 100 000 × 100 000 = 10 000 000 000 (10 милиарда) операции. При лимит от 100 милиона операции, програмата ще работи около 100 секунди и ще „гръмне“!
+                </div>
+
+                <h2>3. Префиксна сума (Prefix Sum)</h2>
+                <h3>Проблемът: Сума в интервал (RSQ)</h3>
+                <p>Имаме масив с N цени на стоки. Шефът пита Q пъти: „Колко е сумата на стоките от индекс L до индекс R?“ Ограниченията са N до 100 000 и Q до 100 000.</p>
+                <p><strong>Наивен подход:</strong> За всеки въпрос пускаме цикъл от L до R. Това води до сложност O(Q × N). При 10⁵ × 10⁵ получаваме 10¹⁰ операции – гарантирано TLE!</p>
+
+                <h3>Умният начин: Предварителна обработка</h3>
+                <p>Вместо да смятаме сумата всеки път, предварително си подготвяме „карта“. Създаваме нов масив <code>P</code>, където <code>P[i]</code> е сумата на всички числа от началото до позиция i.</p>
+                
+                <div class="note-box">
+                    <strong>Магическата формула:</strong> <br>
+                    <code>Сума(L, R) = P[R] - P[L - 1]</code>
+                </div>
+                
+                <p><strong>Защо работи?</strong> <code>P[R]</code> е сумата на всичко от началото до края на нашия интервал. <code>P[L - 1]</code> е сумата на всичко ПРЕДИ нашия интервал (ненужното). Като извадим ненужното, остава само това, което търсим. Отговорът се получава с едно изваждане – O(1)!</p>
+
+                <p><strong>Пример:</strong> Търсим сумата от индекс 1 до 3 за числата (20, 10, 5). <code>P[3] = 45</code>, <code>P[0] = 10</code> (сумата, която не ни трябва). Изчисляваме 45 - 10 = 35.</p>
+
+                <h3>Реализация и приложения</h3>
+                <p>В кода използваме 1-базирано индексиране, за да може <code>P[0]</code> да остане 0 и формулата да работи без проблеми. Задължително ползваме <code>long long</code>, защото сумите могат да станат огромни. Всяка нова сума е старата плюс текущия елемент.</p>
+                <p>Освен за Range Sum Query, префиксните суми се използват за 2D масиви (сума в правоъгълник) и за броене на свойства (например: колко четни числа има в интервал, чрез префиксни суми от 1-ци и 0-ли).</p>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel">
+
+            <!-- Визуализатор 1: CPU TLE Предиктор -->
+            <div class="vis-card">
+                <div class="vis-title">CPU Предиктор: Ще гръмне ли по време?</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Изберете алгоритмична сложност и плъзнете N, за да видите дали операциите надвишават бюджета за 1 секунда (100 млн.).
+                </p>
+
+                <div class="cpu-controls">
+                    <button class="cpu-btn" id="btn-o1" onclick="setComplexity('o1')">O(1)</button>
+                    <button class="cpu-btn" id="btn-ologn" onclick="setComplexity('ologn')">O(log N)</button>
+                    <button class="cpu-btn" id="btn-on" onclick="setComplexity('on')">O(N)</button>
+                    <button class="cpu-btn active" id="btn-on2" onclick="setComplexity('on2')">O(N²)</button>
+                </div>
+
+                <div class="slider-container">
+                    <label style="color: var(--text-muted); font-family: monospace;">Размер на входа (N): <span id="n-value" style="color: var(--text-main); font-weight: bold;">100000</span></label>
+                    <input type="range" id="n-slider" min="1" max="200000" value="100000" oninput="calculateOps()">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">
+                    <span>0</span>
+                    <span>Лимит 1s (10⁸)</span>
+                    <span>&infin;</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-limit"></div>
+                    <div class="progress-bar-fill" id="cpu-fill"></div>
+                </div>
+
+                <div id="cpu-result" style="text-align: center; margin-top: 1rem; font-family: monospace; font-size: 1.1rem;">
+                    Операции: <span id="ops-count" style="font-weight: bold; color: var(--error);">10000000000</span><br>
+                    <span id="tle-status" style="color: var(--error); font-weight: bold; font-size: 1.5rem; display: block; margin-top: 0.5rem;">ГАРАНТИРАНО TLE!</span>
+                </div>
+            </div>
+
+            <!-- Визуализатор 2: Префиксни суми -->
+            <div class="vis-card">
+                <div class="vis-title">Симулатор: Префиксни суми O(1)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                    Изберете интервал [L, R] върху 1-индексирания масив и вижте как магията <code>P[R] - P[L-1]</code> изчислява сумата мигновено.
+                </p>
+
+                <div class="array-vis-container">
+                    <div class="array-row">
+                        <div class="array-label">idx</div>
+                        <div class="cell-group">
+                            <div class="arr-cell idx-cell">0</div>
+                            <div class="arr-cell idx-cell">1</div>
+                            <div class="arr-cell idx-cell">2</div>
+                            <div class="arr-cell idx-cell">3</div>
+                            <div class="arr-cell idx-cell">4</div>
+                            <div class="arr-cell idx-cell">5</div>
+                        </div>
+                    </div>
+                    <div class="array-row">
+                        <div class="array-label" style="color: var(--text-main);">A</div>
+                        <div class="cell-group" id="arr-a-cells">
+                            <div class="arr-cell" style="opacity: 0.3;">-</div>
+                            <div class="arr-cell">10</div>
+                            <div class="arr-cell">20</div>
+                            <div class="arr-cell">10</div>
+                            <div class="arr-cell">5</div>
+                            <div class="arr-cell">15</div>
+                        </div>
+                    </div>
+                    <div class="array-row" style="margin-top: 0.5rem;">
+                        <div class="array-label" style="color: var(--accent);">P</div>
+                        <div class="cell-group" id="arr-p-cells">
+                            <div class="arr-cell">0</div>
+                            <div class="arr-cell">10</div>
+                            <div class="arr-cell">30</div>
+                            <div class="arr-cell">40</div>
+                            <div class="arr-cell">45</div>
+                            <div class="arr-cell">60</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="range-selectors">
+                    <div>
+                        <label style="color: var(--text-muted); font-family: monospace;">От индекс (L):</label>
+                        <select id="sel-l" onchange="updatePrefixSim()">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="color: var(--text-muted); font-family: monospace;">До индекс (R):</label>
+                        <select id="sel-r" onchange="updatePrefixSim()">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3" selected>3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="formula-display" id="prefix-formula">
+                    P[3] - P[0] = 40 - 0 = 40
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // --- 1. CPU TLE Predictor Logic ---
+        let currentComp = 'on2';
+
+        function setComplexity(comp) {
+            currentComp = comp;
+            document.querySelectorAll('.cpu-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + comp).classList.add('active');
+            calculateOps();
+        }
+
+        function formatNumber(num) {
+            if (num > 1000000000000) return "Много (> 1 Трилион)";
+            return num.toLocaleString('en-US').replace(/,/g, ' ');
+        }
+
+        function calculateOps() {
+            const n = parseInt(document.getElementById('n-slider').value);
+            document.getElementById('n-value').innerText = formatNumber(n);
+
+            let ops = 0;
+            if (currentComp === 'o1') ops = 1;
+            else if (currentComp === 'ologn') ops = Math.ceil(Math.log2(n));
+            else if (currentComp === 'on') ops = n;
+            else if (currentComp === 'on2') ops = n * n;
+
+            const limit = 100000000; // 10^8
+            document.getElementById('ops-count').innerText = formatNumber(ops);
+
+            const fillBar = document.getElementById('cpu-fill');
+            const statusText = document.getElementById('tle-status');
+            const opsText = document.getElementById('ops-count');
+
+            // Visual percentage mapped nicely (50% is the limit)
+            let widthPct = (ops / limit) * 50; 
+            if (widthPct > 100) widthPct = 100;
+
+            fillBar.style.width = widthPct + '%';
+
+            if (ops > limit) {
+                fillBar.classList.add('tle');
+                statusText.innerText = "ГАРАНТИРАНО TLE!";
+                statusText.style.color = "var(--error)";
+                opsText.style.color = "var(--error)";
+            } else {
+                fillBar.classList.remove('tle');
+                statusText.innerText = "OK (Влиза в 1 секунда)";
+                statusText.style.color = "var(--accent)";
+                opsText.style.color = "var(--accent)";
+            }
+        }
+
+
+        // --- 2. Prefix Sums Simulator Logic ---
+        const P = [0, 10, 30, 40, 45, 60];
+
+        function updatePrefixSim() {
+            let l = parseInt(document.getElementById('sel-l').value);
+            let r = parseInt(document.getElementById('sel-r').value);
+
+            // Fix inversion
+            if (l > r) {
+                document.getElementById('sel-l').value = r;
+                l = r;
+            }
+
+            // Reset classes
+            const aCells = document.getElementById('arr-a-cells').children;
+            const pCells = document.getElementById('arr-p-cells').children;
+
+            for (let i = 1; i <= 5; i++) {
+                aCells[i].classList.remove('in-range');
+                pCells[i].classList.remove('highlight-r', 'highlight-l');
+            }
+            pCells[0].classList.remove('highlight-l');
+
+            // Apply Highlights
+            for (let i = l; i <= r; i++) {
+                aCells[i].classList.add('in-range');
+            }
+
+            pCells[r].classList.add('highlight-r');
+            pCells[l - 1].classList.add('highlight-l');
+
+            // Update Formula Text
+            const formulaDiv = document.getElementById('prefix-formula');
+            const targetSum = P[r] - P[l - 1];
+            
+            formulaDiv.innerHTML = `
+                <span style="color:var(--text-muted);">P[R] - P[L-1]</span> <br>
+                <span style="color:var(--blue); font-weight:bold;">P[${r}]</span> - 
+                <span style="color:var(--error); font-weight:bold;">P[${l-1}]</span> 
+                = ${P[r]} - ${P[l-1]} = 
+                <span style="color:var(--accent); font-weight:bold; font-size: 1.5rem;">${targetSum}</span>
+            `;
+        }
+
+        // Initialize both
+        calculateOps();
+        updatePrefixSim();
+
+    </script>
+</body>
+
+</html>
