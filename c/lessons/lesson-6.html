@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 6: Двоично търсене по отговора</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --bool-f: #ef4444; /* Червено за False */
+            --bool-t: #10b981; /* Зелено за True */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: #3b82f6; } 
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* Двупанелен изглед */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1; 
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Стилизиране на текста (Ляв панел) */
+        .lesson-section {
+            margin-bottom: 4rem;
+        }
+
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        h2 { font-size: 1.5rem; color: var(--text-main); margin-bottom: 1rem; margin-top: 2rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 1.2rem; color: #60a5fa; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* Премахване на отстоянието за code в pre, за да не се избутва първият ред */
+        pre code {
+            padding: 0;
+            background-color: transparent;
+            color: inherit;
+        }
+
+        .kw { color: #569cd6; }
+        .typ { color: #4ec9b0; }
+        .num { color: #b5cea8; }
+        .com { color: #6a9955; }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-left: 4px solid var(--accent);
+            padding: 1.2rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .note-box h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Интерактивни визуализации (Десен панел) */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 0.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+        button:disabled { background-color: var(--border); cursor: not-allowed; color: var(--text-muted); }
+
+        /* Симулатор на масиви */
+        .array-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            justify-content: center;
+        }
+
+        .array-label {
+            width: 80px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            text-align: right;
+            padding-right: 15px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .cell-group {
+            display: flex;
+            gap: 8px;
+            position: relative;
+        }
+
+        .arr-cell {
+            width: 45px;
+            height: 45px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            border-radius: 0.3rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .arr-cell.bool-cell {
+            font-size: 0.9rem;
+        }
+        
+        .bool-f { color: var(--bool-f); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
+        .bool-t { color: var(--bool-t); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); }
+
+        .arr-cell.eliminated {
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+
+        .arr-cell.mid-highlight {
+            border-color: #f59e0b;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .arr-cell.found-highlight {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+            background: rgba(16, 185, 129, 0.2);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        /* Указатели (Pointers) */
+        .ptr {
+            position: absolute;
+            font-weight: bold;
+            font-size: 0.8rem;
+            width: 45px;
+            text-align: center;
+            font-family: monospace;
+        }
+        .ptr-low { color: #f59e0b; top: -25px; } 
+        .ptr-high { color: #3b82f6; top: -25px; }
+        .ptr-mid { color: #a855f7; bottom: -25px; }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-top: 2rem;
+            min-height: 120px;
+        }
+
+        .logic-panel span.hl-var { color: #38bdf8; font-weight: bold; }
+        .logic-panel span.hl-val { color: var(--accent); font-weight: bold; }
+
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: Урок -->
+        <div class="left-panel">
+            <div class="lesson-section">
+                <h1>Двоично търсене по отговора</h1>
+                
+                <h2>1. Отвъд "класическото" търсене</h2>
+                <p>Класическото двоично търсене намира елемент (или неговата позиция) в предварително сортиран масив. Но често се сблъскваме със задачи, при които <strong>търсим самия оптимален отговор</strong>. Вместо да проверяваме масив, ние правим двоично търсене в <em>интервала от всички възможни отговори</em>.</p>
+                <p>Ако търсим отговор <code>X</code> (например максимално разстояние между елементи), се питаме: "Можем ли да постигнем условието за отговор X?". Ако отговорът е <strong>ДА</strong>, опитваме с по-голям X. Ако е <strong>НЕ</strong>, опитваме с по-малък.</p>
+
+                <h2>2. Монотонни редици и функция check()</h2>
+                <p>Основа при двоичното търсене "по отговора" са <strong>монотонните редици от булеви стойности</strong>. Те изглеждат много просто: префикс от стойности <code>false</code>, последван от суфикс от <code>true</code> (при растящи функции) или обратното (при намаляващи).</p>
+                
+                <div class="note-box">
+                    <h4>Не пазим масива в паметта!</h4>
+                    <p>Не е нужно да имаме цялата редица от `true`/`false` изчислена предварително. Достатъчно е да можем да изчисляваме нейните членове "на момента", когато ни потрябват. За целта винаги пишем помощна функция <code>bool check(int x)</code>.</p>
+                </div>
+
+<pre><code><span class="kw">bool</span> check(<span class="kw">int</span> x) {
+    <span class="com">// Тук разписваме логиката, която проверява </span>
+    <span class="com">// дали стойността 'x' е валиден отговор за задачата.</span>
+    <span class="kw">if</span> (/* условието е изпълнено */) {
+        <span class="kw">return true</span>;
+    }
+    <span class="kw">return false</span>;
+}</code></pre>
+
+                <h2>3. Намиране на границата</h2>
+                <p>Целта ни е да намерим точната "граница" между <code>false</code> и <code>true</code>. Поддържаме подинтервал <code>[low, high]</code>, в който сме сигурни, че се намира границата.</p>
+                <ul>
+                    <li>В началото <code>low</code> и <code>high</code> са най-малката и най-голямата възможна стойност.</li>
+                    <li>На всяка стъпка се грижим да е вярно <code>check(low) == false</code> и <code>check(high) == true</code>.</li>
+                    <li>Ако <code>low + 1 == high</code>, търсенето приключва. Отговорът е в <code>high</code> (ако търсим първото <code>true</code>).</li>
+                </ul>
+
+<pre><code><span class="kw">int</span> low = MIN_VAL;
+<span class="kw">int</span> high = MAX_VAL;
+
+<span class="kw">while</span> (low + <span class="num">1</span> < high) {
+    <span class="kw">int</span> mid = low + (high - low) / <span class="num">2</span>;
+    
+    <span class="kw">if</span> (check(mid)) {
+        high = mid; <span class="com">// Търсим първото срещане на true</span>
+    } <span class="kw">else</span> {
+        low = mid;  <span class="com">// Все още сме в зоната на false</span>
+    }
+}
+<span class="com">// Отговорът е в 'high'</span></code></pre>
+
+                <p>Сложността на този алгоритъм е <strong>O(log M &times; времето за функцията check)</strong>, където M е броят на всички възможни отговори в първоначалния интервал.</p>
+
+                <h2>4. Вариант с дробни числа (double)</h2>
+                <p>Ако търсеният отговор може да бъде дробно число, интервалът става непрекъснат. Тогава не търсим точна граница, а приближение с допустима грешка (например 10<sup>-5</sup>). За целта въвеждаме константата <code>EPS</code>.</p>
+
+<pre><code><span class="kw">const double</span> EPS = <span class="num">0.00001</span>;
+<span class="kw">double</span> low = MIN_VAL;
+<span class="kw">double</span> high = MAX_VAL;
+
+<span class="kw">while</span> (high - low > EPS) { <span class="com">// Условието за край се променя</span>
+    <span class="kw">double</span> mid = (low + high) / <span class="num">2.0</span>;
+    <span class="kw">if</span> (check(mid)) {
+        high = mid;
+    } <span class="kw">else</span> {
+        low = mid;
+    }
+}</code></pre>
+
+            </div>
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Симулатор -->
+        <div class="right-panel">
+            <div class="vis-card" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="vis-title">⚡ Симулатор: Търсене на границата</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Нека <code>check(x)</code> отговаря на въпроса: <em>"Достатъчно голямо ли е числото X (X &ge; 55)?"</em>. Нашата цел е да намерим <strong>първото число</strong>, за което функцията връща <code>True</code>, чрез двоично търсене в интервала от възможни отговори [0, 100].
+                </p>
+
+                <div class="controls">
+                    <button onclick="initSim()">Започни търсенето</button>
+                    <button id="btn-next" onclick="nextStep()" disabled>Следваща стъпка &rarr;</button>
+                </div>
+
+                <!-- Визуализация на масивите -->
+                <div style="margin-top: 2rem; margin-bottom: 3rem; padding-top: 1rem;">
+                    <div class="array-row">
+                        <div class="array-label">Отговор (X)</div>
+                        <div class="cell-group" id="row-vals">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                    <div class="array-row" style="margin-top: 1rem;">
+                        <div class="array-label">check(X)</div>
+                        <div class="cell-group" id="row-bools">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Панел с обяснения -->
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Започни търсенето", за да стартирате симулацията.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- СИМУЛАТОР ЗА ДВОИЧНО ТЪРСЕНЕ ПО ОТГОВОРА ---
+        
+        // За по-нагледно, ще ползваме масив от дискретни отговори, които симулират целия интервал.
+        // Цел: Намиране на първото "True" (F F F F T T T)
+        const possibleX = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+        const boolVals  = [false, false, false, false, false, true, true, true, true]; // Границата е между 50 и 60. Първо True е 60.
+        
+        let sLow = -1;
+        let sHigh = possibleX.length;
+        let sMid = -1;
+        let stepState = 0; // 0=start/wait, 1=calc_mid, 2=evaluate, 3=move_bounds, 4=done
+
+        function drawArrays() {
+            const rowV = document.getElementById('row-vals');
+            const rowB = document.getElementById('row-bools');
+            rowV.innerHTML = '';
+            rowB.innerHTML = '';
+
+            for (let i = 0; i < possibleX.length; i++) {
+                // X values
+                let cVal = document.createElement('div');
+                cVal.className = 'arr-cell';
+                cVal.id = `val-${i}`;
+                cVal.textContent = possibleX[i];
+                rowV.appendChild(cVal);
+
+                // Bool values
+                let cBool = document.createElement('div');
+                cBool.className = 'arr-cell bool-cell';
+                cBool.id = `bool-${i}`;
+                cBool.textContent = boolVals[i] ? 'T' : 'F';
+                if (boolVals[i]) cBool.classList.add('bool-t');
+                else cBool.classList.add('bool-f');
+                rowB.appendChild(cBool);
+            }
+        }
+
+        function updatePointersAndVisibility() {
+            for (let i = 0; i < possibleX.length; i++) {
+                let cv = document.getElementById(`val-${i}`);
+                let cb = document.getElementById(`bool-${i}`);
+                
+                // Clear old pointers/highlights
+                cv.classList.remove('mid-highlight', 'found-highlight');
+                cb.classList.remove('mid-highlight', 'found-highlight');
+                
+                // Dim eliminated elements
+                if (i <= sLow || i >= sHigh) {
+                    cv.classList.add('eliminated');
+                    cb.classList.add('eliminated');
+                } else {
+                    cv.classList.remove('eliminated');
+                    cb.classList.remove('eliminated');
+                }
+
+                // Remove existing Pointers
+                const ptrs = cv.querySelectorAll('.ptr');
+                ptrs.forEach(p => p.remove());
+            }
+
+            // Draw Low (if valid)
+            if (sLow >= 0 && sLow < possibleX.length) {
+                let cell = document.getElementById(`val-${sLow}`);
+                cell.innerHTML += `<div class="ptr ptr-low">LOW</div>`;
+            }
+            // Draw High (if valid)
+            if (sHigh >= 0 && sHigh < possibleX.length) {
+                let cell = document.getElementById(`val-${sHigh}`);
+                cell.innerHTML += `<div class="ptr ptr-high">HIGH</div>`;
+            }
+            // Draw Mid
+            if (sMid >= 0 && sMid < possibleX.length && stepState !== 4) {
+                let cell = document.getElementById(`val-${sMid}`);
+                cell.classList.add('mid-highlight');
+                document.getElementById(`bool-${sMid}`).classList.add('mid-highlight');
+                cell.innerHTML += `<div class="ptr ptr-mid">MID</div>`;
+            }
+        }
+
+        function initSim() {
+            sLow = -1; 
+            sHigh = possibleX.length;
+            sMid = -1;
+            stepState = 1;
+            
+            drawArrays();
+            updatePointersAndVisibility();
+            
+            document.getElementById('logic-display').innerHTML = `
+                <span class="com">// Инициализация</span><br>
+                Поставяме <span class="hl-var" style="color:#f59e0b">low</span> в зоната, където със сигурност е False (преди масива).<br>
+                Поставяме <span class="hl-var" style="color:#3b82f6">high</span> в зоната, където със сигурност е True (след масива).<br>
+                Започваме цикъла <code>while (low + 1 < high)</code>.
+            `;
+            
+            document.getElementById('btn-next').disabled = false;
+        }
+
+        function nextStep() {
+            const panel = document.getElementById('logic-display');
+            
+            if (sLow + 1 >= sHigh && stepState === 1) {
+                stepState = 4;
+            }
+
+            if (stepState === 1) {
+                // Изчисляване на MID
+                sMid = Math.floor((sLow + sHigh) / 2);
+                updatePointersAndVisibility();
+                
+                panel.innerHTML = `
+                    <span class="com">// Стъпка 1: Намиране на средата</span><br>
+                    <code>mid = (low + high) / 2</code><br>
+                    Проверяваме стойността по средата на оставащия интервал: <strong>X = ${possibleX[sMid]}</strong>.
+                `;
+                stepState = 2;
+            } 
+            else if (stepState === 2) {
+                // Оценка (check)
+                let isTrue = boolVals[sMid];
+                
+                panel.innerHTML = `
+                    <span class="com">// Стъпка 2: Проверка чрез check(mid)</span><br>
+                    Функцията връща <strong style="color: ${isTrue ? 'var(--bool-t)' : 'var(--bool-f)'}">${isTrue ? 'True' : 'False'}</strong> за X = ${possibleX[sMid]}.<br>
+                    ${isTrue 
+                        ? `Тъй като е True, знаем че границата е <strong>наляво</strong> (или на самата позиция).` 
+                        : `Тъй като е False, знаем че границата е <strong>надясно</strong>.`}
+                `;
+                stepState = 3;
+            }
+            else if (stepState === 3) {
+                // Местене на границите
+                let isTrue = boolVals[sMid];
+                if (isTrue) {
+                    sHigh = sMid;
+                    panel.innerHTML = `
+                        <span class="com">// Стъпка 3: Обновяване на границите</span><br>
+                        Свиваме интервала: <span class="hl-var" style="color:#3b82f6">high</span> = mid.<br>
+                        Нов интервал на търсене...
+                    `;
+                } else {
+                    sLow = sMid;
+                    panel.innerHTML = `
+                        <span class="com">// Стъпка 3: Обновяване на границите</span><br>
+                        Свиваме интервала: <span class="hl-var" style="color:#f59e0b">low</span> = mid.<br>
+                        Нов интервал на търсене...
+                    `;
+                }
+                
+                sMid = -1; // hide mid
+                updatePointersAndVisibility();
+                stepState = 1;
+            }
+            else if (stepState === 4) {
+                // Край
+                document.getElementById(`val-${sHigh}`).classList.add('found-highlight');
+                document.getElementById(`bool-${sHigh}`).classList.add('found-highlight');
+                
+                panel.innerHTML = `
+                    <span class="com">// Край на цикъла</span><br>
+                    Условието <code>low + 1 < high</code> вече не е изпълнено. Те се срещнаха!<br>
+                    <strong style="color:var(--success); font-size: 1.1rem;">Отговорът се намира в high: X = ${possibleX[sHigh]}</strong>.
+                `;
+                document.getElementById('btn-next').disabled = true;
+            }
+        }
+
+        // Първоначално рисуване на празен масив
+        drawArrays();
+    </script>
+</body>
+</html>
