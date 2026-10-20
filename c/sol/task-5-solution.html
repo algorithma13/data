@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение C5: Максимална медиана - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --highlight: #3b82f6; /* Синьо за highlight */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: #3b82f6; }
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+            margin-left: 1.5rem;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Решение) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        
+        /* Code Block Styling */
+        .code-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', monospace;
+            padding: 1.5rem 0;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .code-line {
+            display: block;
+            padding: 2px 1.5rem;
+            white-space: pre;
+            border-left: 4px solid transparent;
+        }
+
+        .code-line.active {
+            background: #333333;
+            border-left-color: var(--accent);
+            color: var(--highlight);
+            font-weight: bold;
+        }
+
+        .kw { color: #569cd6; }
+        .typ { color: #ce9178; }
+        .mth { color: #dcdcaa; }
+        .var { color: #9cdcfe; }
+        .num { color: #b5cea8; }
+        .com { color: #6a9955; }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-lesson {
+            display: inline-block;
+            text-align: center;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            background-color: rgba(16, 185, 129, 0.1); 
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-lesson:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Управление */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px 15px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            align-items: center;
+            flex-wrap: wrap; 
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap; 
+        }
+
+        input {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="text"] { font-family: 'Consolas', monospace; }
+        #input-array { width: 130px; }
+        #input-k { width: 80px; }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-start { background: var(--accent); color: white; }
+        .btn-start:hover { background: var(--accent-hover); }
+        .btn-next { background: var(--success); color: white; }
+        .btn-next:hover { background: #059669; }
+        .btn-reset { background: #64748b; color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .explanation-banner {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 5px solid var(--accent);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            border-radius: 0 6px 6px 0;
+            color: #cbd5e1;
+            line-height: 1.5;
+            min-height: 75px;
+        }
+
+        /* Таблица за състоянието */
+        .state-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .state-table th, .state-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        .state-table th:last-child, .state-table td:last-child {
+            border-right: none;
+        }
+
+        .state-table th { background: rgba(15, 23, 42, 0.8); font-weight: 600; color: var(--text-muted); font-size: 0.9rem;}
+
+        .val-highlight {
+            font-weight: bold;
+            font-size: 16px;
+            font-family: 'Consolas', monospace;
+            color: var(--text-main);
+        }
+        
+        #val-low { color: var(--warning); }
+        #val-high { color: var(--highlight); }
+        #val-mid { color: var(--accent); }
+
+        /* Конзола */
+        #screen {
+            background: #000;
+            color: #a3e635;
+            font-family: 'Consolas', monospace;
+            padding: 15px;
+            border-radius: 6px;
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 100px;
+            letter-spacing: 1px;
+            white-space: pre-wrap;
+            border: 1px solid var(--border);
+            margin-top: auto;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Оптимално Решение -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Решение C5: Максимална медиана</h1>
+                <div class="task-meta">
+                    <div>Школа МГ</div>
+                    <div>Тема: Двоично търсене по отговора</div>
+                    <div>C++ Оптимално решение</div>
+                </div>
+            </div>
+
+            <p>Пълното авторско решение на задачата. Включва функция <code>check</code>, която пресмята нужните операции само за елементите от средата до края на масива, и главен цикъл за двоично търсене по отговора.</p>
+
+            <div class="code-container">
+<span id="line-1" class="code-line"><span class="kw">#include</span> &lt;iostream&gt;</span>
+<span id="line-2" class="code-line"><span class="kw">#include</span> &lt;vector&gt;</span>
+<span id="line-3" class="code-line"><span class="kw">#include</span> &lt;algorithm&gt;</span>
+<span id="line-4" class="code-line"><span class="kw">using namespace</span> std;</span>
+<span id="line-5" class="code-line"></span>
+<span id="line-6" class="code-line"><span class="kw">int</span> n;</span>
+<span id="line-7" class="code-line"><span class="kw">long long</span> k;</span>
+<span id="line-8" class="code-line">vector&lt;<span class="kw">long long</span>&gt; a;</span>
+            </div>
+            
+            <p>Функцията <code>check(x)</code> проверява дали можем да направим медианата поне <code>x</code>. Разглеждаме елементите от индекс <code>n / 2</code> до края и натрупваме нужната разлика в променливата <code>op</code>.</p>
+
+            <div class="code-container">
+<span id="line-10" class="code-line"><span class="kw">bool</span> <span class="mth">check</span>(<span class="kw">long long</span> x)</span>
+<span id="line-11" class="code-line">{</span>
+<span id="line-12" class="code-line">    <span class="kw">long long</span> op = <span class="num">0</span>;</span>
+<span id="line-13" class="code-line"></span>
+<span id="line-14" class="code-line">    <span class="kw">for</span>(<span class="kw">int</span> i = n / <span class="num">2</span>; i &lt; n; i++)</span>
+<span id="line-15" class="code-line">    {</span>
+<span id="line-16" class="code-line">        <span class="kw">if</span>(x &gt; a[i]) op += (x - a[i]);</span>
+<span id="line-17" class="code-line">        <span class="kw">if</span>(op &gt; k) <span class="kw">return false</span>;</span>
+<span id="line-18" class="code-line">    }</span>
+<span id="line-19" class="code-line">    <span class="kw">return true</span>;</span>
+<span id="line-20" class="code-line">}</span>
+            </div>
+
+            <p>В главната функция сортираме масива (за да работи логиката за дясната половина) и прилагаме стандартния шаблон за двоично търсене в интервала `[1, 2000000005]`.</p>
+
+            <div class="code-container">
+<span id="line-22" class="code-line"><span class="kw">int</span> <span class="mth">main</span>()</span>
+<span id="line-23" class="code-line">{</span>
+<span id="line-24" class="code-line">    ios_base::sync_with_stdio(<span class="kw">false</span>);</span>
+<span id="line-25" class="code-line">    cin.tie(NULL);</span>
+<span id="line-26" class="code-line"></span>
+<span id="line-27" class="code-line">    cin &gt;&gt; n &gt;&gt; k;</span>
+<span id="line-28" class="code-line">    a.resize(n);</span>
+<span id="line-29" class="code-line">    <span class="kw">for</span>(<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; i++) cin &gt;&gt; a[i];</span>
+<span id="line-30" class="code-line"></span>
+<span id="line-31" class="code-line">    <span class="mth">sort</span>(a.begin(), a.end());</span>
+<span id="line-32" class="code-line"></span>
+<span id="line-33" class="code-line">    <span class="kw">long long</span> low = <span class="num">1</span>;</span>
+<span id="line-34" class="code-line">    <span class="kw">long long</span> high = <span class="num">2000000005LL</span>;</span>
+<span id="line-35" class="code-line">    <span class="kw">while</span>(low + <span class="num">1</span> &lt; high)</span>
+<span id="line-36" class="code-line">    {</span>
+<span id="line-37" class="code-line">        <span class="kw">long long</span> mid = low + (high - low) / <span class="num">2</span>;</span>
+<span id="line-38" class="code-line">        <span class="kw">if</span> (check(mid)) low = mid;</span>
+<span id="line-39" class="code-line">        <span class="kw">else</span> high = mid;</span>
+<span id="line-40" class="code-line">    }</span>
+<span id="line-41" class="code-line">    cout &lt;&lt; low &lt;&lt; <span class="typ">"\n"</span>;</span>
+<span id="line-42" class="code-line">}</span>
+            </div>
+
+            <div class="btn-group">
+                <a href="../tasks/task-5.html" class="btn-lesson btn-secondary">&larr; Към условието</a>
+                <a href="../analysis/task-5-analysis.html" class="btn-lesson btn-secondary">Към анализа &rarr;</a>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card" style="display:flex; flex-direction:column; flex:1;">
+                <div class="vis-title">⚡ Симулатор на изпълнението</div>
+
+                <div class="controls">
+                    <div class="controls-group">
+                        <label style="color:var(--text-muted);">Масив:</label>
+                        <input type="text" id="input-array" value="1 3 5">
+                    </div>
+                    <div class="controls-group">
+                        <label style="color:var(--text-muted);">K:</label>
+                        <input type="number" id="input-k" value="2">
+                    </div>
+
+                    <div class="controls-group" style="margin-left: auto;">
+                        <button id="start-btn" class="btn-start">Зареди</button>
+                        <button id="next-btn" class="btn-next" disabled>Стъпка</button>
+                        <button id="reset-btn" class="btn-reset">Рестарт</button>
+                    </div>
+                </div>
+
+                <div id="explanation-banner" class="explanation-banner">
+                    <strong>Подготовка:</strong> Въведете елементите на масива (нечетен брой) и разполагаемите операции K. Натиснете "Зареди", за да проследите двоичното търсене.
+                </div>
+
+                <table class="state-table">
+                    <thead>
+                        <tr>
+                            <th>low</th>
+                            <th>high</th>
+                            <th>mid</th>
+                            <th>нужни операции (op)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="val-low" class="val-highlight">-</td>
+                            <td id="val-high" class="val-highlight">-</td>
+                            <td id="val-mid" class="val-highlight">-</td>
+                            <td id="val-op" class="val-highlight">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top: 0.5rem; color: var(--text-main); font-size:1rem; border-bottom: 1px solid var(--border); padding-bottom:0.5rem;">Конзола (Изход)</h3>
+                <div id="screen"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let stepQueue = [];
+            let currentStepIdx = 0;
+
+            const explanationBanner = document.getElementById('explanation-banner');
+            const startBtn = document.getElementById('start-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const screen = document.getElementById('screen');
+
+            function simulateAlgorithm() {
+                let arrInputRaw = document.getElementById('input-array').value.trim();
+                let arr = arrInputRaw.split(/\s+/).map(Number);
+                let K = parseInt(document.getElementById('input-k').value);
+
+                if (arr.length % 2 === 0) {
+                    alert("Масивът трябва да съдържа нечетен брой елементи!");
+                    return false;
+                }
+
+                let outputAcc = "";
+                let sLow = "-";
+                let sHigh = "-";
+                let sMid = "-";
+                let sOp = "-";
+
+                stepQueue.push({
+                    line: 27,
+                    text: `Прочитаме входните данни: <strong>n = ${arr.length}</strong> и <strong>k = ${K}</strong>. Масивът е: [${arr.join(', ')}].`,
+                    state: { low: sLow, high: sHigh, mid: sMid, op: sOp },
+                    output: outputAcc
+                });
+
+                arr.sort((a, b) => a - b);
+                document.getElementById('input-array').value = arr.join(' '); // update input to show sorted
+
+                stepQueue.push({
+                    line: 31,
+                    text: `Сортираме масива. Вече изглежда така: [${arr.join(', ')}].`,
+                    state: { low: sLow, high: sHigh, mid: sMid, op: sOp },
+                    output: outputAcc
+                });
+
+                sLow = 1;
+                sHigh = 10; // Capped for visual simplicity in the simulator (instead of 2B)
+                // We'll set sHigh dynamically based on input to make the sim reasonable
+                let maxValInArr = arr[arr.length-1];
+                sHigh = maxValInArr + K + 1;
+
+                stepQueue.push({
+                    line: 34,
+                    text: `Инициализираме границите. <strong>low = ${sLow}</strong> (винаги е възможно), <strong>high = ${sHigh}</strong> (невъзможна стойност).`,
+                    state: { low: sLow, high: sHigh, mid: sMid, op: sOp },
+                    output: outputAcc
+                });
+
+                while (sLow + 1 < sHigh) {
+                    sMid = Math.floor(sLow + (sHigh - sLow) / 2);
+                    sOp = "-";
+
+                    stepQueue.push({
+                        line: 37,
+                        text: `Начало на цикъла. Изчисляваме <strong>mid = ${sLow} + (${sHigh} - ${sLow}) / 2 = ${sMid}</strong>. Това е медианата, която ще тестваме.`,
+                        state: { low: sLow, high: sHigh, mid: sMid, op: sOp },
+                        output: outputAcc
+                    });
+
+                    // Inside check()
+                    stepQueue.push({
+                        line: 10,
+                        text: `Извикваме <strong>check(${sMid})</strong>.`,
+                        state: { low: sLow, high: sHigh, mid: sMid, op: sOp },
+                        output: outputAcc
+                    });
+
+                    let op = 0;
+                    let possible = true;
+                    let midIndex = Math.floor(arr.length / 2);
+
+                    for (let i = midIndex; i < arr.length; i++) {
+                        stepQueue.push({
+                            line: 16,
+                            text: `В check(): Проверяваме a[${i}] = ${arr[i]}. Трябва ли да го увеличим до ${sMid}?`,
+                            state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                            output: outputAcc
+                        });
+
+                        if (sMid > arr[i]) {
+                            op += (sMid - arr[i]);
+                            stepQueue.push({
+                                line: 16,
+                                text: `Да, a[${i}] e по-малко от ${sMid}. Добавяме разликата (${sMid} - ${arr[i]}). Общо нужни операции: <strong>${op}</strong>.`,
+                                state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                                output: outputAcc
+                            });
+                        } else {
+                            stepQueue.push({
+                                line: 16,
+                                text: `Не, a[${i}] е достатъчно голямо (&ge; ${sMid}). Операциите остават <strong>${op}</strong>.`,
+                                state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                                output: outputAcc
+                            });
+                        }
+
+                        if (op > K) {
+                            possible = false;
+                            stepQueue.push({
+                                line: 17,
+                                text: `Оптимизация! Нужните операции (${op}) надхвърлят K (${K}). Спираме проверката рано и връщаме <strong>false</strong>.`,
+                                state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                                output: outputAcc
+                            });
+                            break;
+                        }
+                    }
+
+                    if (possible) {
+                        stepQueue.push({
+                            line: 19,
+                            text: `Успешно обходихме дясната половина. Общо нужни операции: <strong>${op}</strong> &le; ${K}. Връщаме <strong>true</strong>.`,
+                            state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                            output: outputAcc
+                        });
+                        
+                        sLow = sMid;
+                        stepQueue.push({
+                            line: 38,
+                            text: `Функцията check върна true. Следователно медиана ${sMid} е постижима! Вдигаме долната граница: <strong>low = mid = ${sLow}</strong>.`,
+                            state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                            output: outputAcc
+                        });
+
+                    } else {
+                        sHigh = sMid;
+                        stepQueue.push({
+                            line: 39,
+                            text: `Функцията check върна false. Медиана ${sMid} НЕ е постижима. Сваляме горната граница: <strong>high = mid = ${sHigh}</strong>.`,
+                            state: { low: sLow, high: sHigh, mid: sMid, op: op },
+                            output: outputAcc
+                        });
+                    }
+                }
+
+                sMid = "-";
+                sOp = "-";
+                outputAcc += `${sLow}\n`;
+
+                stepQueue.push({
+                    line: 41,
+                    text: `Цикълът приключи, защото low + 1 &ge; high (${sLow} + 1 &ge; ${sHigh}). Максималната медиана се пази в low. Отпечатваме <strong>${sLow}</strong>.`,
+                    state: { low: sLow, high: sHigh, mid: sMid, op: sOp },
+                    output: outputAcc
+                });
+                
+                return true;
+            }
+
+            function renderState(step) {
+                document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                if (step.line) {
+                    const lineEl = document.getElementById(`line-${step.line}`);
+                    if (lineEl) {
+                        lineEl.classList.add('active');
+                        // Center the active line in the scrollable code block
+                        lineEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                }
+
+                document.getElementById('val-low').textContent = step.state.low;
+                document.getElementById('val-high').textContent = step.state.high;
+                document.getElementById('val-mid').textContent = step.state.mid;
+                document.getElementById('val-op').textContent = step.state.op;
+
+                explanationBanner.innerHTML = `<strong>Стъпка ${currentStepIdx + 1}:</strong> ${step.text}`;
+                screen.textContent = step.output;
+            }
+
+            startBtn.addEventListener('click', () => {
+                stepQueue = [];
+                currentStepIdx = 0;
+                
+                if (simulateAlgorithm()) {
+                    startBtn.disabled = true;
+                    document.getElementById('input-array').disabled = true;
+                    document.getElementById('input-k').disabled = true;
+                    nextBtn.disabled = false;
+
+                    if (stepQueue.length > 0) renderState(stepQueue[0]);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                currentStepIdx++;
+                if (currentStepIdx < stepQueue.length) {
+                    renderState(stepQueue[currentStepIdx]);
+                } else {
+                    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                    explanationBanner.innerHTML = "<strong>Изпълнението приключи!</strong> Можете да натиснете 'Рестарт', за да опитате с друг вход.";
+                    nextBtn.disabled = true;
+                }
+            });
+
+            resetBtn.addEventListener('click', () => location.reload());
+        });
+    </script>
+</body>
+
+</html>
