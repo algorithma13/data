@@ -370,6 +370,13 @@
             color: #38bdf8;
         }
 
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+
         .btn-lesson {
             display: inline-block;
             text-align: center;
@@ -389,6 +396,20 @@
             color: #fff;
         }
         
+        /* Вторичен бутон (за визуализации и анализи) */
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            margin-top: 0;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+        
         .task-card .btn-lesson {
             background-color: rgba(59, 130, 246, 0.1); 
             color: var(--accent);
@@ -400,7 +421,7 @@
             color: #fff;
         }
 
-        /* СТИЛОВЕ ЗА ЛИНКА "НОВОТО ЗА ВАС" */
+        /* СТИЛОВЕ ЗА ЛИНКА НОВОТО ЗА ВАС */
         .curious-link-container {
             display: flex;
             justify-content: flex-end;
@@ -414,7 +435,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #a855f7; /* Специфичен лилав цвят, за да изпъква като нещо допълнително/ново */
+            color: #a855f7; 
             text-decoration: none;
             font-weight: 600;
             font-size: 0.95rem;
@@ -531,7 +552,9 @@
                         <p>Бърз cin/cout, глобални масиви срещу Stack Overflow, използване на <code>pair</code> и
                             <code>tuple</code>, и ефективно подаване по референция.
                         </p>
-                        <a href="c/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/lessons/lesson-1.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card">
@@ -546,7 +569,9 @@
                             📌 <strong>Към урока:</strong>
                             <br><a href="#task-1">Задача C1: Скакалец</a>
                         </div>
-                        <a href="c/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/lessons/lesson-2.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card">
@@ -557,7 +582,9 @@
                         <h3>Побитово отместване (Bit Shift)</h3>
                         <p>Изключително бързо умножение и деление чрез отместване на битове наляво
                             (<code>&lt;&lt;</code>) и надясно (<code>&gt;&gt;</code>). Внимание за пренатоварване.</p>
-                        <a href="c/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/lessons/lesson-3.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card">
@@ -574,7 +601,9 @@
                             <a href="#task-3">Задача C3: Пица</a>
                             <a href="#task-4">Задача C4: Съвместимост</a>
                         </div>
-                        <a href="c/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/lessons/lesson-4.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
                     </div>
 
                 </div>
@@ -587,12 +616,14 @@
                     <div class="item-card task-card" id="task-1">
                         <div class="card-header">
                             <span class="badge">Задача C1</span>
-                            <span class="read-time">Време: 2s | Памет: 512MB</span>
+                            <span class="read-time">Време: 2.0s | Памет: 512MB</span>
                         </div>
                         <h3>Скакалец</h3>
                         <p>Намерете остатъка при деление на S на N (където N е степен на 2) <strong>БЕЗ</strong> да
                             използвате оператора за модулно деление (%).</p>
-                        <a href="c/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/tasks/task-1.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card task-card" id="task-2">
@@ -603,7 +634,9 @@
                         <h3>Азерия</h3>
                         <p>Управлявайте 60 различни заклинания в една променлива! Имплементирайте команди за научаване,
                             забравяне и проверка чрез побитови маски.</p>
-                        <a href="c/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/tasks/task-2.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card task-card" id="task-3">
@@ -614,7 +647,9 @@
                         <h3>Пица</h3>
                         <p>Група приятели поръчват пица, но трябва да изберат само добавки, които абсолютно всички
                             харесват. Намерете максималния брой съвпадащи добавки.</p>
-                        <a href="c/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/tasks/task-3.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        </div>
                     </div>
 
                     <div class="item-card task-card" id="task-4">
@@ -641,7 +676,9 @@
                                 </ul>
                             </div>
                         </details>
-                        <a href="c/tasks/task-4.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        <div class="card-actions">
+                            <a href="c/tasks/task-4.html" class="btn-lesson">Към условието в цял екран &rarr;</a>
+                        </div>
                     </div>
 
                 </div>
@@ -650,10 +687,103 @@
             <!-- ЛИНК "НОВОТО ЗА ВАС" (Показва се само когато модулът е отворен) -->
             <div class="curious-link-container">
                 <a href="c/extra/sets.html" class="curious-link">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                     Новото за вас: Множества, функции и операции
                 </a>
             </div>
+
+        </div>
+
+        <!-- ==========================================
+             РАЗДЕЛ II: STL
+        =========================================== -->
+        <div class="module-container collapsed" id="module-2">
+            <div class="module-header">
+                <h2>Раздел II: <span>STL</span></h2>
+                <p>Приложения на стандартната библиотека (STL) в C++: бързо сортиране, двоично търсене и оценка на сложността.</p>
+            </div>
+            
+            <section class="section-container">
+                <h3 class="section-title">Теоретични уроци</h3>
+                <div class="cards-grid">
+                    
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 5 (С)</span>
+                            <span class="read-time">⏱️ 90 мин</span>
+                        </div>
+                        <h3>Приложения на STL и сложност</h3>
+                        <p>Научете как да използвате <code>std::sort</code>, двоично търсене (<code>binary_search</code>) и как да оценявате бързината на алгоритмите си чрез Big O нотация (O(N)).</p>
+                        <div class="card-actions">
+                            <a href="c/lessons/lesson-5.html" class="btn-lesson">Започни урока &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div class="item-card">
+                        <div class="card-header">
+                            <span class="badge">Урок 6 (С)</span>
+                            <span class="read-time">⏱️ 60 мин</span>
+                        </div>
+                        <h3>Двоично търсене по отговора</h3>
+                        <p>Основа при двоичното търсене по отговора са монотонните редици от bool стойности. Научете как да намирате границата между false и true, използвайки функция <code>bool check(int x)</code>, както и работа с дробни параметри.</p>
+                        <div class="card-actions">
+                            <a href="c/lessons/lesson-6.html" class="btn-lesson">Започни урока &rarr;</a>
+                            <a href="c/viz/binary_search_ans_viz.html" class="btn-lesson btn-secondary">Виж визуализацията &rarr;</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+            
+            <!-- НОВ РАЗДЕЛ ЗА ЗАДАЧИ КЪМ STL -->
+            <section class="section-container" id="tasks-stl" style="margin-bottom: 0;">
+                <h3 class="section-title" style="color: #60a5fa;">Тематични задачи</h3>
+                <div class="cards-grid">
+
+                    <div class="item-card task-card" id="task-5">
+                        <div class="card-header">
+                            <span class="badge">Задача C5</span>
+                            <span class="read-time">Време: 2.0s | Памет: 256MB</span>
+                        </div>
+                        <h3>Максимална медиана (Codeforces)</h3>
+                        <p>Увеличете елементите на нечетен масив най-много K пъти, за да направите неговата медиана максимално голяма. Изисква се сортиране и двоично търсене по отговора.</p>
+                        
+                        <div class="card-actions">
+                            <a href="c/tasks/task-5.html" class="btn-lesson">Към условието &rarr;</a>
+                            <a href="c/analysis/task-5-analysis.html" class="btn-lesson btn-secondary">Към анализа &rarr;</a>
+                            <a href="c/sol/task-5-solution.html" class="btn-lesson btn-secondary">Към решението &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div class="item-card task-card" id="task-6">
+                        <div class="card-header">
+                            <span class="badge">Задача C6</span>
+                            <span class="read-time">Време: 1.0s | Памет: 64MB</span>
+                        </div>
+                        <h3>Конференция (USACO)</h3>
+                        <p>Разпределете пристигащите крави в автобуси, така че максималното време за чакане да е възможно най-малко. Класическа задача за двоично търсене по отговора.</p>
+                        
+                        <div class="card-actions">
+                            <a href="c/tasks/task-6.html" class="btn-lesson">Към условието &rarr;</a>
+                            <a href="c/analysis/task-6-analysis.html" class="btn-lesson btn-secondary">Към анализа &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div class="item-card task-card" id="task-7">
+                        <div class="card-header">
+                            <span class="badge">Задача C7</span>
+                            <span class="read-time">Време: 1.0s | Памет: 256MB</span>
+                        </div>
+                        <h3>Изплащане на заем (USACO)</h3>
+                        <p>Намерете максималното число X, с което фермерът Джон може да изплати дълга си от мляко навреме. Изисква симулиране на дните и двоично търсене.</p>
+                        
+                        <div class="card-actions">
+                            <a href="c/tasks/task-7.html" class="btn-lesson">Към условието &rarr;</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
 
         </div>
 
