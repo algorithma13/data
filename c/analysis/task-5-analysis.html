@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ C5: Максимална медиана - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: #3b82f6; }
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+            margin-left: 1.5rem;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        pre code {
+            padding: 0;
+            background-color: transparent;
+            color: inherit;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .kw { color: #569cd6; }
+        .mth { color: #dcdcaa; }
+        .com { color: #6a9955; }
+
+        .note-box {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid var(--highlight);
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+        
+        .note-box strong { color: var(--highlight); }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-lesson {
+            display: inline-block;
+            text-align: center;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            background-color: rgba(16, 185, 129, 0.1); 
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-lesson:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background-color: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Диаграма със стълбчета */
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 10px;
+            height: 250px;
+            margin-bottom: 2rem;
+            padding: 20px 10px;
+            background: rgba(11, 17, 32, 0.4);
+            border-radius: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+
+        .bar-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            width: 40px;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .bar-added {
+            width: 100%;
+            background-color: rgba(245, 158, 11, 0.8); /* Оранжево за добавеното */
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            transition: height 0.3s ease;
+            position: relative;
+        }
+
+        .bar-base {
+            width: 100%;
+            background-color: #3b82f6;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            transition: height 0.3s ease, background-color 0.3s;
+        }
+        
+        .bar-col.ignored .bar-base {
+            background-color: #475569; /* Сиво за игнорираната лява част */
+        }
+
+        .bar-col.ignored .bar-added {
+            background-color: transparent;
+            height: 0 !important;
+        }
+
+        .bar-label {
+            margin-top: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        .target-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--success);
+            z-index: 1;
+            transition: bottom 0.3s ease;
+            display: flex;
+            align-items: center;
+            border-top: 1px dashed var(--success);
+            background: transparent;
+        }
+
+        .target-label {
+            position: absolute;
+            right: 10px;
+            top: -25px;
+            color: var(--success);
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            background: var(--bg-primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--success);
+        }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-top: auto;
+            min-height: 120px;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z" /></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Анализ -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Анализ: Максимална медиана</h1>
+                <div class="task-meta">
+                    <div>🏆 <strong>Задача:</strong> C5</div>
+                    <div>🎯 <strong>Тема:</strong> Двоично търсене по отговора</div>
+                </div>
+            </div>
+
+            <h2>Основна идея</h2>
+            <p>За да можем бързо да намерим отговора, първото нещо, което трябва да направим, е <strong>да сортираме масива във възходящ ред</strong>. Тъй като броят на елементите <code>n</code> е нечетен, първоначалната медиана винаги се намира точно на индекс <code>n / 2</code>.</p>
+            
+            <p>Ще търсим оптималната медиана чрез двоично търсене в интервала на възможните отговори (от 1 до много голямо число). Основната ни задача е да напишем функцията <code>check(x)</code>, която проверява: <em>Можем ли да направим медианата да бъде поне x, използвайки най-много k операции?</em></p>
+
+            <div class="note-box">
+                <strong>💡 Защо разглеждаме само дясната половина?</strong><br>
+                Ако искаме средният елемент да стане поне <code>x</code>, трябва не само той, но и <strong>всички елементи вдясно от него</strong> също да станат поне <code>x</code>. В противен случай (тъй като масивът е сортиран), някой по-малък елемент отдясно ще се "плъзне" наляво и ще заеме мястото на медианата. Елементите в лявата половина не ни интересуват – те могат да си останат малки.
+            </div>
+
+            <h2>Функцията check(x)</h2>
+            <p>Обхождаме масива от средата (<code>n / 2</code>) до края. Ако текущият елемент е по-малък от <code>x</code>, добавяме разликата <code>x - a[i]</code> към общия брой нужни операции. За оптимизация, ако нужните операции надхвърлят <code>k</code> преди да сме стигнали до края на масива, спираме рано и връщаме <code>false</code>.</p>
+
+<pre><code><span class="kw">bool</span> <span class="mth">check</span>(<span class="kw">long long</span> x) {
+    <span class="kw">long long</span> operations = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">int</span> i = n / <span class="num">2</span>; i < n; i++) {
+        <span class="kw">if</span> (x > a[i]) {
+            operations += (x - a[i]);
+        }
+        <span class="com">// Оптимизация: спираме рано</span>
+        <span class="kw">if</span> (operations > k) {
+            <span class="kw">return false</span>;
+        }
+    }
+    <span class="kw">return true</span>;
+}</code></pre>
+
+            <h2>Двоично търсене (Главна функция)</h2>
+            <p>В главната програма задаваме границите на двоичното търсене. Най-малката възможна медиана е <code>1</code>. Най-голямата възможна медиана се постига, ако оригиналният масив има елемент 10<sup>9</sup> и добавим към него всичките 10<sup>9</sup> операции. Следователно горната граница (която е гарантирано невъзможна) е малко над 2 милиарда.</p>
+
+<pre><code><span class="com">// 1. Сортираме масива</span>
+<span class="mth">sort</span>(a.begin(), a.end());
+
+<span class="com">// 2. Търсим отговора</span>
+<span class="kw">long long</span> low = <span class="num">1</span>;
+<span class="kw">long long</span> high = <span class="num">2000000005LL</span>;
+
+<span class="kw">while</span> (low + <span class="num">1</span> < high) {
+    <span class="kw">long long</span> mid = low + (high - low) / <span class="num">2</span>;
+    
+    <span class="kw">if</span> (check(mid)) {
+        low = mid; <span class="com">// Възможно е, опитваме по-нагоре</span>
+    } <span class="kw">else</span> {
+        high = mid; <span class="com">// Невъзможно, сваляме границата</span>
+    }
+}
+<span class="kw">cout</span> << low << <span class="typ">"\n"</span>; <span class="com">// Отговорът винаги остава в low</span></code></pre>
+
+            <div class="btn-group">
+                <a href="../tasks/task-5.html" class="btn-lesson btn-secondary">&larr; Към условието</a>
+                <a href="../sol/task-5-solution.html" class="btn-lesson">Към пълното решение &rarr;</a>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">📊 Визуализация: "Доливане" на операции</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Проследете как двоичното търсене променя таргета <code>mid</code>. За да вдигнем медианата, трябва да попълним със стълбчета всички елементи от средата надясно до достигане на линията на <code>mid</code>. 
+                </p>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Масив (сортиран):</label>
+                        <input type="text" id="sim-arr" value="1 1 1 2 2" style="width: 140px;" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>K операции:</label>
+                        <input type="number" id="sim-k" value="5" style="width: 70px;" disabled>
+                    </div>
+                    <button id="btn-start" onclick="initSim()">Старт двоично търсене</button>
+                    <button id="btn-next" onclick="stepSim()" disabled style="background:#cbd5e1; color:#64748b;">Следваща стъпка</button>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container" id="chart-area">
+                    <!-- Target Line -->
+                    <div class="target-line" id="target-line" style="bottom: 0%; display: none;">
+                        <div class="target-label" id="target-label">mid = ?</div>
+                    </div>
+                    <!-- Bars generated via JS -->
+                </div>
+
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Старт", за да започнем двоичното търсене с интервал [low, high].
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // Data for simulation
+        const arr = [1, 1, 1, 2, 2];
+        const n = 5;
+        const K = 5;
+        const midIndex = Math.floor(n / 2); // 2
+        
+        // Binary search state
+        let low = 1;
+        let high = 10; // For visualization purposes, cap high to 10
+        let mid = 0;
+        let step = 0; // 0=start step, 1=calculate check
+        let simRunning = false;
+
+        // Scale factor for heights (max value in chart is 10)
+        const scaleY = 10; 
+
+        function drawBars() {
+            const chartArea = document.getElementById('chart-area');
+            // Keep the target line
+            const targetLine = document.getElementById('target-line');
+            chartArea.innerHTML = '';
+            chartArea.appendChild(targetLine);
+
+            arr.forEach((val, i) => {
+                const col = document.createElement('div');
+                col.className = 'bar-col';
+                if (i < midIndex) col.classList.add('ignored');
+
+                // Base height
+                const baseHeightPct = (val / scaleY) * 100;
+                const baseBar = document.createElement('div');
+                baseBar.className = 'bar-base';
+                baseBar.style.height = `${baseHeightPct}%`;
+
+                // Added height (initially 0)
+                const addedBar = document.createElement('div');
+                addedBar.className = 'bar-added';
+                addedBar.id = `added-${i}`;
+                addedBar.style.height = '0%';
+
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = val;
+
+                col.appendChild(addedBar);
+                col.appendChild(baseBar);
+                col.appendChild(label);
+                
+                chartArea.appendChild(col);
+            });
+        }
+
+        function initSim() {
+            low = 1;
+            high = 8; // Reset limits specifically for this visual example
+            step = 0;
+            simRunning = true;
+
+            drawBars();
+            document.getElementById('target-line').style.display = 'none';
+            
+            const btnNext = document.getElementById('btn-next');
+            btnNext.disabled = false;
+            btnNext.style.background = 'var(--success)';
+            btnNext.style.color = '#fff';
+
+            document.getElementById('btn-start').disabled = true;
+
+            document.getElementById('logic-display').innerHTML = `
+                <span class="com">// Начално състояние</span><br>
+                Масивът е сортиран. Средата е на индекс ${midIndex}.<br>
+                Задаваме <code>low = ${low}</code> и <code>high = ${high}</code>.<br>
+                Готови за цикъла <code>while(low + 1 < high)</code>.
+            `;
+        }
+
+        function stepSim() {
+            if (!simRunning) return;
+            const logic = document.getElementById('logic-display');
+            const targetLine = document.getElementById('target-line');
+
+            if (low + 1 >= high) {
+                // Done
+                logic.innerHTML = `
+                    <span class="com">// Край на търсенето</span><br>
+                    Условието <code>low + 1 < high</code> вече не е вярно (${low} + 1 == ${high}).<br>
+                    <strong style="color:var(--success); font-size: 1.1rem;">Максималната възможна медиана е ${low}!</strong>
+                `;
+                document.getElementById('btn-next').disabled = true;
+                document.getElementById('btn-next').style.background = '#cbd5e1';
+                document.getElementById('btn-start').disabled = false;
+                targetLine.style.display = 'none';
+                simRunning = false;
+                return;
+            }
+
+            if (step === 0) {
+                // Calculate mid
+                mid = Math.floor((low + high) / 2);
+                
+                // Show line
+                targetLine.style.display = 'flex';
+                targetLine.style.bottom = `${(mid / scaleY) * 100}%`;
+                document.getElementById('target-label').textContent = `mid = ${mid}`;
+
+                // Reset added bars
+                for(let i=0; i<n; i++) {
+                    const addBar = document.getElementById(`added-${i}`);
+                    if(addBar) addBar.style.height = '0%';
+                }
+
+                logic.innerHTML = `
+                    <span class="com">// Изчисляване на mid</span><br>
+                    Интервал: [${low}, ${high}].<br>
+                    <code>mid = (${low} + ${high}) / 2 = ${mid}</code>.<br>
+                    Ще тестваме дали можем да попълним дясната половина до линията <code>mid = ${mid}</code>.
+                `;
+                step = 1;
+            } else {
+                // Evaluate
+                let cost = 0;
+                let details = "";
+                for (let i = midIndex; i < n; i++) {
+                    if (arr[i] < mid) {
+                        let diff = mid - arr[i];
+                        cost += diff;
+                        details += `a[${i}]: нужни +${diff}; `;
+                        // Animate bar
+                        const addBar = document.getElementById(`added-${i}`);
+                        if(addBar) {
+                            addBar.style.height = `${(diff / scaleY) * 100}%`;
+                        }
+                    }
+                }
+
+                if (cost <= K) {
+                    low = mid;
+                    logic.innerHTML = `
+                        <span class="com">// Оценка на check(${mid})</span><br>
+                        ${details}<br>
+                        Общо операции: <strong style="color:var(--warning)">${cost}</strong> &le; ${K}.<br>
+                        <span style="color:var(--success)">Възможно е!</span> Местим <code>low = mid = ${mid}</code>.
+                    `;
+                } else {
+                    high = mid;
+                    logic.innerHTML = `
+                        <span class="com">// Оценка на check(${mid})</span><br>
+                        ${details}<br>
+                        Общо операции: <strong style="color:var(--warning)">${cost}</strong> &gt; ${K}.<br>
+                        <span style="color:var(--danger)">Невъзможно е!</span> Местим <code>high = mid = ${mid}</code>.
+                    `;
+                }
+                step = 0;
+            }
+        }
+
+        // Draw initially
+        drawBars();
+    </script>
+</body>
+
+</html>

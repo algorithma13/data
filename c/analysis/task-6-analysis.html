@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ C6: Конференция - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+            --bus-bg: rgba(59, 130, 246, 0.1);
+            --bus-border: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+            margin-left: 1.5rem;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Анализ) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        pre code {
+            padding: 0;
+            background-color: transparent;
+            color: inherit;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .kw { color: #569cd6; }
+        .typ { color: #4ec9b0; }
+        .mth { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .com { color: #6a9955; }
+
+        .note-box {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid var(--highlight);
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+        
+        .note-box strong { color: var(--highlight); }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-lesson {
+            display: inline-block;
+            text-align: center;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            background-color: rgba(16, 185, 129, 0.1); 
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-lesson:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background-color: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Автобуси и Крави Визуализация */
+        .simulation-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 5px;
+        }
+
+        .bus-container {
+            border: 2px dashed var(--bus-border);
+            background: var(--bus-bg);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .bus-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bus-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: var(--highlight);
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 0.5rem;
+        }
+
+        .cow-slots {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cow-box {
+            width: 50px;
+            height: 50px;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .cow-box.filled {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .cow-box.error {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .cow-box::before {
+            content: '🐄';
+            font-size: 14px;
+            position: absolute;
+            top: -20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .cow-box.filled::before, .cow-box.error::before {
+            opacity: 1;
+        }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-top: 1rem;
+            min-height: 100px;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z" /></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Анализ -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>Анализ: Конференция</h1>
+                <div class="task-meta">
+                    <div>🏆 <strong>Задача:</strong> C6 (USACO)</div>
+                    <div>🎯 <strong>Тема:</strong> Двоично търсене по отговора</div>
+                </div>
+            </div>
+
+            <h2>Основна идея</h2>
+            <p>Задачата изисква от нас да минимизираме максималното време за чакане на кравите. Това е класически сигнал за <strong>двоично търсене по отговора</strong>. Първото нещо, което трябва да направим, е да сортираме времената на пристигане на кравите <code>t<sub>i</sub></code> във възходящ ред, за да можем да ги качваме в автобусите хронологично.</p>
+            
+            <p>Ще търсим оптималното време за чакане <code>X</code> в интервала от <code>0</code> до <code>10<sup>9</sup></code>. Функцията <code>check(x)</code> ще отговаря на въпроса: <em>"Възможно ли е да извозим всички крави с <code>M</code> автобуса с капацитет <code>C</code>, така че никоя крава да не чака повече от <code>x</code> време?"</em></p>
+
+            <div class="note-box">
+                <strong>💡 Алчен алгоритъм за check(x):</strong><br>
+                Когато тестваме дадено време <code>x</code>, се опитваме да съберем максимален брой крави във всеки автобус. Започваме нов автобус с първата чакаща крава (нека времето ѝ на пристигане е <code>first_arrival</code>). Продължаваме да качваме следващите крави в <strong>същия автобус</strong>, стига да са изпълнени двете условия:
+                <br>1. В автобуса има свободни места (брой &lt; <code>C</code>).
+                <br>2. Нито една крава не чака прекалено дълго (<code>t<sub>i</sub> - first_arrival &le; x</code>).
+                <br>Ако някое от условията се наруши, този автобус тръгва и отваряме нов за текущата крава.
+            </div>
+
+            <h2>Функцията check(x)</h2>
+
+<pre><code><span class="kw">bool</span> <span class="mth">check</span>(<span class="kw">long long</span> x) {
+    <span class="kw">int</span> buses_used = <span class="num">1</span>;
+    <span class="kw">int</span> cows_in_current_bus = <span class="num">0</span>;
+    <span class="kw">long long</span> first_arrival = t[<span class="num">0</span>];
+
+    <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i < N; i++) {
+        <span class="com">// Ако автобусът се препълни ИЛИ времето за чакане стане твърде голямо</span>
+        <span class="kw">if</span> (cows_in_current_bus == C || t[i] - first_arrival > x) {
+            buses_used++;             <span class="com">// Пускаме нов автобус</span>
+            first_arrival = t[i];     <span class="com">// Той стартира с тази крава</span>
+            cows_in_current_bus = <span class="num">1</span>;  <span class="com">// Качваме я</span>
+        } <span class="kw">else</span> {
+            cows_in_current_bus++;    <span class="com">// Добавяме кравата в текущия автобус</span>
+        }
+    }
+
+    <span class="com">// Можем ли да се справим с най-много M автобуса?</span>
+    <span class="kw">return</span> buses_used <= M;
+}</code></pre>
+
+            <h2>Двоично търсене (Главна функция)</h2>
+
+<pre><code><span class="mth">sort</span>(t.begin(), t.end());
+
+<span class="kw">long long</span> low = <span class="num">-1</span>; <span class="com">// Невъзможна граница отдолу</span>
+<span class="kw">long long</span> high = <span class="num">1000000005LL</span>; <span class="com">// Сигурна граница отгоре</span>
+
+<span class="kw">while</span> (low + <span class="num">1</span> < high) {
+    <span class="kw">long long</span> mid = low + (high - low) / <span class="num">2</span>;
+    
+    <span class="kw">if</span> (check(mid)) {
+        high = mid; <span class="com">// Възможно е, опитваме с по-малко чакане</span>
+    } <span class="kw">else</span> {
+        low = mid; <span class="com">// Невъзможно е, трябва да чакат повече</span>
+    }
+}
+<span class="kw">cout</span> << high << <span class="typ">"\n"</span>; <span class="com">// Отговорът е в high (първото true)</span></code></pre>
+
+            <div class="btn-group">
+                <a href="../tasks/task-6.html" class="btn-lesson btn-secondary">&larr; Към условието</a>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">📊 Симулатор: Товарене на автобусите (Алчен алгоритъм)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Проследете как функцията <code>check(X)</code> се опитва да натовари кравите, ако знаем, че нито една крава не може да чака повече от <code>X</code> времеви единици.
+                </p>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Пристигания t<sub>i</sub> (сортирани):</label>
+                        <input type="text" id="sim-arr" value="1 1 3 4 10 14" style="width: 160px;" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Автобуси (M):</label>
+                        <input type="number" id="sim-m" value="3" style="width: 70px;" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Капацитет (C):</label>
+                        <input type="number" id="sim-c" value="2" style="width: 70px;" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label>Тестваме макс чакане (X):</label>
+                        <input type="number" id="sim-x" value="4" style="width: 80px;">
+                    </div>
+                    <button id="btn-start" onclick="runSimulation()">Старт</button>
+                </div>
+
+                <!-- Simulation Output -->
+                <div class="simulation-area" id="simulation-area">
+                    <!-- Buses will be drawn here -->
+                </div>
+
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Старт", за да стартираме логиката за разпределяне с тестово време <code>X</code>.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        async function runSimulation() {
+            const btnStart = document.getElementById('btn-start');
+            btnStart.disabled = true;
+
+            const arrInput = document.getElementById('sim-arr').value.split(' ').map(Number);
+            const M = parseInt(document.getElementById('sim-m').value);
+            const C = parseInt(document.getElementById('sim-c').value);
+            const X = parseInt(document.getElementById('sim-x').value);
+            
+            const simArea = document.getElementById('simulation-area');
+            const logic = document.getElementById('logic-display');
+            
+            simArea.innerHTML = '';
+            
+            let busesUsed = 1;
+            let cowsInBus = 0;
+            let firstArrival = arrInput[0];
+
+            logic.innerHTML = `<span style="color:var(--text-muted)">// Стартиране</span><br>Тестваме дали можем да извозим всички с макс чакане <strong>X = ${X}</strong>.<br>Отваряме Автобус 1. Първата крава пристига във време ${firstArrival}.`;
+
+            // Create Bus 1
+            let currentBus = createBusUI(busesUsed, firstArrival, X, C);
+            simArea.appendChild(currentBus.el);
+            await sleep(500);
+
+            for (let i = 0; i < arrInput.length; i++) {
+                let cowTime = arrInput[i];
+                let waitTime = cowTime - firstArrival;
+
+                // Check constraints
+                if (cowsInBus === C) {
+                    logic.innerHTML = `Крава ${i+1} (пристига в ${cowTime}): Автобус ${busesUsed} е <strong>ПЪЛЕН</strong> (Капацитет ${C}). Трябва нов автобус!`;
+                    
+                    busesUsed++;
+                    cowsInBus = 1;
+                    firstArrival = cowTime;
+                    
+                    await sleep(1000);
+                    currentBus = createBusUI(busesUsed, firstArrival, X, C);
+                    simArea.appendChild(currentBus.el);
+                    
+                } else if (waitTime > X) {
+                    logic.innerHTML = `Крава ${i+1} (пристига в ${cowTime}): Чакането става <code>${cowTime} - ${firstArrival} = ${waitTime} &gt; ${X}</code>. Не може да се качи тук, трябва нов автобус!`;
+                    
+                    busesUsed++;
+                    cowsInBus = 1;
+                    firstArrival = cowTime;
+                    
+                    await sleep(1000);
+                    currentBus = createBusUI(busesUsed, firstArrival, X, C);
+                    simArea.appendChild(currentBus.el);
+
+                } else {
+                    cowsInBus++;
+                    logic.innerHTML = `Крава ${i+1} (пристига в ${cowTime}): Има място и чакането е <code>${cowTime} - ${firstArrival} = ${waitTime} &le; ${X}</code>. Качва се в Автобус ${busesUsed}.`;
+                }
+
+                // Fill slot visually
+                const slots = currentBus.el.querySelectorAll('.cow-box');
+                const slotToFill = slots[cowsInBus - 1];
+                slotToFill.textContent = cowTime;
+                
+                // If it's a failed attempt (shouldn't happen in visual logic since we spawn new bus before adding, 
+                // but we mark it as filled successfully)
+                slotToFill.classList.add('filled');
+                
+                // Update header
+                const headerSpan = currentBus.el.querySelector('.bus-status-text');
+                headerSpan.textContent = `Крави: ${cowsInBus}/${C} | Чакане: 0 - ${X}`;
+
+                await sleep(1200);
+            }
+
+            // Final Evaluation
+            await sleep(500);
+            if (busesUsed <= M) {
+                logic.innerHTML = `Всички крави са извозени! Използвани автобуси: <strong>${busesUsed}</strong> (Позволени: ${M}).<br><strong style="color:var(--success); font-size:1.1rem">check(${X}) връща TRUE!</strong>`;
+            } else {
+                logic.innerHTML = `Всички крави са извозени, НО използвахме <strong>${busesUsed}</strong> автобуса (Позволени: ${M}).<br><strong style="color:var(--danger); font-size:1.1rem">check(${X}) връща FALSE!</strong>`;
+            }
+
+            btnStart.disabled = false;
+        }
+
+        function createBusUI(num, firstArr, maxWait, capacity) {
+            const busEl = document.createElement('div');
+            busEl.className = 'bus-container';
+
+            const header = document.createElement('div');
+            header.className = 'bus-header';
+            
+            const title = document.createElement('span');
+            title.textContent = `Автобус ${num} (Тръгва &ge; ${firstArr})`;
+            
+            const status = document.createElement('span');
+            status.className = 'bus-status-text';
+            status.textContent = `Крави: 0/${capacity} | Чакане: 0 - ${maxWait}`;
+
+            header.appendChild(title);
+            header.appendChild(status);
+            busEl.appendChild(header);
+
+            const slotsContainer = document.createElement('div');
+            slotsContainer.className = 'cow-slots';
+
+            for (let i = 0; i < capacity; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'cow-box';
+                slotsContainer.appendChild(slot);
+            }
+            
+            busEl.appendChild(slotsContainer);
+
+            // Trigger reflow to animate entrance
+            setTimeout(() => busEl.classList.add('visible'), 50);
+
+            return { el: busEl };
+        }
+    </script>
+</body>
+
+</html>
