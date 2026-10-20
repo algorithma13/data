@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C5: Максимална медиана - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: #3b82f6; }
+        .logo svg { width: 24px; height: 24px; color: #3b82f6; }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        /* Примерен вход/изход */
+        .io-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        button:hover { background: var(--accent-hover); }
+
+        /* Визуализация на масиви */
+        .arrays-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            align-items: center;
+            padding: 1rem 0;
+            min-height: 120px;
+        }
+
+        .cell-group { display: flex; gap: 10px; align-items: flex-end; }
+
+        .arr-cell-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .arr-cell {
+            width: 50px;
+            height: 50px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 0.5rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .diff-badge {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 2px 6px;
+            border-radius: 12px;
+            min-height: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .diff-badge.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .diff-badge.zero {
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Състояния */
+        .cell-ignored {
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+
+        .cell-median {
+            border-color: var(--warning);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .cell-active {
+            border-color: var(--highlight);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-top: 1rem;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА C5: Максимална медиана</h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 2 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>🏆 <strong>Източник:</strong> Codeforces 1201</div>
+                </div>
+            </div>
+
+            <p>Даден е масив <code>a</code> от <code>n</code> цели числа, където <code>n</code> е нечетно. Можете да извършите следната операция върху него:</p>
+            <p>Изберете един от елементите на масива (например <code>a<sub>i</sub></code>) и го увеличете с 1 (тоест, заменете го с <code>a<sub>i</sub> + 1</code>).</p>
+            
+            <p>Да се напише програма <code>maxmedian</code>, която да направи медианата на масива възможно най-голяма, използвайки най-много <code>k</code> операции.</p>
+
+            <p>Медианата на масив с нечетен размер е средният елемент, след като масивът бъде сортиран в ненамаляващ ред. Например, медианата на масива [1, 5, 2, 3, 5] e 3.</p>
+
+            <h2>Вход</h2>
+            <p>Първият ред на входа въвежда две цели числа <code>n</code> и <code>k</code> (1 &le; <code>n</code> &le; 200 000, <code>n</code> е нечетно, 1 &le; <code>k</code> &le; 10<sup>9</sup>) — броят на елементите в масива и най-големият брой операции, които можете да направите. Вторият ред съдържа <code>n</code> цели числа <code>a<sub>1</sub>, a<sub>2</sub>, ..., a<sub>n</sub></code>.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на изхода програмата да отпечатва едно цяло число — максималната възможна медиана след операциите.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <code>n</code> &le; 200 000, <code>n</code> е нечетно</li>
+                <li>1 &le; <code>k</code> &le; 10<sup>9</sup></li>
+                <li>1 &le; <code>a<sub>i</sub></code> &le; 10<sup>9</sup></li>
+            </ul>
+
+            <h2>Примери</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 1</div>
+                    <pre>3 2
+1 3 5</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 1</div>
+                    <pre>5</pre>
+                </div>
+            </div>
+
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 2</div>
+                    <pre>5 5
+1 2 1 1 1</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 2</div>
+                    <pre>3</pre>
+                </div>
+            </div>
+
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 3</div>
+                    <pre>7 7
+4 1 2 4 3 4 4</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 3</div>
+                    <pre>5</pre>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: Проверка на медиана X (check(X))</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Тази визуализация показва как работи функцията <code>check(X)</code>. За да стане медианата поне <code>X</code>, трябва <strong>всички елементи от средата надясно</strong> (в сортирания масив) да бъдат увеличени така, че да станат поне <code>X</code>.
+                </p>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Масив (нечетен брой):</label>
+                        <input type="text" id="sim-arr" value="1 2 1 1 1" style="width: 140px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Разполагаме с K:</label>
+                        <input type="number" id="sim-k" value="5" style="width: 80px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Търсим медиана X:</label>
+                        <input type="number" id="sim-x" value="3" style="width: 80px;">
+                    </div>
+                    <button onclick="runCheck()">Тествай X</button>
+                </div>
+
+                <div class="arrays-container">
+                    <div class="cell-group" id="arr-vis">
+                        <!-- JS Generated -->
+                    </div>
+                </div>
+
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Тествай X", за да изчислим нужните операции.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        function runCheck() {
+            const arrInput = document.getElementById('sim-arr').value.trim();
+            const K = parseInt(document.getElementById('sim-k').value);
+            const targetX = parseInt(document.getElementById('sim-x').value);
+            
+            if (!arrInput || isNaN(K) || isNaN(targetX)) {
+                alert("Моля, попълнете валидни данни!");
+                return;
+            }
+
+            let nums = arrInput.split(/\s+/).map(Number);
+            if (nums.length % 2 === 0) {
+                alert("Масивът трябва да има нечетен брой елементи според условието!");
+                return;
+            }
+
+            // 1. Сортираме
+            nums.sort((a, b) => a - b);
+            
+            const midIndex = Math.floor(nums.length / 2);
+            const visContainer = document.getElementById('arr-vis');
+            const logicPanel = document.getElementById('logic-display');
+            
+            visContainer.innerHTML = '';
+            
+            let totalCost = 0;
+            let logText = `<span style="color:var(--text-muted)">// 1. Сортираме масива: [${nums.join(', ')}]</span><br>`;
+            logText += `<span style="color:var(--text-muted)">// 2. Средата е на индекс ${midIndex}. Разглеждаме елементите от него надясно:</span><br><br>`;
+
+            // Рисуваме масива
+            nums.forEach((val, i) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'arr-cell-wrapper';
+
+                const diffBadge = document.createElement('div');
+                diffBadge.className = 'diff-badge';
+
+                const cell = document.createElement('div');
+                cell.className = 'arr-cell';
+                cell.textContent = val;
+
+                if (i < midIndex) {
+                    // Лява половина - игнорираме
+                    cell.classList.add('cell-ignored');
+                    diffBadge.textContent = "Игн.";
+                    diffBadge.classList.add('zero');
+                } else {
+                    // Дясна половина - проверяваме
+                    if (i === midIndex) cell.classList.add('cell-median');
+                    else cell.classList.add('cell-active');
+
+                    let needed = Math.max(0, targetX - val);
+                    totalCost += needed;
+
+                    if (needed > 0) {
+                        diffBadge.textContent = `+${needed}`;
+                        logText += `a[${i}] = ${val} &rarr; нужни <strong style="color:var(--danger)">+${needed}</strong> операции, за да стане ${targetX}.<br>`;
+                    } else {
+                        diffBadge.textContent = "OK";
+                        diffBadge.classList.add('zero');
+                        logText += `a[${i}] = ${val} &rarr; вече е &ge; ${targetX} (нужни 0 операции).<br>`;
+                    }
+                }
+
+                wrapper.appendChild(diffBadge);
+                wrapper.appendChild(cell);
+                visContainer.appendChild(wrapper);
+
+                // Анимация
+                setTimeout(() => {
+                    diffBadge.classList.add('visible');
+                }, i * 150);
+            });
+
+            setTimeout(() => {
+                logText += `<br>Общо нужни операции: <strong style="font-size:1.1rem">${totalCost}</strong><br>`;
+                
+                if (totalCost <= K) {
+                    logText += `<strong style="color:var(--success); font-size:1.2rem">ВЪЗМОЖНО Е! (${totalCost} &le; ${K}) &rarr; Връщаме TRUE</strong>`;
+                } else {
+                    logText += `<strong style="color:var(--danger); font-size:1.2rem">НЕ Е ВЪЗМОЖНО! (${totalCost} &gt; ${K}) &rarr; Връщаме FALSE</strong>`;
+                }
+
+                logicPanel.innerHTML = logText;
+            }, nums.length * 150 + 200);
+
+        }
+
+        // Инициализация при зареждане (показва сортирания изглед без изчисления)
+        runCheck();
+    </script>
+</body>
+
+</html>
