@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C7: Изплащане на заем - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        /* Примерен вход/изход */
+        .io-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+            font-style: italic;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+        
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            margin: 0 0.2rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .fraction > span {
+            display: block;
+            padding: 0.1rem;
+        }
+
+        .fraction span.fdn {border-top: thin solid #38bdf8;}
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        /* Прогрес бар */
+        .progress-container {
+            margin-bottom: 1.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background-color: var(--code-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Таблица със стъпки */
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-muted);
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+        tr.added { animation: highlightRow 0.8s ease-out; }
+
+        @keyframes highlightRow {
+            0% { background-color: rgba(16, 185, 129, 0.2); }
+            100% { background-color: transparent; }
+        }
+
+        .logic-panel {
+            background-color: var(--code-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            min-height: 60px;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА C7: Изплащане на заем</h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>🏆 <strong>Източник:</strong> USACO 2020</div>
+                </div>
+            </div>
+
+            <p>Фермерът Джон дължи на Беси <code>N</code> литра мляко. Той трябва да й даде млякото в рамките на <code>K</code> дни. Въпреки това, той не иска да дава млякото твърде бързо. От друга страна, той трябва да постигне напредък по заема, така че трябва да дава на Беси поне <code>M</code> литра мляко всеки ден.</p>
+            
+            <p>Ето как фермерът Джон решава да се разплати с Беси. Първо той избира едно положително цяло число <code>X</code>. След това всеки ден повтаря следната процедура:</p>
+
+            <ol style="margin-left: 1.5rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                <li>Като приемем, че фермерът Джон вече е дал на Беси <code>G</code> литра, той изчислява 
+                    <div class="fraction">
+                        <span>N - G</span>
+                        <span class="fdn">X</span>
+                    </div>
+                    закръглено надолу. Нека наречем това число <code>Y</code>.
+                </li>
+                <li>Ако <code>Y</code> е по-малко от <code>M</code>, задава <code>Y</code> да бъде равно на <code>M</code>.</li>
+                <li>Дава на Беси <code>Y</code> литра мляко.</li>
+            </ol>
+
+            <p>Да се напише програма <code>loan</code>, която да определя коя е възможно най-голямата стойност на <code>X</code>, такава че ако фермерът Джон следва горната процедура, той да даде на Беси поне <code>N</code> литра мляко след <code>K</code> дни.</p>
+
+            <h2>Вход</h2>
+            <p>От първия ред на стандартния вход се въвеждат три цели числа, разделени с интервал: <code>N</code>, <code>K</code> и <code>M</code>. Гарантирано е, че <code>K * M &lt; N</code>.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на изхода програмата да отпечатва едно положително цяло число — оптималното най-голямо <code>X</code>, при което фермерът Джон успешно изплаща дълга си.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <code>N</code> &le; 10<sup>12</sup></li>
+                <li>1 &le; <code>K</code> &le; 10<sup>12</sup></li>
+                <li>1 &le; <code>M</code> &le; 10<sup>12</sup></li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход</div>
+                    <pre>10 3 3</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера</div>
+                    <pre>2</pre>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Обяснение на примера:</strong> При X = 2, в първия ден Джон изчислява (10 - 0) / 2 = 5 и дава на Беси 5 литра. Остава му да върне още 5 литра в следващите 2 дни. На втория ден изчислява (10 - 5) / 2 = 2. Тъй като 2 &lt; M (2 &lt; 3), той закръгля сумата на минималните M = 3 литра. На третия ден също дава 3 литра. Така общото количество мляко е 5 + 3 + 3 = 11, което е напълно достатъчно, за да покрие дълга от 10 литра. <br><br>
+                Следователно най-голямото възможно число X, при което той успява да се разплати навреме, е 2.
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: Процедура по връщане check(X)</div>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                    Тази визуализация симулира как Джон връща млякото при фиксирано <code>X</code>. За да работи бързо дори при 10<sup>12</sup> дни, алгоритъмът "групира" дните, в които <code>Y</code> остава едно и също число.
+                </p>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Дълг (N):</label>
+                        <input type="number" id="sim-n" value="10" style="width: 80px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Дни (K):</label>
+                        <input type="number" id="sim-k" value="3" style="width: 80px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Минимум (M):</label>
+                        <input type="number" id="sim-m" value="3" style="width: 80px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Тествай X:</label>
+                        <input type="number" id="sim-x" value="2" style="width: 80px;">
+                    </div>
+                    <button id="btn-test" onclick="runSimulation()">Симулирай</button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span>🥛 Събрано мляко (G)</span>
+                        <span id="progress-text">0 / 10 литра</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Simulation Output -->
+                <div class="table-container">
+                    <table id="sim-table">
+                        <thead>
+                            <tr>
+                                <th>Дни</th>
+                                <th>Начално G</th>
+                                <th>Y = (N-G)/X</th>
+                                <th>Добавено (Дни &times; Y)</th>
+                                <th>Крайно G</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim-tbody">
+                            <!-- Rows generated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="logic-panel" id="logic-display">
+                    Натиснете "Симулирай", за да проверим дали X ще покрие дълга в рамките на K дни.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        function appendRow(dStart, dEnd, gStart, yCalc, yActual, added, gEnd) {
+            const tbody = document.getElementById('sim-tbody');
+            const tr = document.createElement('tr');
+            tr.className = 'added';
+            
+            const period = dStart === dEnd ? dStart : `${dStart} - ${dEnd}`;
+            
+            // Format Y logic: if Y was overridden by M
+            let yText = yActual;
+            if (yCalc < yActual) {
+                yText = `<span style="color:var(--warning); text-decoration:line-through; font-size:0.8em; margin-right:5px;">${yCalc}</span> ${yActual} (M)`;
+            }
+
+            tr.innerHTML = `
+                <td>${period}</td>
+                <td>${gStart}</td>
+                <td>${yText}</td>
+                <td style="color:var(--success)">+ ${added}</td>
+                <td style="font-weight:bold; color:var(--highlight)">${gEnd}</td>
+            `;
+            tbody.appendChild(tr);
+            
+            // Auto scroll to bottom
+            const container = tr.closest('.table-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateProgress(g, n) {
+            const fill = document.getElementById('progress-fill');
+            const txt = document.getElementById('progress-text');
+            
+            // JS BigInt math to normal percentage
+            const gNum = Number(g);
+            const nNum = Number(n);
+            let pct = (gNum / nNum) * 100;
+            if (pct > 100) pct = 100;
+            
+            fill.style.width = `${pct}%`;
+            txt.textContent = `${g} / ${n} литра`;
+        }
+
+        async function runSimulation() {
+            const btn = document.getElementById('btn-test');
+            
+            const nRaw = document.getElementById('sim-n').value;
+            const kRaw = document.getElementById('sim-k').value;
+            const mRaw = document.getElementById('sim-m').value;
+            const xRaw = document.getElementById('sim-x').value;
+            
+            if (!nRaw || !kRaw || !mRaw || !xRaw || xRaw <= 0) {
+                alert("Моля, въведете валидни положителни числа.");
+                return;
+            }
+
+            btn.disabled = true;
+
+            // Use BigInt for exact USACO constraints logic (up to 10^12)
+            const N = BigInt(nRaw);
+            const K = BigInt(kRaw);
+            const M = BigInt(mRaw);
+            const X = BigInt(xRaw);
+
+            let G = 0n;
+            let day = 1n;
+            
+            document.getElementById('sim-tbody').innerHTML = '';
+            updateProgress(0, N);
+            
+            const logicPanel = document.getElementById('logic-display');
+            logicPanel.innerHTML = `Стартиране на симулация с <strong>X = ${X}</strong>...`;
+
+            while (day <= K && G < N) {
+                let Y = (N - G) / X;
+                
+                if (Y < M) {
+                    // Falls below minimum M. Take M for the remaining days.
+                    let daysLeft = K - day + 1n;
+                    let addG = daysLeft * M;
+                    
+                    appendRow(day, K, G, Y, M, addG, G + addG);
+                    G += addG;
+                    day += daysLeft;
+                    
+                    updateProgress(G, N);
+                    await sleep(600);
+                    break;
+                }
+                
+                // Grouping days with the exact same Y
+                let maxG = N - Y * X;
+                let daysSame = (maxG - G) / Y + 1n;
+                
+                if (daysSame > K - day + 1n) {
+                    daysSame = K - day + 1n;
+                }
+                
+                let addG = daysSame * Y;
+                appendRow(day, day + daysSame - 1n, G, Y, Y, addG, G + addG);
+                
+                G += addG;
+                day += daysSame;
+                
+                updateProgress(G, N);
+                await sleep(600);
+            }
+            
+            await sleep(400);
+            if (G >= N) {
+                logicPanel.innerHTML = `<strong style="color:var(--success); font-size:1.1rem">УСПЕХ! (Връщаме TRUE)</strong><br>Фермерът Джон събра общо ${G} литра за $\\le$ ${K} дни. Следователно числото <strong>X = ${X}</strong> е достатъчно малко и работи!`;
+            } else {
+                logicPanel.innerHTML = `<strong style="color:var(--danger); font-size:1.1rem">ПРОВАЛ! (Връщаме FALSE)</strong><br>Събрани са само ${G} литра (трябват ${N}). Числото <strong>X = ${X}</strong> кара Джон да връща твърде малко мляко в началото.`;
+            }
+
+            btn.disabled = false;
+        }
+    </script>
+</body>
+
+</html>
