@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок по състезателна информатика (6. клас): Факторизация на цели числа на C++</title>
+<style>
+  :root {
+    --bg-main: #f4f7fb;
+    --bg-card: #ffffff;
+    --bg-dark: #0f172a;
+    --bg-code: #1e293b;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --secondary: #7c3aed;
+    --secondary-light: #ede9fe;
+    --accent: #059669;
+    --accent-light: #d1fae5;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --border: #e2e8f0;
+    --shadow: 0 4px 20px rgba(15, 23, 42, 0.07);
+    --radius: 12px;
+    
+    /* Цветове от основната тема */
+    --theme-bg-primary: #0b1120;
+    --theme-accent: #3b82f6;
+    --group-d: #f59e0b;
+    --group-c: #10b981;
+    --theme-text-main: #f8fafc;
+    --theme-text-muted: #94a3b8;
+    --theme-border: rgba(255, 255, 255, 0.1);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.65;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Скрити цитати по подразбиране */
+  .cite {
+    display: none;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    background: var(--secondary-light);
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 4px;
+    font-weight: 600;
+  }
+  body.show-citations .cite {
+    display: inline-block;
+  }
+
+  /* Горна навигационна лента (Стандартна за уроците) */
+  header {
+    background-color: rgba(11, 17, 32, 0.95);
+    border-bottom: 1px solid var(--theme-border);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--theme-text-main);
+    text-decoration: none;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .logo span { color: var(--theme-accent); }
+  .logo svg { width: 24px; height: 24px; color: var(--theme-accent); }
+
+  nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;}
+
+  nav a {
+    color: var(--theme-text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+  }
+
+  nav a:hover { color: var(--theme-text-main); background: rgba(255, 255, 255, 0.05); }
+  nav a.active { color: var(--group-d); background: rgba(245, 158, 11, 0.1); }
+
+  /* Контроли специфични за този урок */
+  .lesson-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--theme-border);
+    margin-left: 2rem;
+  }
+
+  .badge-grade {
+    background: #38bdf8;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Основен двуколонен контейнер */
+  .workspace {
+    display: grid;
+    grid-template-columns: 48% 52%;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ЛЯВА КОЛОНА: ТЕОРИЯ */
+  .left-pane {
+    overflow-y: auto;
+    padding: 28px 32px;
+    background: #ffffff;
+    border-right: 2px solid var(--border);
+    scroll-behavior: smooth;
+  }
+
+  .theory-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: -28px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(6px);
+    padding-top: 10px;
+    z-index: 10;
+  }
+
+  .theory-nav a {
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .theory-nav a:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .section-card {
+    margin-bottom: 32px;
+  }
+  
+  .left-pane h1 {
+      font-size: 2.2rem;
+      color: var(--bg-dark);
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+  }
+
+  .left-pane h2 {
+    font-size: 1.4rem;
+    color: var(--bg-dark);
+    border-left: 5px solid var(--primary);
+    padding-left: 12px;
+    margin: 24px 0 14px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .left-pane h3 {
+    font-size: 1.12rem;
+    color: #1e3a8a;
+    margin: 18px 0 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .left-pane h4 {
+    font-size: 1rem;
+    color: var(--secondary);
+    margin: 14px 0 6px 0;
+  }
+
+  .left-pane p {
+    margin-bottom: 10px;
+    color: #334155;
+  }
+
+  .left-pane ul, .left-pane ol {
+    margin: 8px 0 14px 22px;
+    color: #334155;
+  }
+
+  .left-pane li {
+    margin-bottom: 6px;
+  }
+
+  .math-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid var(--secondary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 1.15rem;
+    text-align: center;
+    margin: 12px 0;
+    color: var(--bg-dark);
+  }
+
+  .callout {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 0.94rem;
+  }
+
+  .btn-open-interactive {
+    background: var(--secondary-light);
+    color: var(--secondary);
+    border: 1px solid #c4b5fd;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-open-interactive:hover {
+    background: var(--secondary);
+    color: #fff;
+  }
+
+  pre.static-code {
+    background: var(--bg-code);
+    color: #f8fafc;
+    padding: 14px 16px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    margin: 12px 0;
+  }
+
+  table.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.88rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  table.comparison-table th {
+    background: var(--bg-dark);
+    color: #fff;
+    text-align: left;
+    padding: 10px 12px;
+  }
+  table.comparison-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+  table.comparison-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  /* ДЯСНА КОЛОНА: ИНТЕРАКТИВНИ ПАНЕЛИ */
+  .right-pane {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-main);
+    overflow: hidden;
+  }
+
+  .tabs-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 18px;
+    background: #e2e8f0;
+    border-bottom: 1px solid #cbd5e1;
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    background: #fff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+
+  .panel-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px;
+  }
+
+  .interactive-panel {
+    display: none;
+    animation: fadeIn 0.25s ease;
+  }
+  .interactive-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .viz-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .viz-card h3 {
+    font-size: 1.15rem;
+    color: var(--bg-dark);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .viz-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .input-group label {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .input-group input {
+    padding: 8px 12px;
+    border: 1px solid #94a3b8;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    width: 160px;
+  }
+
+  .btn-action {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.88rem;
+    transition: background 0.2s;
+  }
+  .btn-action:hover {
+    background: #1d4ed8;
+  }
+
+  .btn-preset {
+    background: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-preset:hover {
+    background: #cbd5e1;
+  }
+
+  /* Чипове и блокове за факторизация */
+  .factors-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 10px 0;
+  }
+
+  .prime-chip {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 2px solid #93c5fd;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-family: monospace;
+    font-size: 1.05rem;
+  }
+
+  .pair-chip {
+    background: var(--secondary-light);
+    color: var(--secondary);
+    border: 2px solid #c4b5fd;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-family: monospace;
+    font-size: 1rem;
+  }
+
+  /* Осветяване на код ред по ред */
+  .code-Interactive-box {
+    background: var(--bg-code);
+    border-radius: 10px;
+    padding: 12px 0;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    overflow-x: auto;
+    border: 2px solid #334155;
+  }
+
+  .code-line {
+    display: flex;
+    padding: 3px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 4px solid transparent;
+  }
+  .code-line:hover {
+    background: rgba(255,255,255,0.07);
+  }
+  .code-line.active-line {
+    background: rgba(56, 189, 248, 0.22);
+    border-left-color: #38bdf8;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .line-num {
+    width: 30px;
+    color: #64748b;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .line-text {
+    white-space: pre;
+  }
+
+  .explanation-banner {
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    border-left: 5px solid var(--primary);
+    padding: 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 0.92rem;
+  }
+
+  /* Трасировка контроли и състояние */
+  .trace-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 12px 0;
+  }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .state-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .state-box .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .state-box .val {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--bg-dark);
+    font-family: monospace;
+    margin-top: 2px;
+  }
+
+  /* Колело мод 6 */
+  .wheel-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .wheel-cell {
+    padding: 10px 6px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.82rem;
+    border: 1px solid var(--border);
+  }
+  .wheel-cell.active-candidate {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: #065f46;
+    font-weight: 700;
+  }
+  .wheel-cell.skipped {
+    background: #f1f5f9;
+    color: #94a3b8;
+  }
+
+  .divisor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .divisor-item {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .status-yes {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .status-no {
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+
+  @media (max-width: 1024px) {
+    body {
+      height: auto;
+      overflow: auto;
+    }
+    .workspace {
+      grid-template-columns: 1fr;
+      overflow: visible;
+    }
+    .left-pane, .panel-container {
+      overflow: visible;
+    }
+  }
+</style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+<header>
+    <a href="../../index.html" class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+        <span>Algorithma 13</span>
+    </a>
+    
+    <div class="lesson-controls">
+        <span class="badge-grade">Теория на числата</span>
+    </div>
+
+    <nav>
+        <a href="../../index.html">Начало</a>
+        <a href="../../group-d.html" class="active">Група D</a>
+        <a href="../../group-c.html">Група C</a>
+    </nav>
+</header>
+
+<div class="workspace">
+  <!-- ================= ЛЯВА ЧАСТ: ПЪЛЕН ТЕКСТ НА УРОКА ================= -->
+  <div class="left-pane">
+    <h1>Факторизация на цели числа на C++</h1>
+    <nav class="theory-nav">
+      <a href="#sec-1">1. Същност и предназначение</a>
+      <a href="#sec-2">2. Оптимизация 1 (factor.cpp)</a>
+      <a href="#sec-3">3. Оптимизация 2 (weel.cpp)</a>
+      <a href="#sec-4">4. Сравнение и Задачи</a>
+    </nav>
+
+    <div class="section-card" id="sec-1">
+      <h2>
+        <span>1. Същност и предназначение <span class="cite">[cite: 15]</span></span>
+      </h2>
+
+      <h3>Какво е факторизация? <span class="cite">[cite: 15]</span></h3>
+      <p>
+        <strong>Факторизация</strong> (или разлагане на прости множители) на едно естествено число <em>n &gt; 1</em> означава да го представим като произведение единствено от прости числа.<span class="cite">[cite: 15]</span>
+      </p>
+      <p>
+        Според <strong>Основната теорема на аритметиката</strong>, всяко естествено число <em>n &gt; 1</em> може да се разложи на прости множители по <strong>единствен начин</strong> (с точност до реда на множителите):<span class="cite">[cite: 15]</span>
+      </p>
+      <div class="math-box">
+        n = p<sub>1</sub><sup>k<sub>1</sub></sup> &middot; p<sub>2</sub><sup>k<sub>2</sub></sup> &middot; &hellip; &middot; p<sub>m</sub><sup>k<sub>m</sub></sup> <span class="cite">[cite: 15]</span>
+      </div>
+      <p>
+        където <em>p<sub>1</sub> &lt; p<sub>2</sub> &lt; &hellip; &lt; p<sub>m</sub></em> са прости числа, а <em>k<sub>1</sub>, k<sub>2</sub>, &hellip;, k<sub>m</sub></em> са техните степени (по колко пъти се среща съответният прост множител).<span class="cite">[cite: 15]</span>
+      </p>
+      <div class="callout">
+        <strong>Пример:</strong> Числото <em>n = 360</em> се разлага като:<br>
+        <strong>360 = 2 &middot; 2 &middot; 2 &middot; 3 &middot; 3 &middot; 5 = 2<sup>3</sup> &middot; 3<sup>2</sup> &middot; 5<sup>1</sup></strong><span class="cite">[cite: 15]</span>
+      </div>
+
+      <h3>Защо ни е необходима в състезателната информатика? <span class="cite">[cite: 15]</span></h3>
+      <p>
+        В състезателните задачи рядко се иска само да се отпечатат простите делители.<span class="cite">[cite: 15]</span> Факторизацията е основен инструмент за решаване на задачи от теория на числата:<span class="cite">[cite: 15]</span>
+      </p>
+      <ol>
+        <li>
+          <strong>Намиране на броя на всички делители d(n):</strong> Ако <em>n = p<sub>1</sub><sup>k<sub>1</sub></sup> &middot; p<sub>2</sub><sup>k<sub>2</sub></sup> &middot; &hellip; &middot; p<sub>m</sub><sup>k<sub>m</sub></sup></em>, всеки делител на <em>n</em> се получава, като изберем степен за <em>p<sub>1</sub></em> (от 0 до <em>k<sub>1</sub></em>, т.е. <em>k<sub>1</sub> + 1</em> възможности), степен за <em>p<sub>2</sub></em> (<em>k<sub>2</sub> + 1</em> възможности) и т.н.<span class="cite">[cite: 15]</span> Следователно:<span class="cite">[cite: 15]</span>
+          <div class="math-box">d(n) = (k<sub>1</sub> + 1)(k<sub>2</sub> + 1)&hellip;(k<sub>m</sub> + 1) <span class="cite">[cite: 15]</span></div>
+          <em>За 360 = 2<sup>3</sup> &middot; 3<sup>2</sup> &middot; 5<sup>1</sup> броят на всички делители е (3 + 1)(2 + 1)(1 + 1) = 4 &middot; 3 &middot; 2 = 24.</em><span class="cite">[cite: 16]</span>
+          <button class="btn-open-interactive" onclick="openPanel('panel-divisors')">Виж визуализация ➔</button>
+        </li>
+        <li>
+          <strong>Проверка за точен квадрат или точен куб:</strong> Едно число е точен квадрат тогава и само тогава, когато всички степени <em>k<sub>i</sub></em> в каноничното му разлагане са четни.<span class="cite">[cite: 16]</span>
+          <button class="btn-open-interactive" onclick="openPanel('panel-power')">Виж визуализация ➔</button>
+        </li>
+        <li>
+          <strong>Намиране на НОД и НОК на много големи числа</strong>, както и решаване на задачи за делимост на произведения.<span class="cite">[cite: 16]</span>
+          <button class="btn-open-interactive" onclick="openPanel('panel-gcd')">Виж визуализация ➔</button>
+        </li>
+      </ol>
+
+      <h3>Как съхраняваме резултата в C++? <span class="cite">[cite: 16]</span></h3>
+      <p>
+        В зависимост от условието на задачата използваме един от следните два начина чрез динамичен масив (<code>std::vector</code>):<span class="cite">[cite: 16]</span>
+      </p>
+      <ul>
+        <li>
+          <strong>Списък на всички прости множители с повторенията (<code>vector&lt;long long&gt;</code>)</strong> — използва се в първия примерен код (<code>factor.cpp</code>), където всеки прост множител се добавя в списъка толкова пъти, колкото дели числото.<span class="cite">[cite: 1, 16]</span> За <em>n = 360</em> векторът ще съдържа <code>2 2 2 3 3 5</code>.<span class="cite">[cite: 16]</span>
+        </li>
+        <li>
+          <strong>Списък от двойки <code>{прост_делител, степен}</code> (<code>vector&lt;pair&lt;long long, int&gt;&gt;</code>)</strong> — използва се във втория примерен код (<code>weel.cpp</code>), където за всеки прост делител се пази неговата стойност и колко пъти се среща.<span class="cite">[cite: 2, 16]</span> За <em>n = 360</em> векторът ще съдържа двойките <code>{2, 3}, {3, 2}, {5, 1}</code>, което позволява извеждане във вида <code>360 = 2^3 * 3^2 * 5^1</code>.<span class="cite">[cite: 2, 16]</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="section-card" id="sec-2">
+      <h2>
+        <span>2. Оптимизации на пробното деление <span class="cite">[cite: 16]</span></span>
+        <button class="btn-open-interactive" onclick="openPanel('panel-factor')">Разбор и трасировка ➔</button>
+      </h2>
+      <p>
+        Нека проследим как бавната проверка на всички числа се оптимизира до бързо състезателно решение.<span class="cite">[cite: 16]</span>
+      </p>
+
+      <h3>Защо проверката до n е твърде бавна? <span class="cite">[cite: 16]</span></h3>
+      <p>
+        Ако проверяваме последователно всички делители от 2 до <em>n</em>, при вход <em>n = 10<sup>12</sup></em> (което напълно се побира в типа <code>long long</code>) програмата ще извърши <em>10<sup>12</sup></em> операции.<span class="cite">[cite: 17]</span> Един съвременен процесор в тестова система прави около <em>10<sup>8</sup></em> операции в секунда, така че такъв алгоритъм със сложност <em>O(n)</em> ще надвиши лимита за време (<strong>Time Limit Exceeded – TLE</strong>).<span class="cite">[cite: 17]</span>
+      </p>
+
+      <h3>Оптимизация 1: Проверка само до &radic;n и динамично намаляване на n (factor.cpp) <span class="cite">[cite: 17]</span></h3>
+      <p>
+        <strong>Математическо свойство:</strong> Ако едно число <em>n</em> е съставно, то може да се представи като произведение <em>n = a &middot; b</em>, където <em>1 &lt; a &le; b &lt; n</em>.<span class="cite">[cite: 17]</span> Ако допуснем, че и двата множителя са по-големи от <em>&radic;n</em>, тогава произведението им ще бъде <em>a &middot; b &gt; &radic;n &middot; &radic;n = n</em>, което е невъзможно.<span class="cite">[cite: 17]</span> Следователно <strong>всяко съставно число n има поне един прост делител, по-малък или равен на &radic;n</strong>.<span class="cite">[cite: 17]</span>
+      </p>
+
+      <h4>Пример 1: Класическа оптимизирана факторизация (factor.cpp) <span class="cite">[cite: 1, 17]</span></h4>
+<pre class="static-code">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+vector&lt;long long&gt; factorize(long long n)
+{
+    vector&lt;long long&gt; factors;
+    for(long long i = 2; i * i &lt;= n; i++)
+    {
+        while(n % i == 0)
+        {
+            factors.push_back(i);
+            n /= i;
+        }
+    }
+
+    // Ако след цикъла е останало число &gt; 1, то е последният прост делител
+    if(n &gt; 1) factors.push_back(n);
+    return factors;
+}
+
+int main()
+{
+    long long n; cin &gt;&gt; n;
+    vector&lt;long long&gt; result = factorize(n);
+    for(long long f : result)
+    {
+        cout &lt;&lt; f &lt;&lt; " ";
+    }
+    cout &lt;&lt; "\n";
+}</pre><span class="cite">[cite: 1, 17, 18]</span>
+
+      <h4>Подробен разбор на кода в factor.cpp: <span class="cite">[cite: 18]</span></h4>
+      <ol>
+        <li>
+          <strong>Условие на цикъла <code>for(long long i = 2; i * i &lt;= n; i++)</code>:</strong> Вместо да изчисляваме корен квадратен, проверяваме дали <code>i * i &lt;= n</code>.<span class="cite">[cite: 1, 18]</span> Тъй като типът на <code>i</code> е <code>long long</code>, умножението <code>i * i</code> няма да препълни при <em>n &le; 10<sup>18</sup></em>.<span class="cite">[cite: 18]</span> Освен това при всяко деление <code>n /= i</code> стойността на <code>n</code> намалява, с което автоматично намалява и горната граница на цикъла.<span class="cite">[cite: 1, 18]</span>
+        </li>
+        <li>
+          <strong>Защо във вектора <code>factors</code> попадат само прости числа?</strong> Във вътрешния цикъл <code>while(n % i == 0)</code> делим <code>n</code> на <code>i</code>, докато се дели без остатък.<span class="cite">[cite: 1, 18]</span> Така, преди <code>i</code> да достигне съставно число като 4, 6, 8, 9&hellip;, от <code>n</code> вече са премахнати всички негови по-малки прости множители (2, 3 и т.н.).<span class="cite">[cite: 18, 19]</span> Затова за съставно <code>i</code> условието <code>n % i == 0</code> никога няма да бъде вярно.<span class="cite">[cite: 19]</span>
+        </li>
+        <li>
+          <strong>Защо е необходима проверката <code>if(n &gt; 1) factors.push_back(n);</code>?</strong> Ако след приключване на цикъла <code>i * i &lt;= n</code> числото <code>n</code> все още е по-голямо от 1, то няма нито един делител <em>&le; &radic;n</em>, което означава, че останалото <code>n</code> е <strong>просто число</strong> и е последният прост множител.<span class="cite">[cite: 1, 19]</span>
+        </li>
+      </ol>
+
+      <h4>Трасировка на factor.cpp при вход n = 140: <span class="cite">[cite: 19]</span></h4>
+      <ul>
+        <li><strong>Начало:</strong> <code>n = 140</code>, <code>factors = {}</code>.<span class="cite">[cite: 19]</span></li>
+        <li>
+          <strong><code>i = 2</code>:</strong> <code>2 * 2 &lt;= 140</code> (вярно).<span class="cite">[cite: 19]</span> Влизаме в <code>while(n % 2 == 0)</code>:<span class="cite">[cite: 19]</span>
+          <ul>
+            <li>140 се дели на 2 &rarr; добавяме <code>2</code> във <code>factors</code>, <code>n</code> става 70.<span class="cite">[cite: 19]</span></li>
+            <li>70 се дели на 2 &rarr; добавяме <code>2</code> във <code>factors</code>, <code>n</code> става 35.<span class="cite">[cite: 19]</span></li>
+          </ul>
+        </li>
+        <li><strong><code>i = 3</code>:</strong> <code>3 * 3 &lt;= 35</code> (9 &le; 35, вярно), но 35 mod 3 &ne; 0.<span class="cite">[cite: 19]</span></li>
+        <li><strong><code>i = 4</code>:</strong> <code>4 * 4 &lt;= 35</code> (16 &le; 35, вярно), но 35 mod 4 &ne; 0.<span class="cite">[cite: 19]</span></li>
+        <li><strong><code>i = 5</code>:</strong> <code>5 * 5 &lt;= 35</code> (25 &le; 35, вярно).<span class="cite">[cite: 19]</span> 35 се дели на 5 &rarr; добавяме <code>5</code> във <code>factors</code>, <code>n</code> става 7.<span class="cite">[cite: 19]</span></li>
+        <li><strong><code>i = 6</code>:</strong> Проверяваме <code>6 * 6 &lt;= 7</code> (36 &le; 7 — <strong>невярно</strong>).<span class="cite">[cite: 19]</span> Цикълът приключва веднага!<span class="cite">[cite: 19]</span></li>
+        <li><strong>След цикъла:</strong> Проверяваме <code>if(n &gt; 1)</code> — тъй като <code>n = 7 &gt; 1</code>, добавяме <code>7</code> във <code>factors</code>.<span class="cite">[cite: 19]</span></li>
+        <li><strong>Изход:</strong> Във функцията <code>main()</code> цикълът <code>for(long long f : result)</code> отпечатва: <code>2 2 5 7</code>.<span class="cite">[cite: 1, 20]</span></li>
+      </ul>
+    </div>
+
+    <div class="section-card" id="sec-3">
+      <h2>
+        <span>Оптимизация 2: Колесна факторизация за делителите 2 и 3 (weel.cpp) <span class="cite">[cite: 20]</span></span>
+        <button class="btn-open-interactive" onclick="openPanel('panel-wheel')">Колесна визуализация ➔</button>
+      </h2>
+      <p>
+        В <code>factor.cpp</code> цикълът проверява всяко поредно число <code>i</code> (2, 3, 4, 5, 6, 7, 8, 9&hellip;), въпреки че знаем, че четните числа над 2 и кратните на 3 над 3 няма как да са прости.<span class="cite">[cite: 20]</span>
+      </p>
+      <p>
+        Можем да ускорим алгоритъма <strong>3 пъти</strong>, като разгледаме остатъците на естествените числа при деление на 6:<span class="cite">[cite: 20]</span>
+      </p>
+      <ul>
+        <li><code>6k</code> — дели се на 6 (и на 2, и на 3)<span class="cite">[cite: 20]</span></li>
+        <li><code>6k + 1</code> — <strong>не се дели нито на 2, нито на 3</strong><span class="cite">[cite: 20]</span></li>
+        <li><code>6k + 2 = 2(3k + 1)</code> — четно число (дели се на 2)<span class="cite">[cite: 20]</span></li>
+        <li><code>6k + 3 = 3(2k + 1)</code> — дели се на 3<span class="cite">[cite: 20]</span></li>
+        <li><code>6k + 4 = 2(3k + 2)</code> — четно число (дели се на 2)<span class="cite">[cite: 20]</span></li>
+        <li><code>6k + 5</code> (което е същото като <code>6(k + 1) - 1</code>) — <strong>не се дели нито на 2, нито на 3</strong><span class="cite">[cite: 20]</span></li>
+      </ul>
+      <p>
+        Следователно всички прости числа, по-големи от 3, са от вида <code>6k - 1</code> и <code>6k + 1</code>.<span class="cite">[cite: 20]</span> Ако ги запишем подред, като започнем от 5, получаваме редицата:<span class="cite">[cite: 20]</span>
+      </p>
+      <div class="math-box">5, 7, 11, 13, 17, 19, 23, 25, 29, 31 &hellip; <span class="cite">[cite: 20]</span></div>
+      <p>
+        Забележете как се променя стъпката между съседните числа:<span class="cite">[cite: 20]</span>
+      </p>
+      <div class="math-box">5 &rarr;<sup>+2</sup> 7 &rarr;<sup>+4</sup> 11 &rarr;<sup>+2</sup> 13 &rarr;<sup>+4</sup> 17 &rarr;<sup>+2</sup> 19 &hellip; <span class="cite">[cite: 21]</span></div>
+      <p>
+        Ако първо проверим отделно делителите 2 и 3, след това от <code>i = 5</code> нататък можем просто да редуваме стъпка <strong>+2</strong> и <strong>+4</strong>!<span class="cite">[cite: 2, 21]</span> По този начин проверяваме само 2 от всеки 6 последователни числа и прескачаме 2/3 от ненужните проверки.<span class="cite">[cite: 21]</span>
+      </p>
+
+      <h4>Пример 2: Колесна факторизация с двойки {делител, степен} (weel.cpp) <span class="cite">[cite: 2, 21]</span></h4>
+<pre class="static-code">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;utility&gt;
+using namespace std;
+
+// Връща вектор от двойки: {прост_делител, степен}
+vector&lt;pair&lt;long long, int&gt;&gt; factorize(long long n)
+{
+    vector&lt;pair&lt;long long, int&gt;&gt; factors;
+
+    // 1. Обработваме делителите 2 и 3 поотделно
+    for(long long d : {2, 3})
+    {
+       if(n % d == 0)
+       {
+           int cnt = 0;
+           while(n % d == 0)
+           {
+               n /= d;
+               cnt++;
+           }
+           factors.push_back({d, cnt});
+       }
+    }
+
+    // 2. Проверяваме само числа от вида 6k - 1 и 6k + 1 (редуваме стъпка +2 и +4)
+    long long step = 2;
+    for (long long i = 5; i * i &lt;= n; i += step, step = 6 - step)
+    {
+        if(n % i == 0)
+        {
+            int br = 0;
+            while(n % i == 0)
+            {
+                n /= i;
+                br++;
+            }
+            factors.push_back({i, br});
+        }
+    }
+
+    // 3. Останал прост делител &gt; sqrt(n)
+    if(n &gt; 1) factors.push_back({n, 1});
+    return factors;
+}
+
+int main()
+{
+    long long n; cin &gt;&gt; n;
+    auto res = factorize(n);
+
+    cout &lt;&lt; n &lt;&lt; " = ";
+    for(int i = 0; i &lt; res.size(); i++)
+    {
+        cout &lt;&lt; res[i].first &lt;&lt; "^" &lt;&lt; res[i].second;
+        if(i + 1 &lt; res.size()) cout &lt;&lt; " * ";
+    }
+    cout &lt;&lt; "\n";
+}</pre><span class="cite">[cite: 2, 21, 22, 23]</span>
+
+      <h4>Подробен разбор на кода в weel.cpp: <span class="cite">[cite: 23]</span></h4>
+      <ol>
+        <li>
+          <strong>Библиотека <code>&lt;utility&gt;</code> и тип <code>pair&lt;long long, int&gt;</code>:</strong> Всеки елемент на вектора <code>factors</code> е двойка (<code>pair</code>), в която първото поле (<code>.first</code> от тип <code>long long</code>) пази самия прост делител, а второто поле (<code>.second</code> от тип <code>int</code>) пази неговата степен.<span class="cite">[cite: 2, 23]</span>
+        </li>
+        <li>
+          <strong>Етап 1 — Обработка на делителите 2 и 3 (<code>for(long long d : {2, 3})</code>):</strong> Променливата <code>d</code> приема първо стойност 2, а след това 3.<span class="cite">[cite: 2, 23]</span> Ако <code>n</code> се дели на <code>d</code>, броячът <code>cnt</code> преброява колко пъти <code>d</code> се съдържа в <code>n</code> чрез цикъла <code>while(n % d == 0)</code>, след което двойката <code>{d, cnt}</code> се записва във вектора <code>factors</code>.<span class="cite">[cite: 2, 23]</span>
+        </li>
+        <li>
+          <strong>Етап 2 — Как работи <code>i += step, step = 6 - step</code>:</strong><span class="cite">[cite: 2, 23]</span>
+          <ul>
+            <li>В началото задаваме <code>long long step = 2;</code> и <code>i = 5</code>.<span class="cite">[cite: 2, 23]</span></li>
+            <li>В края на първата итерация (<code>i = 5</code>): към <code>i</code> се прибавя <code>step</code> (5 + 2 = 7), а веднага след това <code>step</code> става <code>6 - 2 = 4</code>.<span class="cite">[cite: 23]</span></li>
+            <li>В края на втората итерация (<code>i = 7</code>): към <code>i</code> се прибавя новата стойност на <code>step</code> (7 + 4 = 11), а <code>step</code> става <code>6 - 4 = 2</code>.<span class="cite">[cite: 24]</span></li>
+            <li>Така без нито една условна конструкция <code>if</code> стъпката автоматично се редува: 2, 4, 2, 4, 2, 4&hellip;<span class="cite">[cite: 24]</span></li>
+            <li>Когато намерим делител <code>i</code>, променливата <code>br</code> преброява неговата степен и добавяме <code>{i, br}</code> във <code>factors</code>.<span class="cite">[cite: 2, 24]</span></li>
+          </ul>
+        </li>
+        <li>
+          <strong>Етап 3 — Останал прост делител (<code>if(n &gt; 1)</code>):</strong> Ако след цикъла е останало число <code>n &gt; 1</code>, то със сигурност е просто число на първа степен, затова добавяме <code>{n, 1}</code>.<span class="cite">[cite: 2, 24]</span>
+        </li>
+        <li>
+          <strong>Форматирано извеждане в <code>main()</code>:</strong> Чрез <code>res[i].first &lt;&lt; "^" &lt;&lt; res[i].second</code> отпечатваме всеки прост множител и неговата степен, а условието <code>if(i + 1 &lt; res.size()) cout &lt;&lt; " * ";</code> поставя знака за умножение между тях, без да слага излишен знак след последния множител.<span class="cite">[cite: 2, 24]</span>
+        </li>
+      </ol>
+
+      <h4>Трасировка на weel.cpp при вход n = 360: <span class="cite">[cite: 24]</span></h4>
+      <ul>
+        <li><strong>Етап 1 (<code>d = 2</code>):</strong> 360 се дели на 2 три пъти (360 &rarr; 180 &rarr; 90 &rarr; 45).<span class="cite">[cite: 24]</span> Записваме <code>{2, 3}</code> във <code>factors</code>, <code>n</code> става 45.<span class="cite">[cite: 24]</span></li>
+        <li><strong>Етап 1 (<code>d = 3</code>):</strong> 45 се дели на 3 два пъти (45 &rarr; 15 &rarr; 5).<span class="cite">[cite: 24]</span> Записваме <code>{3, 2}</code> във <code>factors</code>, <code>n</code> става 5.<span class="cite">[cite: 24]</span></li>
+        <li><strong>Етап 2 (<code>i = 5</code>):</strong> Проверяваме <code>5 * 5 &lt;= 5</code> (25 &le; 5 — <strong>невярно</strong>).<span class="cite">[cite: 24]</span> Основният цикъл изобщо не се изпълнява!<span class="cite">[cite: 24]</span></li>
+        <li><strong>Етап 3 (<code>if(n &gt; 1)</code>):</strong> Тъй като <code>n = 5 &gt; 1</code>, записваме <code>{5, 1}</code> във <code>factors</code>.<span class="cite">[cite: 24]</span></li>
+        <li><strong>Изход на екрана:</strong> <code>360 = 2^3 * 3^2 * 5^1</code>.<span class="cite">[cite: 25]</span></li>
+      </ul>
+    </div>
+
+    <div class="section-card" id="sec-4">
+      <h2>
+        <span>3. Сравнение и задачи за упражнение <span class="cite">[cite: 25]</span></span>
+        <button class="btn-open-interactive" onclick="openPanel('panel-tasks')">Решения на задачите ➔</button>
+      </h2>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Характеристика <span class="cite">[cite: 25]</span></th>
+            <th>factor.cpp (До &radic;n) <span class="cite">[cite: 25]</span></th>
+            <th>weel.cpp (Колесна факторизация) <span class="cite">[cite: 25]</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Какво връща функцията</strong> <span class="cite">[cite: 25]</span></td>
+            <td><code>vector&lt;long long&gt;</code> (всички прости множители) <span class="cite">[cite: 1, 25]</span></td>
+            <td><code>vector&lt;pair&lt;long long, int&gt;&gt;</code> (делител и степен) <span class="cite">[cite: 2, 25]</span></td>
+          </tr>
+          <tr>
+            <td><strong>Пример за изход при n = 360</strong> <span class="cite">[cite: 25]</span></td>
+            <td><code>2 2 2 3 3 5</code> <span class="cite">[cite: 25]</span></td>
+            <td><code>360 = 2^3 * 3^2 * 5^1</code> <span class="cite">[cite: 25]</span></td>
+          </tr>
+          <tr>
+            <td><strong>Проверявани делители</strong> <span class="cite">[cite: 25]</span></td>
+            <td>Всички цели числа 2, 3, 4, 5, 6&hellip; до &radic;n <span class="cite">[cite: 25]</span></td>
+            <td>2, 3 и само числата от вида 6k - 1, 6k + 1 до &radic;n <span class="cite">[cite: 25]</span></td>
+          </tr>
+          <tr>
+            <td><strong>Брой итерации за просто n = 10<sup>12</sup> + 39</strong> <span class="cite">[cite: 25]</span></td>
+            <td>1 000 000 проверки <span class="cite">[cite: 25]</span></td>
+            <td>&approx; 333 333 проверки (3 пъти по-малко) <span class="cite">[cite: 25]</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Задачи за самостоятелна работа в час <span class="cite">[cite: 25]</span></h3>
+      <ol>
+        <li>
+          <strong>Задача „Брой на всички делители“:</strong> Използвайте функцията <code>factorize(n)</code> от файла <code>weel.cpp</code>.<span class="cite">[cite: 2, 25]</span> Прочетете число <em>n</em> (<em>1 &le; n &le; 10<sup>12</sup></em>) и чрез степените на простите му делители (<code>res[i].second</code>) пресметнете и отпечатайте общия брой на всички делители на <em>n</em> по формулата <em>(k<sub>1</sub> + 1)(k<sub>2</sub> + 1)&hellip;(k<sub>m</sub> + 1)</em>.<span class="cite">[cite: 25]</span>
+        </li>
+        <li>
+          <strong>Задача „Брой на простите множители“:</strong> Използвайте файла <code>factor.cpp</code>, за да намерите от колко общо прости множителя (заедно с повторенията) се състои числото <em>n</em>.<span class="cite">[cite: 1, 25]</span> <em>(Подсказка: достатъчно е да отпечатате <code>result.size()</code> в <code>main()</code>).</em><span class="cite">[cite: 25]</span>
+        </li>
+        <li>
+          <strong>Задача „Допълване до точен квадрат“:</strong> С помощта на <code>weel.cpp</code> намерете най-малкото естествено число <em>m</em>, по което трябва да умножим дадено число <em>n</em>, така че произведението <em>n &middot; m</em> да стане точен квадрат.<span class="cite">[cite: 2, 25, 26]</span> <em>(Подсказка: в <code>m</code> трябва да умножите всички прости делители <code>res[i].first</code>, чиято степен <code>res[i].second</code> е нечетна).</em><span class="cite">[cite: 26]</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ================= ДЯСНА ЧАСТ: ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ ================= -->
+  <div class="right-pane">
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="openPanel('panel-what')" id="btn-panel-what">1. Какво е факторизация</button>
+      <button class="tab-btn" onclick="openPanel('panel-divisors')" id="btn-panel-divisors">2. Брой делители d(n)</button>
+      <button class="tab-btn" onclick="openPanel('panel-power')" id="btn-panel-power">3. Точен квадрат / куб</button>
+      <button class="tab-btn" onclick="openPanel('panel-gcd')" id="btn-panel-gcd">4. НОД, НОК и Делимост</button>
+      <button class="tab-btn" onclick="openPanel('panel-factor')" id="btn-panel-factor">5. Код и Трасировка: factor.cpp</button>
+      <button class="tab-btn" onclick="openPanel('panel-wheel')" id="btn-panel-wheel">6. Колесна факторизация: weel.cpp</button>
+      <button class="tab-btn" onclick="openPanel('panel-tasks')" id="btn-panel-tasks">7. Задачи 1, 2 и 3</button>
+    </div>
+
+    <div class="panel-container">
+
+      <!-- ПАНЕЛ 1: КАКВО Е ФАКТОРИЗАЦИЯ -->
+      <div class="interactive-panel active" id="panel-what">
+        <div class="viz-card">
+          <h3>Интерактивен скенер: Какво е факторизация?</h3>
+          <p class="viz-subtitle">Въведете естествено число n &gt; 1, за да видите разлагането му по Основната теорема на аритметиката и как се пази в паметта на C++.</p>
+
+          <div class="input-group">
+            <label for="inp-what">Число n =</label>
+            <input type="number" id="inp-what" value="360" min="2" max="999999999999">
+            <button class="btn-action" onclick="runWhatViz()">Разложи на прости множители</button>
+            <button class="btn-preset" onclick="setWhatPreset(360)">360</button>
+            <button class="btn-preset" onclick="setWhatPreset(140)">140</button>
+            <button class="btn-preset" onclick="setWhatPreset(2520)">2520</button>
+            <button class="btn-preset" onclick="setWhatPreset(9999991)">9999991 (просто)</button>
+          </div>
+
+          <div id="what-output"></div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛ 2: БРОЙ НА ВСИЧКИ ДЕЛИТЕЛИ -->
+      <div class="interactive-panel" id="panel-divisors">
+        <div class="viz-card">
+          <h3>Намиране на броя на всички делители d(n)</h3>
+          <p class="viz-subtitle">Всеки делител се образува чрез избор на степен от 0 до k<sub>i</sub> за всеки прост множител: d(n) = (k<sub>1</sub> + 1)(k<sub>2</sub> + 1)&hellip;(k<sub>m</sub> + 1).</p>
+
+          <div class="input-group">
+            <label for="inp-div">Число n =</label>
+            <input type="number" id="inp-div" value="360" min="2" max="1000000000000">
+            <button class="btn-action" onclick="runDivisorsViz()">Пресметни d(n)</button>
+            <button class="btn-preset" onclick="setDivPreset(360)">360</button>
+            <button class="btn-preset" onclick="setDivPreset(72)">72</button>
+            <button class="btn-preset" onclick="setDivPreset(1000)">1000</button>
+          </div>
+
+          <div id="divisors-output"></div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛ 3: ТОЧЕН КВАДРАТ ИЛИ КУБ -->
+      <div class="interactive-panel" id="panel-power">
+        <div class="viz-card">
+          <h3>Проверка за точен квадрат или точен куб</h3>
+          <p class="viz-subtitle">Едно число е точен квадрат, ако всички степени k<sub>i</sub> са четни, и точен куб, ако всички степени k<sub>i</sub> се делят на 3.</p>
+
+          <div class="input-group">
+            <label for="inp-pow">Число n =</label>
+            <input type="number" id="inp-pow" value="144" min="2" max="1000000000000">
+            <button class="btn-action" onclick="runPowerViz()">Провери степените</button>
+            <button class="btn-preset" onclick="setPowPreset(144)">144 (квадрат)</button>
+            <button class="btn-preset" onclick="setPowPreset(216)">216 (куб)</button>
+            <button class="btn-preset" onclick="setPowPreset(729)">729 (квадрат и куб)</button>
+            <button class="btn-preset" onclick="setPowPreset(360)">360 (нито едно)</button>
+          </div>
+
+          <div id="power-output"></div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛ 4: НОД, НОК И ДЕЛИМОСТ НА ПРОИЗВЕДЕНИЯ -->
+      <div class="interactive-panel" id="panel-gcd">
+        <div class="viz-card">
+          <h3>НОД, НОК и делимост на произведения чрез факторизация</h3>
+          <p class="viz-subtitle">За НОД вземаме минималната степен min(a<sub>i</sub>, b<sub>i</sub>), а за НОК — максималната степен max(a<sub>i</sub>, b<sub>i</sub>) за всеки прост делител.</p>
+
+          <div class="input-group">
+            <label>A =</label>
+            <input type="number" id="inp-gcd-a" value="360" min="2" style="width:110px;">
+            <label>B =</label>
+            <input type="number" id="inp-gcd-b" value="150" min="2" style="width:110px;">
+            <label>Делител C (за A&middot;B) =</label>
+            <input type="number" id="inp-gcd-c" value="900" min="2" style="width:110px;">
+            <button class="btn-action" onclick="runGcdViz()">Анализирай</button>
+          </div>
+
+          <div id="gcd-output"></div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛ 5: FACTOR.CPP И ТРАСИРОВКА N = 140 -->
+      <div class="interactive-panel" id="panel-factor">
+        <div class="viz-card">
+          <h3>Оптимизация 1: Пълен код на <code>factor.cpp</code> с осветяване ред по ред</h3>
+          <p class="viz-subtitle">Кликнете върху произволен ред от кода ИЛИ използвайте бутоните за постъпкова трасировка при вход <strong>n = 140</strong>.</p>
+
+          <div class="trace-controls">
+            <button class="btn-action" onclick="stepFactorTrace(-1)">&#9664; Предишна стъпка</button>
+            <button class="btn-action" onclick="stepFactorTrace(1)">Следваща стъпка &#9654;</button>
+            <button class="btn-preset" onclick="resetFactorTrace()">Нулирай (n = 140)</button>
+            <span id="factor-step-counter" style="font-weight:700; margin-left:8px; color:var(--primary);"></span>
+          </div>
+
+          <div class="state-grid">
+            <div class="state-box">
+              <div class="label">Текущо n</div>
+              <div class="val" id="f-state-n">140</div>
+            </div>
+            <div class="state-box">
+              <div class="label">Делител i</div>
+              <div class="val" id="f-state-i">-</div>
+            </div>
+            <div class="state-box">
+              <div class="label">Проверка i * i &lt;= n</div>
+              <div class="val" id="f-state-cond">-</div>
+            </div>
+            <div class="state-box">
+              <div class="label">Вектор factors</div>
+              <div class="val" id="f-state-vec">{ }</div>
+            </div>
+          </div>
+
+          <div class="code-Interactive-box" id="factor-code-box"></div>
+          <div class="explanation-banner" id="factor-line-explanation">
+            Кликнете върху ред от кода или натиснете „Следваща стъпка“, за да видите подробния разбор.
+          </div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛ 6: КОЛЕСНА ФАКТОРИЗАЦИЯ WEEL.CPP -->
+      <div class="interactive-panel" id="panel-wheel">
+        <div class="viz-card">
+          <h3>Оптимизация 2: Колесна факторизация за 2 и 3 (<code>weel.cpp</code>)</h3>
+          <p class="viz-subtitle">Прескачаме 2/3 от всички числа, като след 2 и 3 проверяваме само кандидатите от вида 6k - 1 и 6k + 1 със стъпки +2 и +4.</p>
+
+          <div class="wheel-grid">
+            <div class="wheel-cell skipped"><strong>6k</strong><br>дели се на 2 и 3</div>
+            <div class="wheel-cell active-candidate"><strong>6k + 1</strong><br>ПРОВЕРЯВА СЕ</div>
+            <div class="wheel-cell skipped"><strong>6k + 2</strong><br>четно (дели се на 2)</div>
+            <div class="wheel-cell skipped"><strong>6k + 3</strong><br>дели се на 3</div>
+            <div class="wheel-cell skipped"><strong>6k + 4</strong><br>четно (дели се на 2)</div>
+            <div class="wheel-cell active-candidate"><strong>6k + 5 (6k' - 1)</strong><br>ПРОВЕРЯВА СЕ</div>
+          </div>
+
+          <div class="trace-controls">
+            <button class="btn-action" onclick="stepWheelTrace(-1)">&#9664; Предишна стъпка</button>
+            <button class="btn-action" onclick="stepWheelTrace(1)">Следваща стъпка &#9654;</button>
+            <button class="btn-preset" onclick="resetWheelTrace()">Нулирай трасировката (n = 360)</button>
+            <span id="wheel-step-counter" style="font-weight:700; margin-left:8px; color:var(--secondary);"></span>
+          </div>
+
+          <div class="state-grid">
+            <div class="state-box">
+              <div class="label">Текущо n</div>
+              <div class="val" id="w-state-n">360</div>
+            </div>
+            <div class="state-box">
+              <div class="label">Делител (d или i)</div>
+              <div class="val" id="w-state-i">-</div>
+            </div>
+            <div class="state-box">
+              <div class="label">Стъпка step</div>
+              <div class="val" id="w-state-step">2</div>
+            </div>
+            <div class="state-box">
+              <div class="label">factors {делител, степен}</div>
+              <div class="val" id="w-state-vec">{ }</div>
+            </div>
+          </div>
+
+          <div class="code-Interactive-box" id="wheel-code-box"></div>
+          <div class="explanation-banner" id="wheel-line-explanation">
+            Използвайте бутоните за трасировка или кликнете върху ред от <code>weel.cpp</code> за обяснение.
+          </div>
+        </div>
+      </div>
+
+      <!-- ПАНЕЛ 7: ЗАДАЧИ 1, 2 И 3 -->
+      <div class="interactive-panel" id="panel-tasks">
+        <!-- Задача 1 -->
+        <div class="viz-card">
+          <h3>5. Задача 1: „Брой на всички делители“ (с <code>weel.cpp</code>)</h3>
+          <p class="viz-subtitle">Чрез степените на простите делители (<code>res[i].second</code>) пресмятаме общия брой делители по формулата (k<sub>1</sub> + 1)(k<sub>2</sub> + 1)&hellip;(k<sub>m</sub> + 1).</p>
+          <div class="input-group">
+            <label>Вход n (1 &le; n &le; 10<sup>12</sup>):</label>
+            <input type="number" id="inp-task1" value="360" min="1" max="1000000000000">
+            <button class="btn-action" onclick="solveTask1()">Изпълни Задача 1</button>
+          </div>
+          <div id="out-task1"></div>
+<pre class="static-code">// Решение на Задача 1 в main() чрез функцията factorize(n) от weel.cpp:
+int main()
+{
+    long long n; cin &gt;&gt; n;
+    auto res = factorize(n);
+    long long total_divisors = 1;
+    for(int i = 0; i &lt; res.size(); i++)
+    {
+        total_divisors *= (res[i].second + 1);
+    }
+    cout &lt;&lt; total_divisors &lt;&lt; "\n";
+}</pre>
+        </div>
+
+        <!-- Задача 2 -->
+        <div class="viz-card">
+          <h3>6. Задача 2: „Брой на простите множители“ (с <code>factor.cpp</code>)</h3>
+          <p class="viz-subtitle">Намираме от колко общо прости множителя (заедно с повторенията) се състои числото n чрез <code>result.size()</code>.</p>
+          <div class="input-group">
+            <label>Вход n:</label>
+            <input type="number" id="inp-task2" value="140" min="2" max="1000000000000">
+            <button class="btn-action" onclick="solveTask2()">Изпълни Задача 2</button>
+          </div>
+          <div id="out-task2"></div>
+<pre class="static-code">// Решение на Задача 2 в main() чрез функцията factorize(n) от factor.cpp:
+int main()
+{
+    long long n; cin &gt;&gt; n;
+    vector&lt;long long&gt; result = factorize(n);
+    cout &lt;&lt; result.size() &lt;&lt; "\n";
+}</pre>
+        </div>
+
+        <!-- Задача 3 -->
+        <div class="viz-card">
+          <h3>7. Задача 3: „Допълване до точен квадрат“ (с <code>weel.cpp</code>)</h3>
+          <p class="viz-subtitle">Намираме най-малкото естествено число m, така че n &middot; m да стане точен квадрат (умножаваме всички <code>res[i].first</code> с нечетна степен <code>res[i].second</code>).</p>
+          <div class="input-group">
+            <label>Вход n:</label>
+            <input type="number" id="inp-task3" value="360" min="1" max="1000000000000">
+            <button class="btn-action" onclick="solveTask3()">Изпълни Задача 3</button>
+            <button class="btn-preset" onclick="document.getElementById('inp-task3').value=140; solveTask3();">n = 140</button>
+            <button class="btn-preset" onclick="document.getElementById('inp-task3').value=72; solveTask3();">n = 72</button>
+          </div>
+          <div id="out-task3"></div>
+<pre class="static-code">// Решение на Задача 3 в main() чрез функцията factorize(n) от weel.cpp:
+int main()
+{
+    long long n; cin &gt;&gt; n;
+    auto res = factorize(n);
+    long long m = 1;
+    for(int i = 0; i &lt; res.size(); i++)
+    {
+        if(res[i].second % 2 != 0)
+        {
+            m *= res[i].first;
+        }
+    }
+    cout &lt;&lt; m &lt;&lt; "\n";
+}</pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Навигация между интерактивните панели вдясно
+  function openPanel(panelId) {
+    document.querySelectorAll('.interactive-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+    const btn = document.getElementById('btn-' + panelId);
+    if (btn) btn.classList.add('active');
+  }
+
+  // Помощни функции за факторизация в JS
+  function getWheelFactors(n) {
+    let num = BigInt(n);
+    const pairs = [];
+    for (const d of [2n, 3n]) {
+      if (num % d === 0n) {
+        let cnt = 0;
+        while (num % d === 0n) {
+          num /= d;
+          cnt++;
+        }
+        pairs.push({ prime: Number(d), exp: cnt });
+      }
+    }
+    let step = 2n;
+    for (let i = 5n; i * i <= num; i += step, step = 6n - step) {
+      if (num % i === 0n) {
+        let br = 0;
+        while (num % i === 0n) {
+          num /= i;
+          br++;
+        }
+        pairs.push({ prime: Number(i), exp: br });
+      }
+    }
+    if (num > 1n) {
+      pairs.push({ prime: Number(num), exp: 1 });
+    }
+    return pairs;
+  }
+
+  function getFlatFactors(pairs) {
+    const flat = [];
+    for (const p of pairs) {
+      for (let k = 0; k < p.exp; k++) flat.push(p.prime);
+    }
+    return flat;
+  }
+
+  // ================= ПАНЕЛ 1: КАКВО Е ФАКТОРИЗАЦИЯ =================
+  function setWhatPreset(val) {
+    document.getElementById('inp-what').value = val;
+    runWhatViz();
+  }
+
+  function runWhatViz() {
+    const val = parseInt(document.getElementById('inp-what').value, 10);
+    const out = document.getElementById('what-output');
+    if (isNaN(val) || val < 2) {
+      out.innerHTML = `<div class="explanation-banner">Моля, въведете естествено число n &gt; 1.</div>`;
+      return;
+    }
+    const pairs = getWheelFactors(val);
+    const flat = getFlatFactors(pairs);
+
+    const flatHtml = flat.map(x => `<span class="prime-chip">${x}</span>`).join(' &middot; ');
+    const canonHtml = pairs.map(p => `<span class="pair-chip">${p.prime}<sup>${p.exp}</sup></span>`).join(' &middot; ');
+    const cppPairs = pairs.map(p => `{${p.prime}, ${p.exp}}`).join(', ');
+    const cppPrint = `${val} = ` + pairs.map(p => `${p.prime}^${p.exp}`).join(' * ');
+
+    out.innerHTML = `
+      <div class="explanation-banner" style="margin-bottom:14px;">
+        <strong>Канонично разлагане на ${val}:</strong><br>
+        <div class="factors-row">${val} = ${flatHtml} = ${canonHtml}</div>
+      </div>
+      <div class="state-grid">
+        <div class="state-box" style="text-align:left;">
+          <div class="label">1. Списък с повторенията (factor.cpp)</div>
+          <div style="margin-top:6px; font-family:monospace; font-weight:700; color:var(--primary);">
+            vector&lt;long long&gt; factors = { ${flat.join(', ')} };
+          </div>
+          <div style="margin-top:6px; font-size:0.84rem; color:var(--text-muted);">
+            Изход на екрана: <code>${flat.join(' ')}</code>
+          </div>
+        </div>
+        <div class="state-box" style="text-align:left;">
+          <div class="label">2. Списък от двойки {делител, степен} (weel.cpp)</div>
+          <div style="margin-top:6px; font-family:monospace; font-weight:700; color:var(--secondary);">
+            vector&lt;pair&lt;long long, int&gt;&gt; factors = { ${cppPairs} };
+          </div>
+          <div style="margin-top:6px; font-size:0.84rem; color:var(--text-muted);">
+            Изход на екрана: <code>${cppPrint}</code>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ================= ПАНЕЛ 2: БРОЙ НА ВСИЧКИ ДЕЛИТЕЛИ =================
+  function setDivPreset(val) {
+    document.getElementById('inp-div').value = val;
+    runDivisorsViz();
+  }
+
+  function runDivisorsViz() {
+    const val = parseInt(document.getElementById('inp-div').value, 10);
+    const out = document.getElementById('divisors-output');
+    if (isNaN(val) || val < 2) {
+      out.innerHTML = `<div class="explanation-banner">Моля, въведете число n &ge; 2.</div>`;
+      return;
+    }
+    const pairs = getWheelFactors(val);
+    let total = 1;
+    const formulaParts = [];
+    const choicesHtml = [];
+
+    for (const p of pairs) {
+      total *= (p.exp + 1);
+      formulaParts.push(`(${p.exp} + 1)`);
+      const opts = [];
+      for (let e = 0; e <= p.exp; e++) opts.push(`${p.prime}<sup>${e}</sup>`);
+      choicesHtml.push(`
+        <div style="margin-bottom:6px;">
+          За прост делител <strong>${p.prime}</strong> (степен k = ${p.exp}) имаме <strong>${p.exp + 1}</strong> възможности за избор на степен:
+          <code>${opts.join(', ')}</code>
+        </div>
+      `);
+    }
+
+    // Ако броят делители е <= 120, генерираме всички делители за нагледност
+    let allDivisorsHtml = '';
+    if (total <= 120) {
+      let divs = [1];
+      for (const p of pairs) {
+        const nextDivs = [];
+        let mult = 1;
+        for (let e = 0; e <= p.exp; e++) {
+          for (const d of divs) nextDivs.push(d * mult);
+          mult *= p.prime;
+        }
+        divs = nextDivs;
+      }
+      divs.sort((a, b) => a - b);
+      allDivisorsHtml = `
+        <div style="margin-top:12px;">
+          <strong>Всички ${total} делителя на ${val}:</strong>
+          <div class="divisor-grid">
+            ${divs.map(d => `<span class="divisor-item">${d}</span>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    out.innerHTML = `
+      <div class="explanation-banner">
+        ${choicesHtml.join('')}
+        <hr style="border:none; border-top:1px solid #bfdbfe; margin:10px 0;">
+        <strong>Формула:</strong> d(${val}) = ${formulaParts.join(' &middot; ')} = ${pairs.map(p => p.exp + 1).join(' &middot; ')} =
+        <span style="font-size:1.25rem; color:var(--primary); font-weight:800;">${total} делителя</span>
+      </div>
+      ${allDivisorsHtml}
+    `;
+  }
+
+  // ================= ПАНЕЛ 3: ТОЧЕН КВАДРАТ ИЛИ КУБ =================
+  function setPowPreset(val) {
+    document.getElementById('inp-pow').value = val;
+    runPowerViz();
+  }
+
+  function runPowerViz() {
+    const val = parseInt(document.getElementById('inp-pow').value, 10);
+    const out = document.getElementById('power-output');
+    if (isNaN(val) || val < 2) return;
+
+    const pairs = getWheelFactors(val);
+    const isSquare = pairs.every(p => p.exp % 2 === 0);
+    const isCube = pairs.every(p => p.exp % 3 === 0);
+
+    const rows = pairs.map(p => `
+      <tr>
+        <td><strong>${p.prime}</strong></td>
+        <td><strong>${p.exp}</strong></td>
+        <td>${p.exp % 2 === 0 ? '<span class="status-pill status-yes">Четна (дели се на 2)</span>' : '<span class="status-pill status-no">Нечетна</span>'}</td>
+        <td>${p.exp % 3 === 0 ? '<span class="status-pill status-yes">Дели се на 3</span>' : '<span class="status-pill status-no">Не се дели на 3</span>'}</td>
+      </tr>
+    `).join('');
+
+    out.innerHTML = `
+      <div class="state-grid">
+        <div class="state-box">
+          <div class="label">Точен квадрат?</div>
+          <div class="val" style="margin-top:6px;">
+            ${isSquare ? `<span class="status-pill status-yes">ДА (${Math.round(Math.sqrt(val))}<sup>2</sup> = ${val})</span>` : '<span class="status-pill status-no">НЕ</span>'}
+          </div>
+        </div>
+        <div class="state-box">
+          <div class="label">Точен куб?</div>
+          <div class="val" style="margin-top:6px;">
+            ${isCube ? `<span class="status-pill status-yes">ДА (${Math.round(Math.cbrt(val))}<sup>3</sup> = ${val})</span>` : '<span class="status-pill status-no">НЕ</span>'}
+          </div>
+        </div>
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Прост множител p<sub>i</sub></th>
+            <th>Степен k<sub>i</sub></th>
+            <th>Условие за точен квадрат (k<sub>i</sub> % 2 == 0)</th>
+            <th>Условие за точен куб (k<sub>i</sub> % 3 == 0)</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  // ================= ПАНЕЛ 4: НОД, НОК И ДЕЛИМОСТ =================
+  function runGcdViz() {
+    const a = parseInt(document.getElementById('inp-gcd-a').value, 10);
+    const b = parseInt(document.getElementById('inp-gcd-b').value, 10);
+    const c = parseInt(document.getElementById('inp-gcd-c').value, 10);
+    const out = document.getElementById('gcd-output');
+    if (isNaN(a) || isNaN(b) || isNaN(c) || a < 2 || b < 2 || c < 2) return;
+
+    const fa = getWheelFactors(a);
+    const fb = getWheelFactors(b);
+    const fc = getWheelFactors(c);
+
+    const primesSet = new Set([...fa.map(x => x.prime), ...fb.map(x => x.prime), ...fc.map(x => x.prime)]);
+    const primes = Array.from(primesSet).sort((x, y) => x - y);
+
+    let gcdVal = 1n, lcmVal = 1n;
+    let divisible = true;
+
+    const tableRows = primes.map(p => {
+      const ea = (fa.find(x => x.prime === p) || { exp: 0 }).exp;
+      const eb = (fb.find(x => x.prime === p) || { exp: 0 }).exp;
+      const ec = (fc.find(x => x.prime === p) || { exp: 0 }).exp;
+      const minE = Math.min(ea, eb);
+      const maxE = Math.max(ea, eb);
+      const sumAB = ea + eb;
+      if (sumAB < ec) divisible = false;
+
+      gcdVal *= BigInt(p) ** BigInt(minE);
+      lcmVal *= BigInt(p) ** BigInt(maxE);
+
+      return `
+        <tr>
+          <td><strong>${p}</strong></td>
+          <td>${ea}</td>
+          <td>${eb}</td>
+          <td><strong>min(${ea}, ${eb}) = ${minE}</strong></td>
+          <td><strong>max(${ea}, ${eb}) = ${maxE}</strong></td>
+          <td>${ea} + ${eb} = ${sumAB} (в C: ${ec}) ${sumAB >= ec ? '&#9989;' : '&#10060;'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    out.innerHTML = `
+      <div class="state-grid">
+        <div class="state-box">
+          <div class="label">НОД(A, B)</div>
+          <div class="val" style="color:var(--primary);">${gcdVal.toString()}</div>
+        </div>
+        <div class="state-box">
+          <div class="label">НОК(A, B)</div>
+          <div class="val" style="color:var(--secondary);">${lcmVal.toString()}</div>
+        </div>
+        <div class="state-box">
+          <div class="label">Дели ли се (A &middot; B) на C?</div>
+          <div class="val">${divisible ? '<span class="status-pill status-yes">ДА</span>' : '<span class="status-pill status-no">НЕ</span>'}</div>
+        </div>
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Прост делител p</th>
+            <th>Степен в A</th>
+            <th>Степен в B</th>
+            <th>Степен в НОД</th>
+            <th>Степен в НОК</th>
+            <th>Степен в A&middot;B спрямо C</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    `;
+  }
+
+  // ================= ПАНЕЛ 5: FACTOR.CPP ОСВЕТЯВАНЕ И ТРАСИРОВКА =================
+  const factorCodeLines = [
+    { num: 1, code: '#include <iostream>', exp: 'Включваме стандартната библиотека за вход и изход (cin, cout).' },
+    { num: 2, code: '#include <vector>', exp: 'Включваме библиотеката за динамичен масив std::vector.' },
+    { num: 3, code: 'using namespace std;', exp: 'Използваме стандартното пространство от имена std.' },
+    { num: 4, code: 'vector<long long> factorize(long long n)', exp: 'Дефинираме функция factorize, която приема 64-битово число n и връща вектор с всички негови прости множители.' },
+    { num: 5, code: '{', exp: 'Начало на тялото на функцията factorize.' },
+    { num: 6, code: '    vector<long long> factors;', exp: 'Създаваме празен вектор factors, в който ще добавяме намерените прости делители.' },
+    { num: 7, code: '    for(long long i = 2; i * i <= n; i++)', exp: 'Цикъл от i = 2, докато i * i <= n. Не използваме бавната функция sqrt(n), а при намаляване на n границата автоматично се свива!' },
+    { num: 8, code: '    {', exp: 'Начало на тялото на цикъла for.' },
+    { num: 9, code: '        while(n % i == 0)', exp: 'Докато текущото число n се дели без остатък на i (гарантирано просто число), го делим многократно.' },
+    { num: 10, code: '        {', exp: 'Начало на вътрешния цикъл while.' },
+    { num: 11, code: '            factors.push_back(i);', exp: 'Добавяме простия делител i в края на вектора factors.' },
+    { num: 12, code: '            n /= i;', exp: 'Разделяме n на i. Така премахваме този множител и намаляваме самото n!' },
+    { num: 13, code: '        }', exp: 'Край на вътрешния цикъл while.' },
+    { num: 14, code: '    }', exp: 'Край на цикъла for.' },
+    { num: 15, code: '    if(n > 1) factors.push_back(n);', exp: 'КЛЮЧОВА ПРОВЕРКА: Ако след цикъла е останало число n > 1, то самото е последният прост делител (> sqrt) и го добавяме.' },
+    { num: 16, code: '    return factors;', exp: 'Връщаме готовия вектор с прости множители.' },
+    { num: 17, code: '}', exp: 'Край на функцията factorize.' },
+    { num: 18, code: 'int main() {', exp: 'Главна функция main(): четем n, извикваме factorize(n) и отпечатваме елементите.' },
+    { num: 19, code: '    long long n; cin >> n; vector<long long> result = factorize(n);', exp: 'Прочитаме входното число n и записваме върнатия вектор в result.' },
+    { num: 20, code: '    for(long long f : result) cout << f << " ";', exp: 'Обхождаме всички намерени прости множители и ги отпечатваме, разделени с интервал.' },
+    { num: 21, code: '}', exp: 'Край на програмата.' }
+  ];
+
+  const factorTraceSteps = [
+    { line: 6, n: 140, i: '-', cond: '-', vec: '{}', text: 'Начало при вход n = 140: Създаваме празен вектор factors = {}.' },
+    { line: 7, n: 140, i: 2, cond: '2*2 <= 140 (ДА)', vec: '{}', text: 'i = 2: Проверяваме 2 * 2 <= 140 (4 <= 140 е вярно). Влизаме в цикъла.' },
+    { line: 9, n: 140, i: 2, cond: '140 % 2 == 0 (ДА)', vec: '{}', text: 'Проверяваме дали 140 се дели на 2. Остатъкът е 0 — влизаме в цикъла while.' },
+    { line: 12, n: 70, i: 2, cond: '140 / 2 = 70', vec: '{2}', text: 'Добавяме 2 във factors и делим n /= 2. Вече n става 70.' },
+    { line: 12, n: 35, i: 2, cond: '70 / 2 = 35', vec: '{2, 2}', text: '70 отново се дели на 2! Добавяме второ 2 във factors и n става 35. Следващата проверка 35 % 2 == 0 е невярна.' },
+    { line: 7, n: 35, i: 3, cond: '3*3 <= 35 (ДА)', vec: '{2, 2}', text: 'i = 3: 3 * 3 <= 35 (9 <= 35 е вярно), но 35 % 3 != 0 (не се дели на 3).' },
+    { line: 7, n: 35, i: 4, cond: '4*4 <= 35 (ДА)', vec: '{2, 2}', text: 'i = 4: 4 * 4 <= 35 (16 <= 35 е вярно), но тъй като вече разделихме на всички двойки, 35 няма как да се дели на съставното 4!' },
+    { line: 12, n: 7, i: 5, cond: '5*5 <= 35 (ДА)', vec: '{2, 2, 5}', text: 'i = 5: 5 * 5 <= 35 (25 <= 35 е вярно). 35 се дели на 5 -> добавяме 5 във factors и n става 7.' },
+    { line: 7, n: 7, i: 6, cond: '6*6 <= 7 (НЕ!)', vec: '{2, 2, 5}', text: 'i = 6: Проверяваме 6 * 6 <= 7 (36 <= 7 — НЕВЯРНО!). Цикълът приключва веднага благодарение на намаленото n!' },
+    { line: 15, n: 7, i: '-', cond: 'n = 7 > 1 (ДА)', vec: '{2, 2, 5, 7}', text: 'След цикъла: Проверяваме if(n > 1). Тъй като n = 7 > 1, добавяме последния прост делител 7 във factors.' },
+    { line: 20, n: 7, i: '-', cond: 'КРАЙ', vec: '2 2 5 7', text: 'В main() отпечатваме съдържанието на вектора result: 2 2 5 7.' }
+  ];
+
+  let curFactorStep = 0;
+
+  function renderFactorCode(activeLineNum) {
+    const box = document.getElementById('factor-code-box');
+    box.innerHTML = factorCodeLines.map(item => `
+      <div class="code-line ${item.num === activeLineNum ? 'active-line' : ''}" onclick="selectFactorLine(${item.num})">
+        <span class="line-num">${item.num}</span>
+        <span class="line-text">${item.code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+      </div>
+    `).join('');
+  }
+
+  function selectFactorLine(lineNum) {
+    renderFactorCode(lineNum);
+    const found = factorCodeLines.find(x => x.num === lineNum);
+    if (found) {
+      document.getElementById('factor-line-explanation').innerHTML = `<strong>Ред ${lineNum}:</strong> ${found.exp}`;
+    }
+  }
+
+  function updateFactorTraceUI() {
+    const s = factorTraceSteps[curFactorStep];
+    renderFactorCode(s.line);
+    document.getElementById('f-state-n').textContent = s.n;
+    document.getElementById('f-state-i').textContent = s.i;
+    document.getElementById('f-state-cond').textContent = s.cond;
+    document.getElementById('f-state-vec').textContent = s.vec;
+    document.getElementById('factor-step-counter').textContent = `Стъпка ${curFactorStep + 1} от ${factorTraceSteps.length}`;
+    document.getElementById('factor-line-explanation').innerHTML = `<strong>Трасировка (Стъпка ${curFactorStep + 1}):</strong> ${s.text}`;
+  }
+
+  function stepFactorTrace(dir) {
+    curFactorStep = Math.max(0, Math.min(factorTraceSteps.length - 1, curFactorStep + dir));
+    updateFactorTraceUI();
+  }
+
+  function resetFactorTrace() {
+    curFactorStep = 0;
+    updateFactorTraceUI();
+  }
+
+  // ================= ПАНЕЛ 6: WEEL.CPP ОСВЕТЯВАНЕ И ТРАСИРОВКА =================
+  const wheelCodeLines = [
+    { num: 1, code: 'vector<pair<long long, int>> factorize(long long n) {', exp: 'Функцията връща вектор от двойки {прост_делител, степен}.' },
+    { num: 2, code: '    vector<pair<long long, int>> factors;', exp: 'Създаваме празен вектор от двойки factors.' },
+    { num: 3, code: '    for(long long d : {2, 3}) {', exp: 'ЕТАП 1: Обработваме отделно простите делители 2 и 3.' },
+    { num: 4, code: '        if(n % d == 0) {', exp: 'Ако n се дели на d (2 или 3), започваме броене на степента му.' },
+    { num: 5, code: '            int cnt = 0;', exp: 'Брояч cnt = 0 за степента на делителя d.' },
+    { num: 6, code: '            while(n % d == 0) { n /= d; cnt++; }', exp: 'Делим n на d, докато е възможно, и увеличаваме степента cnt.' },
+    { num: 7, code: '            factors.push_back({d, cnt});', exp: 'Записваме двойката {делител d, степен cnt} във вектора factors.' },
+    { num: 8, code: '        }', exp: 'Край на проверката за текущото d.' },
+    { num: 9, code: '    }', exp: 'Край на цикъла за 2 и 3.' },
+    { num: 10, code: '    long long step = 2;', exp: 'ЕТАП 2: Задаваме начална стъпка step = 2 (за преход от 5 към 7).' },
+    { num: 11, code: '    for(long long i = 5; i * i <= n; i += step, step = 6 - step) {', exp: 'Проверяваме само числата 6k - 1 и 6k + 1: след всяка стъпка step = 6 - step редува +2 и +4 (5, 7, 11, 13, 17, 19...).' },
+    { num: 12, code: '        if(n % i == 0) {', exp: 'Ако n се дели на текущия кандидат i:' },
+    { num: 13, code: '            int br = 0; while(n % i == 0) { n /= i; br++; }', exp: 'Преброяваме колко пъти i се съдържа в n чрез брояча br.' },
+    { num: 14, code: '            factors.push_back({i, br});', exp: 'Добавяме двойката {i, br} във вектора factors.' },
+    { num: 15, code: '        }', exp: 'Край на if блока.' },
+    { num: 16, code: '    }', exp: 'Край на колесния цикъл.' },
+    { num: 17, code: '    if(n > 1) factors.push_back({n, 1});', exp: 'ЕТАП 3: Ако е останал прост делител n > 1, той е на първа степен -> добавяме {n, 1}.' },
+    { num: 18, code: '    return factors;', exp: 'Връщаме вектора от двойки {прост_делител, степен}.' },
+    { num: 19, code: '}', exp: 'Край на функцията.' }
+  ];
+
+  const wheelTraceSteps = [
+    { line: 2, n: 360, i: '-', step: 2, vec: '{}', text: 'Начало при вход n = 360: Създаваме празен вектор factors = {}.' },
+    { line: 6, n: 45, i: 'd = 2', step: 2, vec: '{{2, 3}}', text: 'Етап 1 (d = 2): 360 се дели на 2 три пъти (360 -> 180 -> 90 -> 45). Записваме {2, 3}, а n става 45.' },
+    { line: 6, n: 5, i: 'd = 3', step: 2, vec: '{{2, 3}, {3, 2}}', text: 'Етап 1 (d = 3): 45 се дели на 3 два пъти (45 -> 15 -> 5). Записваме {3, 2}, а n става 5.' },
+    { line: 11, n: 5, i: 'i = 5', step: 2, vec: '{{2, 3}, {3, 2}}', text: 'Етап 2 (i = 5): Проверяваме условието 5 * 5 <= 5 (25 <= 5 е НЕВЯРНО!). Основният цикъл изобщо не се изпълнява!' },
+    { line: 17, n: 5, i: '-', step: 2, vec: '{{2, 3}, {3, 2}, {5, 1}}', text: 'Етап 3: Проверяваме if(n > 1). Тъй като n = 5 > 1, добавяме {5, 1}. Изход: 360 = 2^3 * 3^2 * 5^1.' }
+  ];
+
+  let curWheelStep = 0;
+
+  function renderWheelCode(activeLineNum) {
+    const box = document.getElementById('wheel-code-box');
+    box.innerHTML = wheelCodeLines.map(item => `
+      <div class="code-line ${item.num === activeLineNum ? 'active-line' : ''}" onclick="selectWheelLine(${item.num})">
+        <span class="line-num">${item.num}</span>
+        <span class="line-text">${item.code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+      </div>
+    `).join('');
+  }
+
+  function selectWheelLine(lineNum) {
+    renderWheelCode(lineNum);
+    const found = wheelCodeLines.find(x => x.num === lineNum);
+    if (found) {
+      document.getElementById('wheel-line-explanation').innerHTML = `<strong>Ред ${lineNum}:</strong> ${found.exp}`;
+    }
+  }
+
+  function updateWheelTraceUI() {
+    const s = wheelTraceSteps[curWheelStep];
+    renderWheelCode(s.line);
+    document.getElementById('w-state-n').textContent = s.n;
+    document.getElementById('w-state-i').textContent = s.i;
+    document.getElementById('w-state-step').textContent = s.step;
+    document.getElementById('w-state-vec').textContent = s.vec;
+    document.getElementById('wheel-step-counter').textContent = `Стъпка ${curWheelStep + 1} от ${wheelTraceSteps.length}`;
+    document.getElementById('wheel-line-explanation').innerHTML = `<strong>Трасировка (Стъпка ${curWheelStep + 1}):</strong> ${s.text}`;
+  }
+
+  function stepWheelTrace(dir) {
+    curWheelStep = Math.max(0, Math.min(wheelTraceSteps.length - 1, curWheelStep + dir));
+    updateWheelTraceUI();
+  }
+
+  function resetWheelTrace() {
+    curWheelStep = 0;
+    updateWheelTraceUI();
+  }
+
+  // ================= ПАНЕЛ 7: РЕШЕНИЯ НА ЗАДАЧИ 1, 2 И 3 =================
+  function solveTask1() {
+    const val = parseInt(document.getElementById('inp-task1').value, 10);
+    const out = document.getElementById('out-task1');
+    if (isNaN(val) || val < 1) return;
+    if (val === 1) {
+      out.innerHTML = `<div class="explanation-banner">За n = 1 броят на делителите е <strong>1</strong>.</div>`;
+      return;
+    }
+    const pairs = getWheelFactors(val);
+    let ans = 1;
+    for (const p of pairs) ans *= (p.exp + 1);
+    const steps = pairs.map(p => `(${p.exp} + 1)`).join(' * ');
+    out.innerHTML = `
+      <div class="explanation-banner">
+        Разлагане от <code>weel.cpp</code>: <code>${pairs.map(p => `{${p.prime}, ${p.exp}}`).join(', ')}</code><br>
+        Изчисление чрез <code>res[i].second</code>: <strong>${steps} = ${ans} делителя</strong>.
+      </div>
+    `;
+  }
+
+  function solveTask2() {
+    const val = parseInt(document.getElementById('inp-task2').value, 10);
+    const out = document.getElementById('out-task2');
+    if (isNaN(val) || val < 2) return;
+    const pairs = getWheelFactors(val);
+    const flat = getFlatFactors(pairs);
+    out.innerHTML = `
+      <div class="explanation-banner">
+        Вектор <code>result</code> от <code>factor.cpp</code>: <code>{ ${flat.join(', ')} }</code><br>
+        Общ брой прости множители (<code>result.size()</code>): <strong>${flat.length}</strong>.
+      </div>
+    `;
+  }
+
+  function solveTask3() {
+    const val = parseInt(document.getElementById('inp-task3').value, 10);
+    const out = document.getElementById('out-task3');
+    if (isNaN(val) || val < 1) return;
+    if (val === 1) {
+      out.innerHTML = `<div class="explanation-banner">Числото 1 вече е точен квадрат &rarr; <strong>m = 1</strong>.</div>`;
+      return;
+    }
+    const pairs = getWheelFactors(val);
+    let m = 1n;
+    const oddPrimes = [];
+    for (const p of pairs) {
+      if (p.exp % 2 !== 0) {
+        m *= BigInt(p.prime);
+        oddPrimes.push(p.prime);
+      }
+    }
+    const product = BigInt(val) * m;
+    const root = Math.round(Math.sqrt(Number(product)));
+    out.innerHTML = `
+      <div class="explanation-banner">
+        Разлагане на ${val}: <code>${pairs.map(p => `${p.prime}^${p.exp}`).join(' * ')}</code><br>
+        Прости делители с <strong>нечетна степен</strong> (<code>res[i].second % 2 != 0</code>):
+        <strong>${oddPrimes.length > 0 ? oddPrimes.join(', ') : 'няма (числото вече е точен квадрат)'}</strong><br>
+        Най-малко число <strong>m = ${m.toString()}</strong>
+        (Проверка: ${val} &middot; ${m.toString()} = ${product.toString()} = ${root}<sup>2</sup>).
+      </div>
+    `;
+  }
+
+  // Първоначална инициализация
+  window.addEventListener('DOMContentLoaded', () => {
+    runWhatViz();
+    runDivisorsViz();
+    runPowerViz();
+    runGcdViz();
+    resetFactorTrace();
+    resetWheelTrace();
+    solveTask1();
+    solveTask2();
+    solveTask3();
+  });
+</script>
+</body>
+</html>
