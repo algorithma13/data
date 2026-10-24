@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЗАДАЧА 2: Игра на деления (Div Game) — AtCoder Beginner Contest 169</title>
+<style>
+  :root {
+    --bg-main: #f4f7fb;
+    --bg-card: #ffffff;
+    --bg-dark: #0f172a;
+    --bg-board: #1e293b;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --secondary: #7c3aed;
+    --secondary-light: #ede9fe;
+    --accent: #059669;
+    --accent-light: #d1fae5;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --border: #e2e8f0;
+    --shadow: 0 4px 20px rgba(15, 23, 42, 0.07);
+    --radius: 12px;
+
+    /* Цветове от основната тема Algorithma 13 */
+    --theme-bg-primary: #0b1120;
+    --theme-accent: #3b82f6;
+    --group-d: #f59e0b;
+    --group-c: #10b981;
+    --theme-text-main: #f8fafc;
+    --theme-text-muted: #94a3b8;
+    --theme-border: rgba(255, 255, 255, 0.1);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.65;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Горна навигационна лента */
+  header {
+    background-color: rgba(11, 17, 32, 0.95);
+    border-bottom: 1px solid var(--theme-border);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--theme-text-main);
+    text-decoration: none;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .logo span { color: var(--theme-accent); }
+  .logo svg { width: 24px; height: 24px; color: var(--theme-accent); }
+
+  nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+
+  nav a {
+    color: var(--theme-text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  nav a:hover { color: var(--theme-text-main); background: rgba(255, 255, 255, 0.05); }
+  nav a.active { color: var(--group-d); background: rgba(245, 158, 11, 0.1); }
+
+  .lesson-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--theme-border);
+  }
+
+  .badge-grade {
+    background: #38bdf8;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Основен двуколонен контейнер */
+  .workspace {
+    display: grid;
+    grid-template-columns: 46% 54%;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ЛЯВА КОЛОНА: УСЛОВИЕ НА ЗАДАЧАТА */
+  .left-pane {
+    overflow-y: auto;
+    padding: 28px 34px;
+    background: #ffffff;
+    border-right: 2px solid var(--border);
+    scroll-behavior: smooth;
+  }
+
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--primary);
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--bg-dark);
+  }
+
+  .meta-limits {
+    display: flex;
+    gap: 18px;
+  }
+
+  .meta-school {
+    color: var(--primary);
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+
+  .problem-title {
+    font-size: 1.55rem;
+    color: var(--bg-dark);
+    margin-bottom: 18px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  .problem-title .sub-en {
+    display: block;
+    font-size: 1.15rem;
+    color: var(--primary);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .left-pane p {
+    margin-bottom: 14px;
+    color: #334155;
+    text-align: justify;
+  }
+
+  .rules-list {
+    margin: 12px 0 18px 22px;
+    color: #334155;
+  }
+
+  .rules-list li {
+    margin-bottom: 10px;
+    text-align: justify;
+  }
+
+  .left-pane h2 {
+    font-size: 1.2rem;
+    color: var(--bg-dark);
+    border-left: 4px solid var(--primary);
+    padding-left: 10px;
+    margin: 22px 0 10px 0;
+  }
+
+  .constraints-list {
+    list-style: none;
+    margin: 10px 0 16px 0;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 18px;
+  }
+
+  .constraints-list li {
+    padding: 4px 0;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .constraints-list li::before {
+    content: "•";
+    color: var(--primary);
+    font-weight: 900;
+    font-size: 1.2rem;
+  }
+
+  table.examples-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px 0;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+  }
+
+  table.examples-table th {
+    background: var(--bg-dark);
+    color: #ffffff;
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 700;
+    width: 50%;
+  }
+
+  table.examples-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    vertical-align: middle;
+    background: #ffffff;
+  }
+
+  table.examples-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .example-row-clickable {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .example-row-clickable:hover td {
+    background: var(--primary-light) !important;
+  }
+
+  .btn-try-example {
+    float: right;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.75rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  /* ДЯСНА КОЛОНА: ИНТЕРАКТИВНИ ПАНЕЛИ ЗА ПРИМЕРИТЕ */
+  .right-pane {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-main);
+    overflow: hidden;
+  }
+
+  .tabs-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 22px;
+    background: #e2e8f0;
+    border-bottom: 1px solid #cbd5e1;
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .tab-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+  }
+
+  .tab-badge {
+    background: rgba(15, 23, 42, 0.12);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.82rem;
+  }
+  .tab-btn.active .tab-badge {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+  }
+
+  .panel-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px;
+  }
+
+  .viz-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .viz-card h3 {
+    font-size: 1.15rem;
+    color: var(--bg-dark);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .viz-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  /* Контроли за стъпките */
+  .step-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .btn-step {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-weight: 700;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-step:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+  .btn-step:disabled {
+    background: #cbd5e1;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+
+  .btn-reset {
+    background: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 7px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+  .btn-reset:hover {
+    background: #cbd5e1;
+  }
+
+  .step-indicator {
+    margin-left: auto;
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 0.9rem;
+    background: var(--primary-light);
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  /* Черна дъска за визуализация на числото N и неговите делители */
+  .blackboard {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border: 6px solid #78350f;
+    border-radius: 14px;
+    padding: 20px;
+    color: #f8fafc;
+    box-shadow: inset 0 3px 12px rgba(0,0,0,0.45);
+    margin-bottom: 16px;
+  }
+
+  .blackboard-label {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .board-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 6px 0;
+  }
+
+  .current-n-box {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(56, 189, 248, 0.5);
+    border-radius: 14px;
+    padding: 12px 28px;
+    text-align: center;
+    min-width: 190px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  }
+
+  .current-n-box .lbl {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+  }
+
+  .current-n-box .val {
+    font-size: 2.1rem;
+    font-weight: 900;
+    font-family: 'Consolas', monospace;
+    color: #38bdf8;
+  }
+
+  .prime-blocks-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .prime-factor-pill {
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #f8fafc;
+  }
+
+  .prime-factor-pill.active-div {
+    background: rgba(245, 158, 11, 0.3);
+    border-color: #fbbf24;
+    color: #fef3c7;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  }
+
+  .used-z-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+    justify-content: center;
+  }
+
+  .used-z-chip {
+    background: rgba(16, 185, 129, 0.22);
+    border: 1px solid #34d399;
+    color: #a7f3d0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: monospace;
+  }
+
+  /* Статистически кутии */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .stat-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .stat-box .lbl {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .stat-box .v {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--bg-dark);
+    margin-top: 2px;
+    font-family: monospace;
+  }
+
+  .step-explanation {
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    border-left: 5px solid var(--primary);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.94rem;
+    color: #1e293b;
+  }
+
+  .step-explanation.success {
+    background: var(--accent-light);
+    border-color: #6ee7b7;
+    border-left: 5px solid var(--accent);
+    color: #064e3b;
+  }
+
+  /* Бутони за интерактивната игра (Опитай сам) */
+  .choices-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .btn-z-choice {
+    background: #334155;
+    color: #f8fafc;
+    border: 2px solid #60a5fa;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-z-choice:hover:not(:disabled) {
+    background: #2563eb;
+    border-color: #93c5fd;
+    transform: translateY(-2px);
+  }
+
+  .btn-z-choice.used {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: #10b981;
+    color: #6ee7b7;
+    cursor: not-allowed;
+    opacity: 0.75;
+  }
+
+  .btn-z-choice.invalid {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #475569;
+    color: #64748b;
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  @media (max-width: 1024px) {
+    body {
+      height: auto;
+      overflow: auto;
+    }
+    .workspace {
+      grid-template-columns: 1fr;
+      overflow: visible;
+    }
+    .left-pane, .panel-container {
+      overflow: visible;
+    }
+  }
+</style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+<header>
+  <a href="../../index.html" class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+    <span>Algorithma 13</span>
+  </a>
+
+  <div class="lesson-controls">
+    <span class="badge-grade">AtCoder • Факторизация</span>
+  </div>
+
+  <nav>
+    <a href="../../index.html">Начало</a>
+    <a href="../../group-d.html" class="active">Група D</a>
+    <a href="../../group-c.html">Група C</a>
+  </nav>
+</header>
+
+<div class="workspace">
+  <!-- ================= ЛЯВ ПАНЕЛ: ПЪЛНО УСЛОВИЕ НА ЗАДАЧАТА ================= -->
+  <div class="left-pane">
+    <div class="meta-bar">
+      <div class="meta-limits">
+        <span>Време: 1 с.</span>
+        <span>Памет: 64 MB</span>
+      </div>
+      <div class="meta-school">Школа МГ</div>
+    </div>
+
+    <h1 class="problem-title">
+      ЗАДАЧА 2: AtCoder Beginner Contest 169. Игра на деления
+      <span class="sub-en">(Div Game)</span>
+    </h1>
+
+    <p>
+      На черната дъска е записано едно цяло число <em>N</em>. Можете да извършвате следната операция толкова пъти, колкото пожелаете (възможно е и нито веднъж):
+    </p>
+
+    <ul class="rules-list">
+      <li>
+        Избирате едно число от вида <em>z = p<sup>e</sup></em>, където <em>p</em> е просто число, а <em>e</em> е цяло положително число (<em>e &ge; 1</em>).
+      </li>
+      <li>
+        Числото <em>z</em> трябва да дели текущата стойност на <em>N</em>, а също така <strong>избраното число <em>z</em> (или по-точно комбинацията от прост множител и неговата степен) не трябва да е било избирано в предишни стъпки</strong>.
+      </li>
+      <li>
+        Заменяте текущото <em>N</em> с новото <em>N / z</em>.
+      </li>
+    </ul>
+
+    <p>
+      Напишете програма <code>divgame</code>, която намира максималния възможен брой операции, които можете да извършите.
+    </p>
+
+    <h2>Вход</h2>
+    <p>
+      Първият и единствен ред на входа съдържа едно цяло число <em>N</em>.
+    </p>
+
+    <h2>Изход</h2>
+    <p>
+      На единствения ред на стандартния изход програмата да извежда едно цяло число &mdash; максималния брой операции на деление, които могат да бъдат извършени.
+    </p>
+
+    <h2>Ограничения</h2>
+    <ul class="constraints-list">
+      <li>1 &le; <em>N</em> &le; 10<sup>12</sup></li>
+    </ul>
+
+    <h2>Примери</h2>
+    <table class="examples-table">
+      <thead>
+        <tr>
+          <th>Примерен вход</th>
+          <th>Изход за примера</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="example-row-clickable" onclick="selectExample(0)">
+          <td>24</td>
+          <td>
+            3
+            <button class="btn-try-example">Разгледай Пример 1 &rarr;</button>
+          </td>
+        </tr>
+        <tr class="example-row-clickable" onclick="selectExample(1)">
+          <td>1</td>
+          <td>
+            0
+            <button class="btn-try-example">Разгледай Пример 2 &rarr;</button>
+          </td>
+        </tr>
+        <tr class="example-row-clickable" onclick="selectExample(2)">
+          <td>2020</td>
+          <td>
+            3
+            <button class="btn-try-example">Разгледай Пример 3 &rarr;</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================= ДЕСЕН ПАНЕЛ: ТАБОВЕ ЗА ВСЕКИ ПРИМЕР ================= -->
+  <div class="right-pane">
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tab-btn-0" onclick="selectExample(0)">
+        Пример 1 <span class="tab-badge">N = 24 &rarr; 3</span>
+      </button>
+      <button class="tab-btn" id="tab-btn-1" onclick="selectExample(1)">
+        Пример 2 <span class="tab-badge">N = 1 &rarr; 0</span>
+      </button>
+      <button class="tab-btn" id="tab-btn-2" onclick="selectExample(2)">
+        Пример 3 <span class="tab-badge">N = 2020 &rarr; 3</span>
+      </button>
+    </div>
+
+    <div class="panel-container">
+      <!-- КАРТА 1: ПОСТЪПКОВА ВИЗУАЛИЗАЦИЯ НА ИЗБРАНИЯ ПРИМЕР -->
+      <div class="viz-card">
+        <h3>
+          <span id="viz-title">Постъпково разглеждане на Пример 1</span>
+        </h3>
+        <p class="viz-subtitle">
+          Проследете как на всяка стъпка избираме различна степен на просто число <em>z = p<sup>e</sup></em>, която дели текущото <em>N</em>.
+        </p>
+
+        <div class="step-controls">
+          <button class="btn-step" id="btn-prev" onclick="changeStep(-1)">&#9664; Предишна стъпка</button>
+          <button class="btn-step" id="btn-next" onclick="changeStep(1)">Следваща стъпка &#9654;</button>
+          <button class="btn-reset" onclick="resetSteps()">В началото</button>
+          <span class="step-indicator" id="step-counter">Стъпка 0 от 3</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="lbl">Текущо число N</div>
+            <div class="v" id="stat-n">24</div>
+          </div>
+          <div class="stat-box">
+            <div class="lbl">Избрано z = p<sup>e</sup></div>
+            <div class="v" id="stat-z" style="color: var(--warning);">&mdash;</div>
+          </div>
+          <div class="stat-box">
+            <div class="lbl">Брой операции</div>
+            <div class="v" id="stat-ops" style="color: var(--primary);">0</div>
+          </div>
+        </div>
+
+        <div class="blackboard">
+          <div class="blackboard-label">
+            <span>Черната дъска</span>
+            <span id="board-input-badge">Начално N = 24</span>
+          </div>
+          <div class="board-main">
+            <div class="current-n-box">
+              <span class="lbl">Стойност на дъската</span>
+              <span class="val" id="board-n-val">24</span>
+            </div>
+            <div style="font-size: 0.82rem; color: #cbd5e1;">Оставащи прости множители в N:</div>
+            <div class="prime-blocks-row" id="board-factors-row"></div>
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Вече използвани числа z (не могат да се избират повторно):</div>
+            <div class="used-z-row" id="board-used-row"></div>
+          </div>
+        </div>
+
+        <div class="step-explanation" id="step-explanation"></div>
+      </div>
+
+      <!-- КАРТА 2: ИНТЕРАКТИВНА ИГРА "ОПИТАЙ САМ" -->
+      <div class="viz-card">
+        <h3>
+          <span>Опитай сам да разделиш числото N!</span>
+          <button class="btn-reset" onclick="resetSandbox()">Възстанови началното N</button>
+        </h3>
+        <p class="viz-subtitle">
+          Кликнете върху някое от възможните числа <em>z = p<sup>e</sup></em> по-долу, за да разделите текущото <em>N</em>. Забележете как ако изберете твърде голяма степен още в началото, губите възможни ходове!
+        </p>
+
+        <div class="blackboard" style="margin-bottom: 12px;">
+          <div class="blackboard-label">
+            <span id="sandbox-n-label">Текущо N = 24</span>
+            <span id="sandbox-ops-label">Направени деления: 0</span>
+          </div>
+          <div style="text-align: center; font-size: 0.84rem; color: #cbd5e1; margin-bottom: 8px;">
+            Изберете валиден делител <em>z = p<sup>e</sup></em>:
+          </div>
+          <div class="choices-grid" id="sandbox-choices"></div>
+        </div>
+
+        <div class="step-explanation" id="sandbox-status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const examplesData = [
+    {
+      title: 'Постъпково разглеждане на Пример 1 (Вход: 24 → Изход: 3)',
+      inputBadge: 'Вход: N = 24 (24 = 2³ · 3¹)',
+      initialN: 24,
+      targetOps: 3,
+      availableZ: [
+        { label: 'z = 2¹ = 2', val: 2 },
+        { label: 'z = 2² = 4', val: 4 },
+        { label: 'z = 2³ = 8', val: 8 },
+        { label: 'z = 3¹ = 3', val: 3 }
+      ],
+      steps: [
+        {
+          n: 24,
+          zLabel: '—',
+          ops: 0,
+          factors: ['2', '2', '2', '3'],
+          highlightCount: 0,
+          used: [],
+          done: false,
+          text: '<strong>Начално състояние (0 операции):</strong> На черната дъска е записано числото <code>N = 24</code>. Ако го разложим на прости множители, виждаме, че <code>24 = 2 &middot; 2 &middot; 2 &middot; 3 = 2<sup>3</sup> &middot; 3<sup>1</sup></code>. За да направим възможно най-много стъпки, започваме с най-малката възможна степен на двойката: <code>z = 2<sup>1</sup> = 2</code>.'
+        },
+        {
+          n: 12,
+          zLabel: '2¹ = 2',
+          ops: 1,
+          factors: ['2', '2', '3'],
+          highlightCount: 2,
+          used: ['2¹ = 2'],
+          done: false,
+          text: '<strong>Стъпка 1 (1 операция):</strong> Избрахме <code>z = 2<sup>1</sup> = 2</code> и заменихме <code>N</code> с <code>24 / 2 = 12</code>. Вече не разполагаме с право да избираме <code>2<sup>1</sup> = 2</code> втори път! Но в <code>12 = 2<sup>2</sup> &middot; 3<sup>1</sup></code> са останали още две двойки, затова избираме следващата степен: <code>z = 2<sup>2</sup> = 4</code>.'
+        },
+        {
+          n: 3,
+          zLabel: '2² = 4',
+          ops: 2,
+          factors: ['3'],
+          highlightCount: 1,
+          used: ['2¹ = 2', '2² = 4'],
+          done: false,
+          text: '<strong>Стъпка 2 (2 операции):</strong> Избрахме <code>z = 2<sup>2</sup> = 4</code> и разделихме <code>12 / 4 = 3</code>. Сега на дъската е записано <code>N = 3</code>. Единственият останал прост множител е <code>3</code>, затова избираме <code>z = 3<sup>1</sup> = 3</code>.'
+        },
+        {
+          n: 1,
+          zLabel: '3¹ = 3',
+          ops: 3,
+          factors: [],
+          highlightCount: 0,
+          used: ['2¹ = 2', '2² = 4', '3¹ = 3'],
+          done: true,
+          text: '<strong>Стъпка 3 (Край — 3 операции):</strong> Разделихме <code>3 / 3 = 1</code>. Тъй като на дъската остана <code>N = 1</code>, повече деления са невъзможни. Използвахме три различни числа от вида <em>p<sup>e</sup></em> (<code>2<sup>1</sup></code>, <code>2<sup>2</sup></code> и <code>3<sup>1</sup></code>), така че максималният брой операции е <strong>3</strong>.'
+        }
+      ]
+    },
+    {
+      title: 'Постъпково разглеждане на Пример 2 (Вход: 1 → Изход: 0)',
+      inputBadge: 'Вход: N = 1',
+      initialN: 1,
+      targetOps: 0,
+      availableZ: [],
+      steps: [
+        {
+          n: 1,
+          zLabel: '—',
+          ops: 0,
+          factors: [],
+          highlightCount: 0,
+          used: [],
+          done: true,
+          text: '<strong>Начално и крайно състояние (0 операции):</strong> На дъската е записано числото <code>N = 1</code>. Според условието трябва да изберем число <em>z = p<sup>e</sup></em> с положителна степен <em>e &ge; 1</em>, което да дели <em>N</em>. Тъй като всяко такова число е поне 2, никое <em>z</em> не дели 1. Затова максималният брой операции е <strong>0</strong>.'
+        }
+      ]
+    },
+    {
+      title: 'Постъпково разглеждане на Пример 3 (Вход: 2020 → Изход: 3)',
+      inputBadge: 'Вход: N = 2020 (2020 = 2² · 5¹ · 101¹)',
+      initialN: 2020,
+      targetOps: 3,
+      availableZ: [
+        { label: 'z = 2¹ = 2', val: 2 },
+        { label: 'z = 2² = 4', val: 4 },
+        { label: 'z = 5¹ = 5', val: 5 },
+        { label: 'z = 101¹ = 101', val: 101 }
+      ],
+      steps: [
+        {
+          n: 2020,
+          zLabel: '—',
+          ops: 0,
+          factors: ['2', '2', '5', '101'],
+          highlightCount: 1,
+          used: [],
+          done: false,
+          text: '<strong>Начално състояние (0 операции):</strong> Числото <code>2020</code> се разлага на прости множители като <code>2020 = 2 &middot; 2 &middot; 5 &middot; 101 = 2<sup>2</sup> &middot; 5<sup>1</sup> &middot; 101<sup>1</sup></code>. На първата стъпка избираме <code>z = 2<sup>1</sup> = 2</code>.'
+        },
+        {
+          n: 1010,
+          zLabel: '2¹ = 2',
+          ops: 1,
+          factors: ['2', '5', '101'],
+          highlightCount: 0,
+          used: ['2¹ = 2'],
+          done: false,
+          text: '<strong>Стъпка 1 (1 операция):</strong> След делението <code>2020 / 2 = 1010</code> в числото остава още една двойка (<code>2<sup>1</sup></code>), но <strong>не можем</strong> да изберем <code>z = 2<sup>1</sup> = 2</code> повторно, а за <code>z = 2<sup>2</sup> = 4</code> вече не достигат двойки! Преминаваме към следващия прост делител и избираме <code>z = 5<sup>1</sup> = 5</code>.'
+        },
+        {
+          n: 202,
+          zLabel: '5¹ = 5',
+          ops: 2,
+          factors: ['2', '101'],
+          highlightCount: 0,
+          used: ['2¹ = 2', '5¹ = 5'],
+          done: false,
+          text: '<strong>Стъпка 2 (2 операции):</strong> Делим <code>1010 / 5 = 202</code>. Остават простите множители <code>2</code> и <code>101</code>. Тъй като <code>2<sup>1</sup></code> вече е използвано, избираме <code>z = 101<sup>1</sup> = 101</code>.'
+        },
+        {
+          n: 2,
+          zLabel: '101¹ = 101',
+          ops: 3,
+          factors: ['2'],
+          highlightCount: 0,
+          used: ['2¹ = 2', '5¹ = 5', '101¹ = 101'],
+          done: true,
+          text: '<strong>Стъпка 3 (Край — 3 операции):</strong> Делим <code>202 / 101 = 2</code>. На дъската остава <code>N = 2</code>, но <code>z = 2<sup>1</sup> = 2</code> вече беше използвано в Стъпка 1, затова не можем да направим повече ходове. Максималният брой операции е <strong>3</strong>.'
+        }
+      ]
+    }
+  ];
+
+  let currentExampleIdx = 0;
+  let currentStepIdx = 0;
+
+  let sandboxN = 24;
+  let sandboxUsed = [];
+
+  function selectExample(exIdx) {
+    currentExampleIdx = exIdx;
+    currentStepIdx = 0;
+
+    document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+      btn.classList.toggle('active', idx === exIdx);
+    });
+
+    renderStep();
+    resetSandbox();
+  }
+
+  function changeStep(delta) {
+    const steps = examplesData[currentExampleIdx].steps;
+    currentStepIdx = Math.max(0, Math.min(steps.length - 1, currentStepIdx + delta));
+    renderStep();
+  }
+
+  function resetSteps() {
+    currentStepIdx = 0;
+    renderStep();
+  }
+
+  function renderStep() {
+    const ex = examplesData[currentExampleIdx];
+    const step = ex.steps[currentStepIdx];
+
+    document.getElementById('viz-title').textContent = ex.title;
+    document.getElementById('board-input-badge').textContent = ex.inputBadge;
+    document.getElementById('step-counter').textContent = `Стъпка ${currentStepIdx} от ${ex.steps.length - 1}`;
+
+    document.getElementById('btn-prev').disabled = (currentStepIdx === 0);
+    document.getElementById('btn-next').disabled = (currentStepIdx === ex.steps.length - 1);
+
+    document.getElementById('stat-n').textContent = step.n;
+    document.getElementById('stat-z').textContent = step.zLabel;
+    document.getElementById('stat-ops').textContent = step.ops;
+    document.getElementById('board-n-val').textContent = step.n;
+
+    const factorsRow = document.getElementById('board-factors-row');
+    if (step.factors.length === 0) {
+      factorsRow.innerHTML = `<span style="color: #94a3b8; font-style: italic;">Няма останали прости множители (N = 1)</span>`;
+    } else {
+      factorsRow.innerHTML = step.factors.map((f, idx) => `
+        <span class="prime-factor-pill ${idx < step.highlightCount ? 'active-div' : ''}">${f}</span>
+      `).join(' <span style="color:#64748b; font-weight:900;">&middot;</span> ');
+    }
+
+    const usedRow = document.getElementById('board-used-row');
+    if (step.used.length === 0) {
+      usedRow.innerHTML = `<span style="color: #64748b; font-size: 0.82rem;">Все още няма използвани числа z</span>`;
+    } else {
+      usedRow.innerHTML = step.used.map(u => `<span class="used-z-chip">✔ ${u}</span>`).join('');
+    }
+
+    const expBox = document.getElementById('step-explanation');
+    expBox.className = step.done ? 'step-explanation success' : 'step-explanation';
+    expBox.innerHTML = step.text;
+  }
+
+  function resetSandbox() {
+    const ex = examplesData[currentExampleIdx];
+    sandboxN = ex.initialN;
+    sandboxUsed = [];
+    renderSandbox();
+  }
+
+  function pickSandboxZ(val, label) {
+    if (sandboxUsed.includes(val) || sandboxN % val !== 0) return;
+    sandboxN = sandboxN / val;
+    sandboxUsed.push(val);
+    renderSandbox();
+  }
+
+  function renderSandbox() {
+    const ex = examplesData[currentExampleIdx];
+    document.getElementById('sandbox-n-label').textContent = `Текущо N = ${sandboxN}`;
+    document.getElementById('sandbox-ops-label').textContent = `Направени деления: ${sandboxUsed.length}`;
+
+    const choicesBox = document.getElementById('sandbox-choices');
+    if (ex.availableZ.length === 0) {
+      choicesBox.innerHTML = `<span style="color: #94a3b8;">За N = 1 няма валидни делители z = p<sup>e</sup> (e &ge; 1).</span>`;
+    } else {
+      choicesBox.innerHTML = ex.availableZ.map(item => {
+        const isUsed = sandboxUsed.includes(item.val);
+        const divides = (sandboxN % item.val === 0);
+        let cls = 'btn-z-choice';
+        let disabledAttr = '';
+        let statusTag = '';
+
+        if (isUsed) {
+          cls += ' used';
+          disabledAttr = 'disabled';
+          statusTag = ' (използвано)';
+        } else if (!divides) {
+          cls += ' invalid';
+          disabledAttr = 'disabled';
+          statusTag = ' (не дели N)';
+        }
+
+        return `
+          <button class="${cls}" ${disabledAttr} onclick="pickSandboxZ(${item.val}, '${item.label}')">
+            ${item.label}${statusTag}
+          </button>
+        `;
+      }).join('');
+    }
+
+    const anyMovesLeft = ex.availableZ.some(item => !sandboxUsed.includes(item.val) && (sandboxN % item.val === 0));
+    const statusBox = document.getElementById('sandbox-status');
+
+    if (!anyMovesLeft) {
+      if (sandboxUsed.length === ex.targetOps) {
+        statusBox.className = 'step-explanation success';
+        statusBox.innerHTML = `<strong>Отлично!</strong> Постигнахте максималния възможен брой от <strong>${sandboxUsed.length}</strong> операции (остана <code>N = ${sandboxN}</code>).`;
+      } else {
+        statusBox.className = 'step-explanation';
+        statusBox.innerHTML = `Няма повече валидни ходове! Направихте <strong>${sandboxUsed.length}</strong> операции, но максимумът за този пример е <strong>${ex.targetOps}</strong> (тъй като избрахте твърде голяма степен наведнъж). Натиснете „Възстанови началното N“ и опитайте с по-малки степени!`;
+      }
+    } else {
+      statusBox.className = 'step-explanation';
+      statusBox.innerHTML = `Текущо <code>N = ${sandboxN}</code>. Изберете бутон с делител <em>z = p<sup>e</sup></em>, който все още не е използван и дели <code>${sandboxN}</code>.`;
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    selectExample(0);
+  });
+</script>
+</body>
+</html>
