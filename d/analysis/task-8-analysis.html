@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Анализ: Игра на деления (Div Game) — AtCoder Beginner Contest 169</title>
+<style>
+  :root {
+    --bg-main: #f4f7fb;
+    --bg-card: #ffffff;
+    --bg-dark: #0f172a;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --secondary: #7c3aed;
+    --secondary-light: #ede9fe;
+    --accent: #059669;
+    --accent-light: #d1fae5;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+    --border: #e2e8f0;
+    --shadow: 0 4px 20px rgba(15, 23, 42, 0.07);
+    --radius: 12px;
+
+    /* Цветове от основната тема Algorithma 13 */
+    --theme-bg-primary: #0b1120;
+    --theme-accent: #3b82f6;
+    --group-d: #f59e0b;
+    --group-c: #10b981;
+    --theme-text-main: #f8fafc;
+    --theme-text-muted: #94a3b8;
+    --theme-border: rgba(255, 255, 255, 0.1);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.65;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Горна навигационна лента */
+  header {
+    background-color: rgba(11, 17, 32, 0.95);
+    border-bottom: 1px solid var(--theme-border);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--theme-text-main);
+    text-decoration: none;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .logo span { color: var(--theme-accent); }
+  .logo svg { width: 24px; height: 24px; color: var(--theme-accent); }
+
+  nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+
+  nav a {
+    color: var(--theme-text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  nav a:hover { color: var(--theme-text-main); background: rgba(255, 255, 255, 0.05); }
+  nav a.active { color: var(--group-d); background: rgba(245, 158, 11, 0.1); }
+
+  .lesson-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--theme-border);
+  }
+
+  .badge-grade {
+    background: #38bdf8;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Основен двуколонен контейнер */
+  .workspace {
+    display: grid;
+    grid-template-columns: 46% 54%;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ЛЯВА КОЛОНА: ТЕКСТ НА АНАЛИЗА */
+  .left-pane {
+    overflow-y: auto;
+    padding: 28px 34px;
+    background: #ffffff;
+    border-right: 2px solid var(--border);
+    scroll-behavior: smooth;
+  }
+
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--primary);
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--bg-dark);
+  }
+
+  .meta-limits {
+    display: flex;
+    gap: 18px;
+  }
+
+  .meta-school {
+    color: var(--primary);
+    font-weight: 800;
+  }
+
+  .problem-title {
+    font-size: 1.45rem;
+    color: var(--bg-dark);
+    margin-bottom: 16px;
+    line-height: 1.3;
+    font-weight: 800;
+  }
+
+  .problem-title .sub-en {
+    display: block;
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .analysis-section-title {
+    font-size: 1.15rem;
+    color: var(--bg-dark);
+    border-left: 4px solid var(--secondary);
+    padding-left: 10px;
+    margin: 20px 0 10px 0;
+    font-weight: 700;
+  }
+
+  .left-pane p {
+    margin-bottom: 12px;
+    color: #334155;
+    text-align: justify;
+    font-size: 0.95rem;
+  }
+
+  .code-inline {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border: 1px solid #cbd5e1;
+  }
+
+  /* Математическа формула с дроб без LaTeX */
+  .math-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid var(--secondary);
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 1.15rem;
+    text-align: center;
+    margin: 14px 0;
+    color: var(--bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .fraction {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1.2;
+    padding: 0 4px;
+  }
+
+  .fraction .num {
+    border-bottom: 1.5px solid var(--bg-dark);
+    padding: 0 4px 2px 4px;
+  }
+
+  .fraction .den {
+    padding-top: 2px;
+  }
+
+  table.examples-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px 0;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  table.examples-table th {
+    background: var(--bg-dark);
+    color: #ffffff;
+    text-align: left;
+    padding: 8px 14px;
+  }
+
+  table.examples-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    background: #ffffff;
+  }
+
+  table.examples-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .example-row-clickable {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .example-row-clickable:hover td {
+    background: var(--primary-light) !important;
+  }
+
+  .btn-try-example {
+    float: right;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.75rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  /* ДЯСНА КОЛОНА: ИНТЕРАКТИВНИ ЛАБОРАТОРИИ ЗА АНАЛИЗА */
+  .right-pane {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-main);
+    overflow: hidden;
+  }
+
+  .tabs-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 22px;
+    background: #e2e8f0;
+    border-bottom: 1px solid #cbd5e1;
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .tab-btn.active {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+  }
+
+  .panel-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px;
+  }
+
+  .viz-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .viz-card h3 {
+    font-size: 1.15rem;
+    color: var(--bg-dark);
+    margin-bottom: 6px;
+  }
+
+  .viz-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .input-group label {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .input-group input {
+    padding: 8px 12px;
+    border: 1px solid #94a3b8;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    width: 150px;
+  }
+
+  .btn-action {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.88rem;
+  }
+  .btn-action:hover { background: #1d4ed8; }
+
+  .btn-preset {
+    background: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-preset:hover { background: #cbd5e1; }
+
+  .explanation-banner {
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    border-left: 5px solid var(--primary);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    color: #1e293b;
+    margin-top: 12px;
+  }
+
+  .prime-breakdown-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--secondary);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+
+  .step-blocks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+  }
+
+  .step-block {
+    background: var(--accent-light);
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+
+  .step-block.leftover {
+    background: var(--warning-light);
+    color: #92400e;
+    border-color: #fcd34d;
+  }
+
+  .staircase-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .unit-square {
+    width: 26px;
+    height: 26px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-family: monospace;
+  }
+
+  .unit-square.unused {
+    background: #cbd5e1;
+    color: #475569;
+  }
+
+  @media (max-width: 1024px) {
+    body { height: auto; overflow: auto; }
+    .workspace { grid-template-columns: 1fr; overflow: visible; }
+    .left-pane, .panel-container { overflow: visible; }
+  }
+</style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+<body>
+
+<header>
+  <a href="../../index.html" class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+    <span>Algorithma 13</span>
+  </a>
+
+  <div class="lesson-controls">
+    <span class="badge-grade">Анализ на задача</span>
+  </div>
+
+  <nav>
+    <a href="../../index.html">Начало</a>
+    <a href="../../group-d.html" class="active">Група D</a>
+    <a href="../../group-c.html">Група C</a>
+  </nav>
+</header>
+
+<div class="workspace">
+  <!-- ================= ЛЯВА КОЛОНА: ТЕКСТ НА АНАЛИЗА ================= -->
+  <div class="left-pane">
+    <div class="meta-bar">
+      <div class="meta-limits">
+        <span>Време: 1 с.</span>
+        <span>Памет: 64 MB</span>
+      </div>
+      <div class="meta-school">Анализ • Школа МГ</div>
+    </div>
+
+    <h1 class="problem-title">
+      ЗАДАЧА 2: AtCoder Beginner Contest 169. Игра на деления
+      <span class="sub-en">(Div Game)</span>
+    </h1>
+
+    <div class="analysis-section-title">Вход</div>
+    <p>
+      Първият и единствен ред на входа съдържа едно цяло число <em>N</em>.
+    </p>
+
+    <div class="analysis-section-title">Изход</div>
+    <p>
+      На единствения ред на стандартния изход програмата да извежда едно цяло число &mdash; максималния брой операции на деление, които могат да бъдат извършени.
+    </p>
+
+    <div class="analysis-section-title">Анализ</div>
+    <p>
+      Прочитаме входното цяло число <em>N</em>. Ако <span class="code-inline">N == 1</span>, отговорът е веднага <span class="code-inline">0</span>, тъй като не можем да изберем никое число <em>z = p<sup>e</sup></em> (<em>e &ge; 1</em>), което да дели 1.
+    </p>
+    <p>
+      Тъй като можем да избираме степени от вида <em>z = p<sup>e</sup></em> за различни прости числа <em>p</em> и всяка комбинация от прост множител и степен трябва да е уникална в предишни стъпки, задачата се свежда до следното: всяко отделно просто число <em>p</em> в каноничното разлагане на <em>N</em> може да бъде „разделено“ на възможно най-много независими стъпки по степен.
+    </p>
+    <p>
+      Разлагаме числото <em>N</em> на прости множители чрез функция за колесна факторизация, която връща списък от двойки <span class="code-inline">{прост_делител, степен}</span> (например във вектор от <span class="code-inline">pair&lt;long long, int&gt;</span>).
+    </p>
+    <p>
+      За всеки получен прост делител <em>p</em> с обща натрупана степен <em>k</em> в разлагането на <em>N</em>, целта ни е да разделим тази обща степен на възможно най-много различни положителни степени <em>1, 2, 3, &hellip;, m</em>, така че тяхната сума да не надвишава <em>k</em>:
+    </p>
+
+    <div class="math-box">
+      <span>1 + 2 + 3 + &hellip; + <em>m</em> =</span>
+      <span class="fraction">
+        <span class="num"><em>m</em>(<em>m</em> + 1)</span>
+        <span class="den">2</span>
+      </span>
+      <span>&le; <em>k</em></span>
+    </div>
+
+    <p>
+      Следователно за всяко <em>p</em> намираме максималното цяло число <em>m</em>, за което сумата от първите <em>m</em> естествени числа е <em>&le; k</em>. Това число <em>m</em> показва колко операции можем да направим с дадения прост множител <em>p</em> (избирайки последователно <em>p<sup>1</sup>, p<sup>2</sup>, &hellip;, p<sup>m</sup></em>).
+    </p>
+    <p>
+      Сумираме стойностите на <em>m</em> за всички прости делители на <em>N</em>, извеждаме общия брой натрупани операции на стандартния изход и приключваме програмата.
+    </p>
+
+    <h2>Примери</h2>
+    <table class="examples-table">
+      <thead>
+        <tr>
+          <th>Примерен вход</th>
+          <th>Изход за примера</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="example-row-clickable" onclick="setNPreset(24)">
+          <td>24</td>
+          <td>3 <button class="btn-try-example">Анализирай вдясно &rarr;</button></td>
+        </tr>
+        <tr class="example-row-clickable" onclick="setNPreset(1)">
+          <td>1</td>
+          <td>0 <button class="btn-try-example">Анализирай вдясно &rarr;</button></td>
+        </tr>
+        <tr class="example-row-clickable" onclick="setNPreset(2020)">
+          <td>2020</td>
+          <td>3 <button class="btn-try-example">Анализирай вдясно &rarr;</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================= ДЯСНА КОЛОНА: ИНТЕРАКТИВНИ ЛАБОРАТОРИИ ================= -->
+  <div class="right-pane">
+    <div class="tabs-bar">
+      <button class="tab-btn active">Интерактивна лаборатория към анализа на Div Game</button>
+    </div>
+
+    <div class="panel-container">
+      <!-- ЛАБОРАТОРИЯ 1: ПЪЛЕН АНАЛИЗ НА ЧИСЛО N -->
+      <div class="viz-card">
+        <h3>Лаборатория 1: Разлагане на N и пресмятане на операциите за всяко p</h3>
+        <p class="viz-subtitle">
+          Въведете число <em>N</em>, за да видите неговата колесна факторизация и как общата степен <em>k</em> на всеки прост делител <em>p</em> се разделя на последователни степени <em>1 + 2 + &hellip; + m &le; k</em>.
+        </p>
+
+        <div class="input-group">
+          <label for="inp-n">Число N =</label>
+          <input type="number" id="inp-n" value="24" min="1" max="1000000000000">
+          <button class="btn-action" onclick="runAnalysisN()">Анализирай N</button>
+          <button class="btn-preset" onclick="setNPreset(24)">24</button>
+          <button class="btn-preset" onclick="setNPreset(2020)">2020</button>
+          <button class="btn-preset" onclick="setNPreset(64)">64 (2⁶)</button>
+          <button class="btn-preset" onclick="setNPreset(360)">360</button>
+        </div>
+
+        <div id="lab1-output"></div>
+      </div>
+
+      <!-- ЛАБОРАТОРИЯ 2: ВИЗУАЛИЗАЦИЯ НА СТЪПАЛОВИДНАТА СУМА 1 + 2 + ... + m <= k -->
+      <div class="viz-card">
+        <h3>Лаборатория 2: Стъпаловидно разбиване на степента k</h3>
+        <p class="viz-subtitle">
+          Проверете за произволна степен <em>k</em> и прост делител <em>p</em> колко най-много стъпки <em>m</em> се побират по формулата <em>1 + 2 + 3 + &hellip; + m &le; k</em>.
+        </p>
+
+        <div class="input-group">
+          <label for="inp-p">Прост делител p =</label>
+          <input type="number" id="inp-p" value="2" min="2" style="width: 80px;">
+          <label for="inp-k">Обща степен k =</label>
+          <input type="number" id="inp-k" value="7" min="1" max="45" style="width: 80px;">
+          <button class="btn-action" onclick="runStaircaseLab()">Разбий степента k</button>
+          <button class="btn-preset" onclick="setKPreset(3)">k = 3</button>
+          <button class="btn-preset" onclick="setKPreset(6)">k = 6</button>
+          <button class="btn-preset" onclick="setKPreset(10)">k = 10</button>
+        </div>
+
+        <div id="lab2-output"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function wheelFactorizeJS(n) {
+    let num = BigInt(n);
+    const factors = [];
+
+    for (const d of [2n, 3n]) {
+      if (num % d === 0n) {
+        let cnt = 0;
+        while (num % d === 0n) {
+          num /= d;
+          cnt++;
+        }
+        factors.push({ p: Number(d), k: cnt });
+      }
+    }
+
+    let step = 2n;
+    for (let i = 5n; i * i <= num; i += step, step = 6n - step) {
+      if (num % i === 0n) {
+        let br = 0;
+        while (num % i === 0n) {
+          num /= i;
+          br++;
+        }
+        factors.push({ p: Number(i), k: br });
+      }
+    }
+
+    if (num > 1n) {
+      factors.push({ p: Number(num), k: 1 });
+    }
+    return factors;
+  }
+
+  function setNPreset(val) {
+    document.getElementById('inp-n').value = val;
+    runAnalysisN();
+  }
+
+  function runAnalysisN() {
+    const valStr = document.getElementById('inp-n').value;
+    const n = parseInt(valStr, 10);
+    const out = document.getElementById('lab1-output');
+
+    if (isNaN(n) || n < 1) {
+      out.innerHTML = `<div class="explanation-banner">Моля, въведете естествено число N &ge; 1.</div>`;
+      return;
+    }
+
+    if (n === 1) {
+      out.innerHTML = `
+        <div class="explanation-banner">
+          <strong>Граничен случай (N == 1):</strong><br>
+          Числото 1 няма прости делители, затова не можем да изберем никое <em>z = p<sup>e</sup></em> (<em>e &ge; 1</em>).<br>
+          Общ брой операции: <strong style="color: var(--primary); font-size: 1.15rem;">0</strong>
+        </div>
+      `;
+      return;
+    }
+
+    const factors = wheelFactorizeJS(n);
+    const canonStr = factors.map(f => `${f.p}<sup>${f.k}</sup>`).join(' &middot; ');
+    const pairsStr = factors.map(f => `{${f.p}, ${f.k}}`).join(', ');
+
+    let totalOps = 0;
+    const cardsHtml = [];
+
+    for (const f of factors) {
+      let rem = f.k;
+      let step = 1;
+      let m = 0;
+      const chosenSteps = [];
+
+      while (rem >= step) {
+        rem -= step;
+        chosenSteps.push(step);
+        m++;
+        step++;
+      }
+
+      totalOps += m;
+
+      const blocks = chosenSteps.map(e => `
+        <span class="step-block">z = ${f.p}<sup>${e}</sup> = ${Math.pow(f.p, e)} (изразходва степен ${e})</span>
+      `);
+
+      if (rem > 0) {
+        blocks.push(`
+          <span class="step-block leftover">Остатък от степента: ${rem} (не достига за ${f.p}<sup>${step}</sup>)</span>
+        `);
+      }
+
+      cardsHtml.push(`
+        <div class="prime-breakdown-card">
+          <div>
+            Прост делител <strong>p = ${f.p}</strong> с обща степен <strong>k = ${f.k}</strong>
+            &rarr; дава <strong>m = ${m}</strong> операции:
+          </div>
+          <div class="step-blocks">${blocks.join('')}</div>
+        </div>
+      `);
+    }
+
+    out.innerHTML = `
+      <div class="explanation-banner">
+        <strong>1. Колесна факторизация на N = ${n}:</strong><br>
+        Канонично разлагане: <strong>${n} = ${canonStr}</strong><br>
+        Вектор от двойки <code>res</code>: <code>{ ${pairsStr} }</code>
+        ${cardsHtml.join('')}
+        <hr style="border:none; border-top: 1px solid #93c5fd; margin: 12px 0;">
+        <strong>Краен резултат (сума от всички m):</strong>
+        <span style="font-size: 1.25rem; font-weight: 900; color: var(--primary); margin-left: 6px;">
+          ${totalOps} операции
+        </span>
+      </div>
+    `;
+  }
+
+  function setKPreset(kVal) {
+    document.getElementById('inp-k').value = kVal;
+    runStaircaseLab();
+  }
+
+  function runStaircaseLab() {
+    const p = parseInt(document.getElementById('inp-p').value, 10) || 2;
+    const k = parseInt(document.getElementById('inp-k').value, 10);
+    const out = document.getElementById('lab2-output');
+
+    if (isNaN(k) || k < 1 || k > 45) {
+      out.innerHTML = `<div class="explanation-banner">Моля, въведете степен k между 1 и 45.</div>`;
+      return;
+    }
+
+    let rem = k;
+    let e = 1;
+    let m = 0;
+    const rowsHtml = [];
+    const sumTerms = [];
+
+    while (rem >= e) {
+      rem -= e;
+      m++;
+      sumTerms.push(e);
+
+      let squares = '';
+      for (let i = 0; i < e; i++) {
+        squares += `<span class="unit-square">${p}</span>`;
+      }
+
+      rowsHtml.push(`
+        <div class="staircase-row">
+          <span style="min-width: 95px; font-weight: 700; font-family: monospace;">Стъпка ${e}:</span>
+          <div>${squares}</div>
+          <span style="font-size: 0.86rem; color: var(--accent); font-weight: 700;">
+            &rarr; избираме z = ${p}<sup>${e}</sup> (степен ${e})
+          </span>
+        </div>
+      `);
+      e++;
+    }
+
+    if (rem > 0) {
+      let squares = '';
+      for (let i = 0; i < rem; i++) {
+        squares += `<span class="unit-square unused">${p}</span>`;
+      }
+      rowsHtml.push(`
+        <div class="staircase-row">
+          <span style="min-width: 95px; font-weight: 700; font-family: monospace; color: var(--warning);">Остатък:</span>
+          <div>${squares}</div>
+          <span style="font-size: 0.86rem; color: var(--warning); font-weight: 700;">
+            &rarr; остават ${rem} (нужни са поне ${e} за следваща стъпка ${p}<sup>${e}</sup>)
+          </span>
+        </div>
+      `);
+    }
+
+    const usedSum = (m * (m + 1)) / 2;
+
+    out.innerHTML = `
+      <div class="explanation-banner">
+        За обща степен <strong>k = ${k}</strong> максималното <strong>m = ${m}</strong>, тъй като:
+        <strong>${sumTerms.join(' + ')} = ${usedSum} &le; ${k}</strong>
+        (а за m = ${m + 1} са нужни ${(m + 1) * (m + 2) / 2} &gt; ${k}).
+        <div style="margin-top: 12px;">
+          ${rowsHtml.join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    runAnalysisN();
+    runStaircaseLab();
+  });
+</script>
+</body>
+</html>
