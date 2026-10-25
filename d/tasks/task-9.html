@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача D9: Взаимно прости общи делители - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачите */
+            --accent-hover: #2563eb;
+            --group-d: #f59e0b; /* Оранжев акцент за Група D */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--group-d);
+        }
+
+        /* КОНТЕЙНЕР (Два Панела) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        /* Примерен вход/изход */
+        .io-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация) */
+        .right-panel {
+            flex: 1;
+            background-color: var(--panel-bg);
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            text-align: center;
+            width: 120px;
+        }
+
+        button {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: var(--accent);
+            color: white;
+            align-self: flex-end;
+            height: 38px;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+
+        .explanation-banner {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .step-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 1.2rem;
+            border-radius: 0.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+        }
+
+        .step-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content {
+            font-family: 'Consolas', monospace;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .divisors-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .divisor-chip {
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--success);
+            color: var(--success);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .divisor-chip.base {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: var(--highlight);
+            color: #d8b4fe;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА D9: Взаимно прости общи делители</h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1 с.</div>
+                    <div>💾 <strong>Памет:</strong> 64 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>🏆 <strong>Източник:</strong> AtCoder Beginner Contest 142</div>
+                </div>
+            </div>
+
+            <p>Дадени са две положителни цели числа А и В.</p>
+            
+            <p>Разглеждаме всички положителни цели числа, които са общи делители едновременно на А и на В. Вашата цел е да изберете възможно най-много от тези общи делители, така че всеки два от избраните делители да са взаимно прости (тоест да нямат други общи делители освен 1).</p>
+            
+            <p>Да се напише програма <code>divisors</code>, която намира максималния брой общи делители на А и В, които могат да бъдат избрани при това условие.</p>
+
+            <h2>Вход</h2>
+            <p>Първият и единствен ред на входа съдържа две цели числа А и В, разделени с един интервал.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на стандартния изход програмата да извежда едно цяло число — максималния брой избрани общи делители, всеки два от които са взаимно прости.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; A, B &le; 10<sup>12</sup></li>
+            </ul>
+
+            <h2>Примери</h2>
+            
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 1</div>
+                    <pre>12 18</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 1</div>
+                    <pre>3</pre>
+                </div>
+            </div>
+            
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 2</div>
+                    <pre>420 660</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 2</div>
+                    <pre>4</pre>
+                </div>
+            </div>
+            
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 3</div>
+                    <pre>1 2019</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 3</div>
+                    <pre>1</pre>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">⚡ Симулатор: Оптимален избор на делители</div>
+                
+                <div class="explanation-banner">
+                    <strong>Анализ на задачата:</strong> Всички общи делители на A и B са всъщност делители на техния <strong>Най-голям общ делител (НОД)</strong>. За да изберем максимален брой делители, които са взаимно прости (нямат общ множител > 1 помежду си), най-добрата стратегия е да изберем <strong>числото 1</strong> и по <strong>точно едно просто число</strong> (или негова степен) за всеки уникален прост множител на НОД.
+                    <br><br>
+                    <em>Следователно отговорът е просто: <strong>1 + (броят на уникалните прости множители на НОД)</strong>.</em>
+                </div>
+
+                <div class="controls">
+                    <div class="input-group">
+                        <label>Число A:</label>
+                        <input type="number" id="sim-a" value="420" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>Число B:</label>
+                        <input type="number" id="sim-b" value="660" min="1">
+                    </div>
+                    <button id="btn-test" onclick="runSimulation()">Симулирай</button>
+                </div>
+
+                <div class="step-container" id="simulation-steps">
+                    <!-- Стъпките се генерират динамично -->
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        function gcd(a, b) {
+            while (b !== 0n) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function getUniquePrimes(n) {
+            let primes = [];
+            for (let i = 2n; i * i <= n; i++) {
+                if (n % i === 0n) {
+                    primes.push(i);
+                    while (n % i === 0n) {
+                        n /= i;
+                    }
+                }
+            }
+            if (n > 1n) {
+                primes.push(n);
+            }
+            return primes;
+        }
+
+        async function runSimulation() {
+            const btn = document.getElementById('btn-test');
+            const aRaw = document.getElementById('sim-a').value;
+            const bRaw = document.getElementById('sim-b').value;
+            
+            if (!aRaw || !bRaw || aRaw < 1 || bRaw < 1) {
+                alert("Моля, въведете валидни положителни числа.");
+                return;
+            }
+
+            btn.disabled = true;
+            const stepsContainer = document.getElementById('simulation-steps');
+            stepsContainer.innerHTML = '';
+
+            const A = BigInt(aRaw);
+            const B = BigInt(bRaw);
+
+            // Step 1: Compute GCD
+            const G = gcd(A, B);
+            
+            const step1 = document.createElement('div');
+            step1.className = 'step-box';
+            step1.innerHTML = `
+                <div class="step-title">Стъпка 1: Намиране на НОД</div>
+                <div class="step-content">
+                    НОД(${A.toString()}, ${B.toString()}) = <strong style="color: var(--accent);">${G.toString()}</strong>
+                </div>
+            `;
+            stepsContainer.appendChild(step1);
+            
+            await sleep(100);
+            step1.classList.add('visible');
+            await sleep(800);
+
+            // Step 2: Factorize GCD
+            const primes = getUniquePrimes(G);
+            
+            const step2 = document.createElement('div');
+            step2.className = 'step-box';
+            
+            let primesDisplay = primes.length > 0 
+                ? primes.map(p => p.toString()).join(', ') 
+                : "Няма (НОД е 1)";
+
+            step2.innerHTML = `
+                <div class="step-title">Стъпка 2: Уникални прости множители на НОД</div>
+                <div class="step-content">
+                    Прости делители на ${G.toString()}: <strong style="color: var(--warning);">${primesDisplay}</strong>
+                </div>
+            `;
+            stepsContainer.appendChild(step2);
+            
+            await sleep(100);
+            step2.classList.add('visible');
+            await sleep(1000);
+
+            // Step 3: Result
+            const step3 = document.createElement('div');
+            step3.className = 'step-box';
+            step3.innerHTML = `
+                <div class="step-title">Стъпка 3: Избор на взаимно прости общи делители</div>
+                <div class="step-content">
+                    Избрани числа (1 + всички уникални прости множители):
+                    <div class="divisors-grid" id="divisors-grid">
+                        <div class="divisor-chip base">1</div>
+                    </div>
+                </div>
+            `;
+            stepsContainer.appendChild(step3);
+            
+            await sleep(100);
+            step3.classList.add('visible');
+            
+            const grid = step3.querySelector('#divisors-grid');
+            
+            for (let i = 0; i < primes.length; i++) {
+                await sleep(400);
+                const chip = document.createElement('div');
+                chip.className = 'divisor-chip';
+                chip.innerText = primes[i].toString();
+                grid.appendChild(chip);
+            }
+
+            await sleep(600);
+            
+            const step4 = document.createElement('div');
+            step4.className = 'step-box';
+            step4.style.borderColor = 'var(--success)';
+            step4.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
+            step4.innerHTML = `
+                <div class="step-title" style="color: var(--success);">Краен резултат</div>
+                <div class="step-content">
+                    Максимален брой избрани делители: <strong style="font-size: 1.5rem; color: var(--success);">${primes.length + 1}</strong>
+                </div>
+            `;
+            stepsContainer.appendChild(step4);
+            
+            await sleep(100);
+            step4.classList.add('visible');
+
+            btn.disabled = false;
+        }
+    </script>
+</body>
+
+</html>
