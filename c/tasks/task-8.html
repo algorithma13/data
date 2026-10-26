@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 1: Различни числа (CSES 1621) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #fff;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2.15rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.25;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        .io-container {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.5rem;
+            margin-top: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация с табове) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(15, 23, 42, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .vis-title::before { content: '⚡'; }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            text-align: center;
+            width: 190px;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            background: var(--accent);
+            color: white;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); }
+        .btn-blue:hover { background-color: #2563eb; }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        .stats-bar span strong { color: var(--accent); font-family: monospace; font-size: 1.1rem; }
+
+        .arr-track {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 85px;
+            padding: 1.25rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .num-box {
+            min-width: 60px;
+            height: 60px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.15rem;
+            padding: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .num-box.current {
+            border-color: var(--warning);
+            background-color: rgba(245, 158, 11, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .num-box.unique {
+            border-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .num-box.duplicate {
+            border-color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.12);
+            color: var(--text-muted);
+            opacity: 0.55;
+        }
+
+        .box-sub {
+            font-family: system-ui, sans-serif;
+            font-size: 0.65rem;
+            font-weight: normal;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .calc-box {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-top: 1rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Условие на задачата -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА 1: CSES 1621. Различни числа <br><span style="font-size: 1.35rem; color: var(--text-muted); font-weight: normal;">(Distinct Numbers)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>🏆 <strong>Източник:</strong> CSES 1621</div>
+                </div>
+            </div>
+
+            <p>Даден е списък от <code>N</code> цели числа. Вашата задача е да преброите колко различни стойности се срещат в него.</p>
+            
+            <p>Да се напише програма <code>distinct</code>, която определя броя на различните (уникалните) числа в дадения списък.</p>
+
+            <h2>Вход</h2>
+            <p>От първия ред на стандартния вход се въвежда едно цяло число <code>N</code> — броят на числата в списъка.</p>
+            <p>От втория ред се въвеждат <code>N</code> цели числа <code>x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>N</sub></code>, разделени с интервал — елементите на списъка.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на изхода програмата да отпечатва едно положително цяло число — броят на различните стойности в списъка.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <code>N</code> &le; 10<sup>12</sup></li>
+                <li>1 &le; <code>x<sub>i</sub></code> &le; 10<sup>9</sup></li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход</div>
+                    <pre>5
+2 3 2 2 3</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера</div>
+                    <pre>2</pre>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Обяснение на примера:</strong> В дадения списък общият брой на елементите е 5, но сред тях се срещат само две уникални стойности: числото 2 (което се появява три пъти) и числото 3 (което се появява два пъти). Тъй като повтарящите се стойности не се броят повторно, общият брой на различните числа е точно 2.
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Интерактивна Симулация -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-vec')" id="btn-tab-vec">1. С Вектор и Сортиране</button>
+                <button class="tab-btn" onclick="switchTab('tab-pq')" id="btn-tab-pq">2. С Приоритетна опашка</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ВЕКТОР И СОРТИРАНЕ -->
+                <div class="tab-pane active" id="tab-vec">
+                    <div class="vis-card">
+                        <div class="vis-title">Подход 1: Сортиране на вектор и проверка на съседи</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Когато запишем числата във вектор и ги подредим във възходящ ред, всички еднакви стойности застават една до друга. След това обхождаме вектора и броим само елементите, които се различават от предходния си съсед.
+                        </p>
+
+                        <div class="controls">
+                            <input type="text" id="sort-input" value="2 3 2 2 3">
+                            <button onclick="initSortSim()">Зареди и сортирай</button>
+                            <button id="btn-sort-step" class="btn-blue" onclick="stepSortSim()">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="stats-bar">
+                            <span>Преброени уникални числа <strong id="sort-count">0</strong></span>
+                        </div>
+
+                        <div class="arr-track" id="sort-vis"></div>
+
+                        <div class="calc-box" id="sort-calc">
+                            Натиснете „Зареди и сортирай“, за да подредите числата във вектора
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: ПРИОРИТЕТНА ОПАШКА -->
+                <div class="tab-pane" id="tab-pq">
+                    <div class="vis-card">
+                        <div class="vis-title">Подход 2: Изваждане по ред от Приоритетна опашка</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Ако поставим всички числа в приоритетна опашка, тя винаги ще ни подава най-големия останал елемент на върха. Изваждаме ги един по един и увеличаваме брояча само когато текущото число е различно от последното извадено.
+                        </p>
+
+                        <div class="controls">
+                            <input type="text" id="pq-input" value="2 3 2 2 3">
+                            <button onclick="initPqSim()">Зареди в опашката</button>
+                            <button id="btn-pq-step" class="btn-blue" onclick="stepPqSim()">Извади върха &rarr;</button>
+                        </div>
+
+                        <div class="stats-bar">
+                            <span>Последно извадено <strong id="pq-last">няма</strong></span>
+                            <span>Уникални числа <strong id="pq-count">0</strong></span>
+                        </div>
+
+                        <div style="font-size:0.85rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">Елементи в приоритетната опашка</div>
+                        <div class="arr-track" id="pq-vis"></div>
+
+                        <div class="calc-box" id="pq-calc">
+                            Натиснете „Извади върха“, за да прегледате елементите от най-големия към най-малкия
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            if (pct < 25) pct = 25;
+            if (pct > 75) pct = 75;
+            leftPanel.style.width = pct + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        function parseInputList(id) {
+            const raw = document.getElementById(id).value.trim();
+            if (!raw) return [2, 3, 2, 2, 3];
+            return raw.split(/\s+/).map(Number).filter(n => !isNaN(n));
+        }
+
+        // ==========================================
+        // 1. СИМУЛАЦИЯ С ВЕКТОР И СОРТИРАНЕ
+        // ==========================================
+        let sortArr = [];
+        let sortIdx = 0;
+        let sortCount = 0;
+        let sortStates = [];
+
+        function renderSortTrack() {
+            const track = document.getElementById('sort-vis');
+            track.innerHTML = '';
+
+            sortArr.forEach((val, i) => {
+                const box = document.createElement('div');
+                let cls = 'num-box';
+                if (i === sortIdx) cls += ' current';
+                else if (sortStates[i] === 'unique') cls += ' unique';
+                else if (sortStates[i] === 'duplicate') cls += ' duplicate';
+
+                let label = `индекс ${i}`;
+                if (sortStates[i] === 'unique') label = 'ново';
+                else if (sortStates[i] === 'duplicate') label = 'дубликат';
+
+                box.className = cls;
+                box.innerHTML = `<span>${val}</span><span class="box-sub">${label}</span>`;
+                track.appendChild(box);
+            });
+
+            document.getElementById('sort-count').innerText = sortCount;
+        }
+
+        function initSortSim() {
+            sortArr = parseInputList('sort-input').sort((a, b) => a - b);
+            sortIdx = 0;
+            sortCount = 0;
+            sortStates = new Array(sortArr.length).fill('');
+            document.getElementById('btn-sort-step').disabled = false;
+            renderSortTrack();
+            document.getElementById('sort-calc').innerHTML = `Векторът е сортиран във възходящ ред — натиснете „Следваща стъпка“`;
+        }
+
+        function stepSortSim() {
+            if (sortIdx >= sortArr.length) {
+                renderSortTrack();
+                document.getElementById('sort-calc').innerHTML = `Обхождането приключи — общият брой различни числа е <strong>${sortCount}</strong>`;
+                document.getElementById('btn-sort-step').disabled = true;
+                return;
+            }
+
+            const cur = sortArr[sortIdx];
+            if (sortIdx === 0 || cur !== sortArr[sortIdx - 1]) {
+                sortStates[sortIdx] = 'unique';
+                sortCount++;
+                const reason = sortIdx === 0 ? 'първи елемент във вектора' : `различен от предходния елемент ${sortArr[sortIdx - 1]}`;
+                document.getElementById('sort-calc').innerHTML = `Числото <strong>${cur}</strong> на индекс ${sortIdx} е ${reason} — увеличаваме брояча на <strong>${sortCount}</strong>`;
+            } else {
+                sortStates[sortIdx] = 'duplicate';
+                document.getElementById('sort-calc').innerHTML = `Числото <strong>${cur}</strong> на индекс ${sortIdx} е равно на предходното — пропускаме го`;
+            }
+
+            sortIdx++;
+            renderSortTrack();
+        }
+
+        // ==========================================
+        // 2. СИМУЛАЦИЯ С ПРИОРИТЕТНА ОПАШКА
+        // ==========================================
+        let pqSimArr = [];
+        let pqLastVal = null;
+        let pqUniqueCount = 0;
+
+        function renderPqSim() {
+            const track = document.getElementById('pq-vis');
+            track.innerHTML = '';
+
+            if (pqSimArr.length === 0) {
+                track.innerHTML = `<span style="color:var(--text-muted); font-size:0.9rem;">Приоритетната опашка вече е празна</span>`;
+            } else {
+                pqSimArr.forEach((val, i) => {
+                    const box = document.createElement('div');
+                    box.className = 'num-box' + (i === 0 ? ' current' : '');
+                    const label = i === 0 ? 'връх' : 'в опашката';
+                    box.innerHTML = `<span>${val}</span><span class="box-sub">${label}</span>`;
+                    track.appendChild(box);
+                });
+            }
+
+            document.getElementById('pq-last').innerText = pqLastVal === null ? 'няма' : pqLastVal;
+            document.getElementById('pq-count').innerText = pqUniqueCount;
+        }
+
+        function initPqSim() {
+            pqSimArr = parseInputList('pq-input').sort((a, b) => b - a);
+            pqLastVal = null;
+            pqUniqueCount = 0;
+            document.getElementById('btn-pq-step').disabled = false;
+            renderPqSim();
+            document.getElementById('pq-calc').innerHTML = `Числата са заредени в приоритетната опашка — натиснете „Извади върха“`;
+        }
+
+        function stepPqSim() {
+            if (pqSimArr.length === 0) {
+                document.getElementById('pq-calc').innerHTML = `Опашката е празна — общият брой различни числа е <strong>${pqUniqueCount}</strong>`;
+                document.getElementById('btn-pq-step').disabled = true;
+                return;
+            }
+
+            const topVal = pqSimArr.shift();
+            if (pqLastVal === null || topVal !== pqLastVal) {
+                pqUniqueCount++;
+                pqLastVal = topVal;
+                document.getElementById('pq-calc').innerHTML = `Извадихме върха <strong>${topVal}</strong> — нова стойност, увеличаваме брояча на <strong>${pqUniqueCount}</strong>`;
+            } else {
+                document.getElementById('pq-calc').innerHTML = `Извадихме върха <strong>${topVal}</strong> — съвпада с последното извадено число и не се брои повторно`;
+            }
+
+            renderPqSim();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initSortSim();
+            initPqSim();
+        });
+    </script>
+</body>
+
+</html>
