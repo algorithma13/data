@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C10: Танцуващи крави (USACO) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+            margin-left: 1.5rem;
+        }
+
+        .nav-controls a:hover { color: var(--accent); }
+
+        /* CONTAINERS */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .resizer:hover, .resizer.dragging { background-color: var(--accent); border-color: var(--accent); }
+        .resizer:hover::after, .resizer.dragging::after { color: #fff; }
+
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TEXT STYLES */
+        .task-header { margin-bottom: 2rem; border-bottom: 2px solid rgba(16, 185, 129, 0.3); padding-bottom: 1.5rem; }
+        .task-header h1 { font-size: 2.15rem; color: var(--accent); margin-bottom: 1rem; line-height: 1.25; }
+        .task-meta { display: flex; gap: 1.5rem; color: var(--text-muted); font-size: 0.9rem; font-family: 'Consolas', monospace; background: var(--code-bg); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); flex-wrap: wrap; }
+        h2 { font-size: 1.25rem; color: var(--text-main); margin: 2rem 0 1rem 0; border-left: 4px solid var(--accent); padding-left: 0.75rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        .io-container { display: flex; gap: 1.5rem; margin-top: 1rem; }
+        .io-box { flex: 1; }
+        .io-title { font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; font-size: 0.95rem; }
+        pre { background-color: var(--code-bg); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); overflow-x: auto; margin-bottom: 1.5rem; font-family: 'Consolas', monospace; color: #e2e8f0; font-size: 1rem; }
+        code { font-family: 'Consolas', monospace; background-color: var(--code-bg); padding: 0.15rem 0.35rem; border-radius: 0.25rem; color: #38bdf8; }
+        .explanation { background-color: rgba(16, 185, 129, 0.08); border-left: 4px solid var(--accent); padding: 1.15rem 1.5rem; margin-top: 1rem; border-radius: 0 0.5rem 0.5rem 0; color: #cbd5e1; }
+
+        /* TABS */
+        .tabs-header { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem 1.5rem; background-color: rgba(15, 23, 42, 0.85); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .tab-btn { background-color: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab-btn:hover { color: var(--text-main); border-color: var(--accent); }
+        .tab-btn.active { background-color: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3); }
+        .tabs-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* VISUALIZATION CARDS */
+        .vis-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); }
+        .vis-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .vis-title::before { content: '⚡'; }
+        
+        .controls { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.5rem; align-items: center; background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); justify-content: center; }
+        button { padding: 0.5rem 1rem; border: none; border-radius: 0.35rem; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 0.9rem; background: var(--accent); color: white; }
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-amber { background-color: var(--warning); color: #000; }
+        .btn-amber:hover { background-color: #d97706; color: #fff; }
+        
+        .calc-box { background: rgba(15, 23, 42, 0.6); padding: 1rem 1.25rem; border-radius: 0.5rem; border: 1px dashed var(--border); text-align: center; font-size: 1rem; line-height: 1.6; margin-top: 1rem; color: var(--text-main); }
+        .calc-box strong { color: var(--accent); font-weight: 700; }
+        
+        /* DATA STRUCTURE VISUALS */
+        .arr-track { display: flex; gap: 0.65rem; justify-content: center; flex-wrap: wrap; min-height: 85px; padding: 1.15rem; background: rgba(11, 17, 32, 0.5); border-radius: 0.5rem; border: 1px solid var(--border); align-items: center; margin-bottom: 1rem; }
+        
+        .num-box { min-width: 60px; height: 60px; background-color: var(--code-bg); border: 2px solid var(--border); border-radius: 0.45rem; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; font-size: 1.15rem; padding: 0 0.5rem; transition: all 0.3s ease; position: relative; }
+        .num-box.active { border-color: var(--warning); background-color: rgba(245, 158, 11, 0.2); transform: translateY(-4px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+        .num-box.done { border-color: var(--success); background-color: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .num-box.invalid { border-color: var(--danger); background-color: rgba(239, 68, 68, 0.12); color: var(--text-muted); opacity: 0.55; }
+        .num-box.target { border-color: var(--highlight); background-color: rgba(59, 130, 246, 0.2); }
+        .box-sub { font-family: system-ui, sans-serif; font-size: 0.66rem; font-weight: normal; color: var(--text-muted); margin-top: 2px; line-height: 1; }
+        
+        .state-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+        .state-box { background: var(--code-bg); border: 1px solid var(--border); padding: 0.65rem; border-radius: 0.45rem; text-align: center; }
+        .state-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .state-val { font-size: 1.15rem; font-weight: 800; color: var(--accent); font-family: 'Consolas', monospace; margin-top: 2px; }
+
+        footer { border-top: 1px solid var(--border); padding: 0.85rem; text-align: center; color: var(--text-muted); margin-top: auto; width: 100%; flex-shrink: 0; background-color: var(--bg-primary); }
+        footer p { font-size: 0.65rem; margin: 0; opacity: 0.6; }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z" /></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА 3: USACO 2017. Танцуващи крави <br><span style="font-size: 1.35rem; color: var(--text-muted); font-weight: normal;">(Cow Dance Show)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1.0 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>🏆 <strong>Източник:</strong> USACO 2017 January Silver</div>
+                </div>
+            </div>
+
+            <p>След няколко месеца репетиции, кравите на фермера Джон са готови да организират ежегодното си танцово шоу. Тази година те ще изпълняват известния танц "Bovine Fandango".</p>
+            <p>В шоуто участват <code>N</code> крави. Всяка крава <code>i</code> има определена продължителност на танца <code>d<sub>i</sub></code>. Сцената, на която танцуват, има размер <code>K</code>, което означава, че най-много <code>K</code> крави могат да танцуват едновременно.</p>
+            
+            <p>Шоуто протича по следния начин:</p>
+            <ul>
+                <li>Първите <code>K</code> крави от списъка се качват на сцената и започват да танцуват.</li>
+                <li>Когато дадена крава приключи своя танц, тя веднага слиза от сцената и на нейно място се качва следващата чакаща крава от списъка. Този процес отнема 0 секунди.</li>
+                <li>Ако няколко крави приключат едновременно, на тяхно място се качват съответният брой нови крави в реда, в който са в списъка.</li>
+                <li>Шоуто приключва, когато и последната крава завърши своя танц.</li>
+            </ul>
+
+            <p>Фермерът Джон е резервирал залата за максимум <code>T<sub>max</sub></code> единици време. Да се напише програма <code>cowdance</code>, която намира минималната възможна стойност на <code>K</code> (размера на сцената), така че шоуто да приключи за не повече от <code>T<sub>max</sub></code> време.</p>
+
+            <h2>Вход</h2>
+            <p>От първия ред на стандартния вход се въвеждат две цели числа <code>N</code> и <code>T<sub>max</sub></code>, разделени с интервал.</p>
+            <p>От следващите <code>N</code> реда се въвежда по едно цяло число <code>d<sub>i</sub></code> — продължителността на танца за всяка поредна крава.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на изхода програмата да отпечатва едно цяло число — минималният размер на сцената <code>K</code>.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <code>N</code> &le; 10<sup>5</sup></li>
+                <li>1 &le; <code>d<sub>i</sub></code> &le; 10<sup>5</sup></li>
+                <li>1 &le; <code>T<sub>max</sub></code> &le; 10<sup>6</sup></li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход</div>
+                    <pre>5 8
+4
+7
+8
+6
+4</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера</div>
+                    <pre>4</pre>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Обяснение на примера:</strong> Ако <code>K=4</code>, на сцената се качват първите четири крави с времена 4, 7, 8, 6. В момент <code>T=4</code> първата крава приключва и на сцената се качва петата крава, която ще приключи в момент 4+4=8. Останалите приключват в моменти 7, 8 и 6. Максималното време е 8, което се вмества в <code>T<sub>max</sub> &le; 8</code>. Ако <code>K=3</code>, шоуто ще отнеме общо 10 време.
+            </div>
+        </div>
+
+        <div class="resizer" id="resizer"></div>
+
+        <!-- ДЕСЕН ПАНЕЛ -->
+        <div class="right-panel" id="right-panel">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-bs')" id="btn-tab-bs">1. Двоично търсене по K</button>
+                <button class="tab-btn" onclick="switchTab('tab-pq')" id="btn-tab-pq">2. Проверка чрез Min-Heap (PQ)</button>
+            </div>
+
+            <div class="tabs-content">
+                <!-- ТАБ 1: ДВОИЧНО ТЪРСЕНЕ -->
+                <div class="tab-pane active" id="tab-bs">
+                    <div class="vis-card">
+                        <div class="vis-title">Двоично търсене по отговора за размера K</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Тъй като по-голяма сцена <code>K</code> винаги означава по-бързо приключване, функцията за време е монотонно намаляваща. Следователно можем да приложим двоично търсене за оптималния размер в интервала <code>[1, N]</code>.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-blue" id="btn-bs-step" onclick="stepBS()">Следваща стъпка на търсене &rarr;</button>
+                            <button onclick="resetBS()">Рестартирай</button>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Лява граница L</div>
+                                <div class="state-val" id="bs-l">1</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Среда Mid (тестваме)</div>
+                                <div class="state-val" id="bs-mid" style="color:var(--highlight)">3</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Дясна граница R</div>
+                                <div class="state-val" id="bs-r">5</div>
+                            </div>
+                        </div>
+
+                        <div class="arr-track" id="bs-track"></div>
+                        <div class="calc-box" id="bs-calc">
+                            Интервалът на възможните отговори е от 1 до N (5). Натиснете „Следваща стъпка“, за да тествате средата.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: PRIORITY QUEUE -->
+                <div class="tab-pane" id="tab-pq">
+                    <div class="vis-card">
+                        <div class="vis-title">Проверка на K чрез Приоритетна опашка</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            За да проверим дали дадено <code>K</code> е достатъчно, поддържаме Min-Heap (в C++ <code>priority_queue</code> с <code>greater&lt;int&gt;</code>) за времената на приключване на кравите на сцената.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-amber" onclick="initPQ(3)">Тествай K = 3 (Неуспешно)</button>
+                            <button class="btn-blue" onclick="initPQ(4)">Тествай K = 4 (Успешно)</button>
+                            <button class="btn-slate" id="btn-pq-step" onclick="stepPQ()" disabled>Симулирай шоуто &rarr;</button>
+                        </div>
+
+                        <div style="font-size:0.85rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">Сцена (Времена на приключване в Min-Heap)</div>
+                        <div class="arr-track" id="pq-stage"></div>
+
+                        <div style="font-size:0.85rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">Чакащи крави (Продължителност)</div>
+                        <div class="arr-track" id="pq-wait"></div>
+
+                        <div class="calc-box" id="pq-calc">
+                            Изберете стойност за K, за да стартирате симулацията на сцената.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // RESIZER
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => { isDragging = true; resizer.classList.add('dragging'); document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; });
+        document.addEventListener('mousemove', (e) => { if (!isDragging) return; let pct = ((e.clientX - container.getBoundingClientRect().left) / container.getBoundingClientRect().width) * 100; leftPanel.style.width = Math.max(25, Math.min(75, pct)) + '%'; });
+        document.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; resizer.classList.remove('dragging'); document.body.style.cursor = ''; document.body.style.userSelect = ''; } });
+        resizer.addEventListener('dblclick', () => { leftPanel.style.width = '50%'; });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // BINARY SEARCH LOGIC
+        const n = 5, Tmax = 8;
+        let bsL = 1, bsR = 5, bsMid = 0, bsState = 0; // 0: start, 1: tested
+        
+        function renderBS() {
+            document.getElementById('bs-l').innerText = bsL;
+            document.getElementById('bs-r').innerText = bsR;
+            document.getElementById('bs-mid').innerText = (bsL <= bsR) ? Math.floor((bsL + bsR) / 2) : '-';
+
+            const track = document.getElementById('bs-track');
+            track.innerHTML = '';
+            for(let i=1; i<=n; i++) {
+                const box = document.createElement('div');
+                let cls = 'num-box';
+                let sub = '';
+                if(i < bsL || i > bsR) cls += ' invalid';
+                else if(i === Math.floor((bsL + bsR) / 2)) { cls += ' target'; sub = 'Mid'; }
+                
+                box.className = cls;
+                box.innerHTML = `<span>${i}</span><span class="box-sub">${sub}</span>`;
+                track.appendChild(box);
+            }
+        }
+
+        function resetBS() {
+            bsL = 1; bsR = 5; bsState = 0;
+            document.getElementById('btn-bs-step').disabled = false;
+            document.getElementById('bs-calc').innerHTML = `Интервалът е от L=1 до R=5.`;
+            renderBS();
+        }
+
+        function simulateTime(K) {
+            if(K === 3) return 10;
+            if(K === 4) return 8;
+            return 8; // simplified for example logic
+        }
+
+        function stepBS() {
+            if(bsL > bsR) {
+                document.getElementById('bs-calc').innerHTML = `Търсенето приключи! Минималното възможно K е <strong>${bsL}</strong>.`;
+                document.getElementById('btn-bs-step').disabled = true;
+                return;
+            }
+            
+            let mid = Math.floor((bsL + bsR) / 2);
+            
+            if(bsState === 0) {
+                let time = simulateTime(mid);
+                let msg = `Тестваме <strong>Mid = ${mid}</strong>. Времето за шоуто е <strong>${time}</strong>. `;
+                if(time <= Tmax) {
+                    msg += `Тъй като ${time} &le; ${Tmax}, това K е достатъчно. Намаляваме R = Mid.`;
+                    bsState = 1;
+                } else {
+                    msg += `Тъй като ${time} &gt; ${Tmax}, това K е твърде малко. Увеличаваме L = Mid + 1.`;
+                    bsState = 2;
+                }
+                document.getElementById('bs-calc').innerHTML = msg;
+            } else {
+                if(bsState === 1) bsR = mid - 1; // Actually for finding min valid, if valid, R = mid - 1, save ans = mid. Here standard logic R = mid or R = mid-1. Let's use standard lower bound.
+                else bsL = mid + 1;
+                
+                if(bsState === 1 && bsL > bsR) bsL = mid; // fix display bound for ans
+                
+                bsState = 0;
+                renderBS();
+                
+                if(bsL > bsR) {
+                    document.getElementById('bs-calc').innerHTML = `Търсенето приключи! Минималното възможно K е <strong>${bsL}</strong>.`;
+                    document.getElementById('btn-bs-step').disabled = true;
+                } else {
+                    document.getElementById('bs-calc').innerHTML = `Нов интервал: L=${bsL}, R=${bsR}.`;
+                }
+            }
+        }
+
+        // PQ SIMULATION LOGIC
+        const cows = [4, 7, 8, 6, 4];
+        let pq = [], waitQueue = [], pqK = 0, pqTime = 0;
+
+        function renderPQ() {
+            const stage = document.getElementById('pq-stage');
+            stage.innerHTML = '';
+            pq.sort((a,b) => a - b); // Simulate Min-Heap
+            
+            pq.forEach((v, i) => {
+                const box = document.createElement('div');
+                box.className = 'num-box' + (i === 0 ? ' active' : ' done');
+                box.innerHTML = `<span>${v}</span><span class="box-sub">${i===0 ? 'слиза първа' : 'танцува'}</span>`;
+                stage.appendChild(box);
+            });
+
+            const wait = document.getElementById('pq-wait');
+            wait.innerHTML = '';
+            waitQueue.forEach((v) => {
+                const box = document.createElement('div');
+                box.className = 'num-box';
+                box.innerHTML = `<span>${v}</span><span class="box-sub">чака</span>`;
+                wait.appendChild(box);
+            });
+        }
+
+        function initPQ(K) {
+            pqK = K;
+            pq = [];
+            waitQueue = [...cows];
+            
+            for(let i=0; i<K && waitQueue.length>0; i++) {
+                pq.push(waitQueue.shift());
+            }
+            
+            document.getElementById('btn-pq-step').disabled = false;
+            document.getElementById('pq-calc').innerHTML = `Сцената събира ${K} крави. Първите ${K} се качват. Времената в опашката показват кога ще приключат.`;
+            renderPQ();
+        }
+
+        function stepPQ() {
+            if(waitQueue.length === 0 && pq.length === 1) {
+                pqTime = pq[0];
+                pq = [];
+                renderPQ();
+                let status = pqTime <= Tmax ? 'УСПЕХ' : 'ПРОВАЛ';
+                let col = pqTime <= Tmax ? 'var(--success)' : 'var(--danger)';
+                document.getElementById('pq-calc').innerHTML = `Шоуто приключи! Общо време: <strong style="color:${col}">${pqTime}</strong>. Резултат: <strong>${status}</strong>.`;
+                document.getElementById('btn-pq-step').disabled = true;
+                return;
+            }
+
+            if(waitQueue.length > 0) {
+                pq.sort((a,b) => a - b);
+                let finishTime = pq.shift();
+                let nextCowTime = waitQueue.shift();
+                let newFinish = finishTime + nextCowTime;
+                pq.push(newFinish);
+                document.getElementById('pq-calc').innerHTML = `Кравата с най-ранно време (${finishTime}) слиза. Следващата крава (с продължителност ${nextCowTime}) се качва и ще приключи в момент <strong>${newFinish}</strong>.`;
+            } else if (pq.length > 1) {
+                pq.sort((a,b) => a - b);
+                let finishTime = pq.shift();
+                document.getElementById('pq-calc').innerHTML = `Няма повече чакащи. Кравата, приключваща в момент ${finishTime}, слиза от сцената.`;
+            }
+
+            renderPQ();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resetBS();
+            renderPQ();
+        });
+    </script>
+</body>
+</html>
