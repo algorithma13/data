@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение с Приоритетна опашка: Различни числа (CSES 1621) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Анализ на алгоритъма) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #fff;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.25rem;
+        }
+
+        .task-header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            line-height: 1.25;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        h2 { 
+            font-size: 1.3rem; 
+            color: var(--text-main); 
+            margin: 1.8rem 0 0.85rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.02rem; }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.55rem; }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .step-card {
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--highlight);
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .step-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-card h4 span {
+            font-size: 0.78rem;
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.15);
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.3rem;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивен Код и Трасировка) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            background: var(--accent);
+            color: white;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЪСТОЯНИЕ НА ПРОМЕНЛИВИТЕ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.65rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        /* ВИЗУАЛИЗАЦИЯ НА ПРИОРИТЕТНАТА ОПАШКА */
+        .arr-track {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 82px;
+            padding: 1rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .pq-item {
+            width: 58px;
+            height: 58px;
+            background-color: var(--highlight);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            font-size: 1.15rem;
+            transition: all 0.25s ease;
+        }
+
+        .pq-item.top {
+            background-color: var(--warning);
+            color: #000;
+            transform: scale(1.16);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+            z-index: 10;
+        }
+
+        .pq-sub {
+            font-family: system-ui, sans-serif;
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        /* ИНТЕРАКТИВЕН КОД С ОСВЕТЯВАНЕ РЕД ПО РЕД */
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.6rem;
+            border: 1px solid var(--border);
+            padding: 0.75rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.22rem 1rem;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 32px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #ffffff;
+        }
+
+        /* КУТИЯ ЗА ОБЯСНЕНИЕ */
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: left;
+            font-size: 0.98rem;
+            line-height: 1.55;
+            margin-top: 1rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../tasks/task-8.html">&larr; Към условието</a>
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Разбор на решението -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>Решение с Приоритетна опашка: Различни числа <br><span style="font-size: 1.25rem; color: var(--text-muted); font-weight: normal;">(var2_pq.cpp)</span></h1>
+                <div class="task-meta">
+                    <div>⚡ <strong>Сложност по време:</strong> O(N log N)</div>
+                    <div>💾 <strong>Сложност по памет:</strong> O(N)</div>
+                    <div>📦 <strong>Структура:</strong> std::priority_queue</div>
+                </div>
+            </div>
+
+            <p>Вторият класически начин да преброим различните числа чрез структурите от урока е да използваме <strong>приоритетна опашка (<code>std::priority_queue</code>)</strong>. Тъй като приоритетната опашка в C++ автоматично поддържа най-големия елемент на своя връх, последователното изваждане на елементите ни ги подава в <strong>намаляващ сортиран ред</strong>.</p>
+
+            <h2>Основна идея на алгоритъма</h2>
+            <p>Поставяме всички входни числа в приоритетната опашка чрез <code>pq.push(x)</code>. След това, докато опашката не се изпразни, вземаме най-големия елемент от върха с <code>pq.top()</code> и го премахваме с <code>pq.pop()</code>. Пазим стойността на последното преброено число в променливата <code>last</code> и увеличаваме брояча <code>cnt</code> само когато текущото число <code>curr</code> е различно от <code>last</code>.</p>
+
+            <h2>Стъпки на решението (Кликнете за осветяване в кода)</h2>
+
+            <div class="step-card" onclick="highlightLine(7)">
+                <h4>1. Бърз вход и изход <span>Редове 7 – 8</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Ускоряваме стандартните потоци за четене и писане чрез <code>ios_base::sync_with_stdio(false);</code> и <code>cin.tie(NULL);</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(11)">
+                <h4>2. Запълване на приоритетната опашка <span>Редове 10 – 16</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Прочитаме броя на числата <code>n</code>, създаваме <code>priority_queue&lt;int&gt; pq;</code> и в цикъл добавяме всяко прочетено число <code>x</code> чрез <code>pq.push(x);</code> за време <code>O(log N)</code> на елемент.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(18)">
+                <h4>3. Начални стойности за преброяването <span>Редове 17 – 18</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Задаваме <code>cnt = 0</code> и <code>last = -1</code>. По условие всички входни числа са положителни, така че първото извадено число от опашката гарантирано ще бъде различно от <code>-1</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(21)">
+                <h4>4. Изваждане на върха и проверка за дубликат <span>Редове 19 – 29</span></h4>
+                <p style="margin:0; font-size:0.95rem;">В цикъла <code>while(!pq.empty())</code> взимаме текущия връх <code>int curr = pq.top();</code> и веднага го премахваме с <code>pq.pop();</code>. Ако <code>curr != last</code>, значи сме открили нова уникална стойност — увеличаваме <code>cnt++</code> и обновяваме <code>last = curr</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(30)">
+                <h4>5. Извеждане на резултата <span>Ред 30</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Когато приоритетната опашка се изпразни напълно, отпечатваме натрупания брой уникални числа <code>cnt</code>.</p>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Осветяване на кода и трасировка -->
+        <div class="right-panel" id="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">
+                    <span>⚡ Интерактивна трасировка на кода</span>
+                    <span id="step-indicator" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Стъпка 1 от 9</span>
+                </div>
+
+                <div class="controls">
+                    <button class="btn-slate" onclick="stepTrace(-1)" id="btn-prev">&larr; Предишна стъпка</button>
+                    <button class="btn-blue" onclick="stepTrace(1)" id="btn-next">Следваща стъпка &rarr;</button>
+                    <button onclick="resetTrace()">Започни отначало</button>
+                </div>
+
+                <!-- Текущо състояние на променливите -->
+                <div class="state-grid">
+                    <div class="state-box">
+                        <div class="state-label">Текущо curr</div>
+                        <div class="state-val" id="st-curr">няма</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Последно last</div>
+                        <div class="state-val" id="st-last">-1</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Проверка</div>
+                        <div class="state-val" id="st-cmp" style="font-size:0.95rem;">изчакване</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Брояч cnt</div>
+                        <div class="state-val" id="st-cnt">0</div>
+                    </div>
+                </div>
+
+                <!-- Визуализация на приоритетната опашка -->
+                <div class="arr-track" id="pq-track"></div>
+
+                <!-- Код ред по ред -->
+                <div class="code-box" id="code-box"></div>
+
+                <!-- Обяснение на текущия ред / стъпка -->
+                <div class="calc-box" id="explanation-box">
+                    Кликнете върху произволен ред от кода или използвайте бутона „Следваща стъпка“, за да проследите изпълнението.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            if (pct < 25) pct = 25;
+            if (pct > 75) pct = 75;
+            leftPanel.style.width = pct + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        // ==========================================
+        // 1. ДАННИ ЗА КОДА И ОБЯСНЕНИЯ НА РЕДОВЕТЕ
+        // ==========================================
+        const codeLines = [
+            { num: 1, text: '#include <iostream>', exp: 'Включваме стандартната библиотека за входно-изходни потоци.' },
+            { num: 2, text: '#include <queue>', exp: 'Включваме библиотеката queue, в която се намира std::priority_queue.' },
+            { num: 3, text: 'using namespace std;', exp: 'Използваме стандартното пространство от имена std.' },
+            { num: 4, text: '', exp: 'Празен разделителен ред.' },
+            { num: 5, text: 'int main()', exp: 'Начало на главната функция main.' },
+            { num: 6, text: '{', exp: 'Отваряща скоба на главната функция.' },
+            { num: 7, text: '    ios_base::sync_with_stdio(false);', exp: 'Ускоряваме четенето и писането от стандартния вход и изход.' },
+            { num: 8, text: '    cin.tie(NULL);', exp: 'Развързваме потока cin от cout за по-бързо изпълнение.' },
+            { num: 9, text: '', exp: 'Празен разделителен ред.' },
+            { num: 10, text: '    int n; cin >> n;', exp: 'Декларираме и прочитаме броя на числата n в списъка.' },
+            { num: 11, text: '    priority_queue<int> pq;', exp: 'Създаваме празна приоритетна опашка pq, която държи най-големия елемент на върха.' },
+            { num: 12, text: '    for(int i = 0; i < n; i++)', exp: 'Цикъл за прочитане на всички n числа от входа.' },
+            { num: 13, text: '    {', exp: 'Начало на тялото на цикъла.' },
+            { num: 14, text: '        int x; cin >> x;', exp: 'Прочитаме поредното число x от входа.' },
+            { num: 15, text: '        pq.push(x);', exp: 'Поставяме числото x в приоритетната опашка за време O(log N).' },
+            { num: 16, text: '    }', exp: 'Край на цикъла за четене и запълване на опашката.' },
+            { num: 17, text: '    int cnt = 0;', exp: 'Инициализираме брояча за различните числа cnt с 0.' },
+            { num: 18, text: '    int last = -1;', exp: 'В променливата last пазим последното уникално число, което сме срещнали.' },
+            { num: 19, text: '    while(!pq.empty())', exp: 'Повтаряме цикъла, докато в приоритетната опашка има останали елементи.' },
+            { num: 20, text: '    {', exp: 'Начало на цикъла while.' },
+            { num: 21, text: '        int curr = pq.top();', exp: 'Вземаме най-големия останал елемент от върха на опашката в curr.' },
+            { num: 22, text: '        pq.pop();', exp: 'Премахваме върха от приоритетната опашка.' },
+            { num: 23, text: '', exp: 'Празен разделителен ред.' },
+            { num: 24, text: '        if(curr != last)', exp: 'Проверяваме дали текущото число е различно от последното преброено число.' },
+            { num: 25, text: '        {', exp: 'Начало на условния блок при открита нова стойност.' },
+            { num: 26, text: '            cnt++;', exp: 'Увеличаваме брояча на различните числа с 1.' },
+            { num: 27, text: '            last = curr;', exp: 'Запомняме текущото число в last, за да пропуснем всички негови дубликати.' },
+            { num: 28, text: '        }', exp: 'Край на условния блок.' },
+            { num: 29, text: '    }', exp: 'Край на цикъла while.' },
+            { num: 30, text: '    cout << cnt << "\\n";', exp: 'Извеждаме общия брой на различните числа на стандартния изход.' },
+            { num: 31, text: '}', exp: 'Край на програмата.' }
+        ];
+
+        // ==========================================
+        // 2. СТЪПКИ НА ТРАСИРОВКАТА ЗА ПРИМЕРА (5: 2 3 2 2 3)
+        // ==========================================
+        const traceSteps = [
+            {
+                line: 7,
+                curr: 'няма', last: '-', cmp: 'начало', cnt: 0,
+                pq: [],
+                msg: 'Активираме бързия вход и изход в началото на програмата'
+            },
+            {
+                line: 15,
+                curr: 'няма', last: '-', cmp: 'зареждане', cnt: 0,
+                pq: [3, 3, 2, 2, 2],
+                msg: 'Прочитаме <strong>n = 5</strong> и добавяме числата <strong>2, 3, 2, 2, 3</strong> в приоритетната опашка — на върха застава най-голямото число <strong>3</strong>'
+            },
+            {
+                line: 18,
+                curr: 'няма', last: -1, cmp: 'подготовка', cnt: 0,
+                pq: [3, 3, 2, 2, 2],
+                msg: 'Инициализираме брояча <strong>cnt = 0</strong> и задаваме <strong>last = -1</strong> преди старта на цикъла'
+            },
+            {
+                line: 27,
+                curr: 3, last: 3, cmp: '3 е различно от -1', cnt: 1,
+                pq: [3, 2, 2, 2],
+                msg: 'Изваждаме върха <strong>curr = 3</strong> — тъй като е различно от <strong>last = -1</strong>, увеличаваме <strong>cnt = 1</strong> и обновяваме <strong>last = 3</strong>'
+            },
+            {
+                line: 24,
+                curr: 3, last: 3, cmp: '3 е равно на 3', cnt: 1,
+                pq: [2, 2, 2],
+                msg: 'Изваждаме следващия връх <strong>curr = 3</strong> — той съвпада с <strong>last = 3</strong> и го пропускаме като дубликат'
+            },
+            {
+                line: 27,
+                curr: 2, last: 2, cmp: '2 е различно от 3', cnt: 2,
+                pq: [2, 2],
+                msg: 'Изваждаме върха <strong>curr = 2</strong> — различно е от <strong>last = 3</strong>, затова увеличаваме <strong>cnt = 2</strong> и задаваме <strong>last = 2</strong>'
+            },
+            {
+                line: 24,
+                curr: 2, last: 2, cmp: '2 е равно на 2', cnt: 2,
+                pq: [2],
+                msg: 'Изваждаме следващия връх <strong>curr = 2</strong> — съвпада с <strong>last = 2</strong> и не увеличаваме брояча'
+            },
+            {
+                line: 24,
+                curr: 2, last: 2, cmp: '2 е равно на 2', cnt: 2,
+                pq: [],
+                msg: 'Изваждаме последния елемент <strong>curr = 2</strong> — отново е дубликат и опашката вече остава празна'
+            },
+            {
+                line: 30,
+                curr: 'край', last: 2, cmp: 'завършено', cnt: 2,
+                pq: [],
+                msg: 'Приоритетната опашка е празна и програмата отпечатва крайния резултат: <strong>2</strong>'
+            }
+        ];
+
+        let curStep = 0;
+
+        function renderCode(activeLineNum) {
+            const box = document.getElementById('code-box');
+            box.innerHTML = codeLines.map(item => `
+                <div class="code-line ${item.num === activeLineNum ? 'active-line' : ''}" onclick="highlightLine(${item.num})">
+                    <span class="line-num">${item.num}</span>
+                    <span class="line-text">${item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                </div>
+            `).join('');
+        }
+
+        function highlightLine(lineNum) {
+            renderCode(lineNum);
+            const found = codeLines.find(x => x.num === lineNum);
+            if (found) {
+                document.getElementById('explanation-box').innerHTML = `<strong>Ред ${lineNum}:</strong> ${found.exp}`;
+            }
+        }
+
+        function renderPqState(stepObj) {
+            const track = document.getElementById('pq-track');
+            track.innerHTML = '';
+
+            if (stepObj.pq.length === 0) {
+                track.innerHTML = `<span style="color:var(--text-muted); font-size:0.9rem;">Приоритетната опашка е празна</span>`;
+                return;
+            }
+
+            stepObj.pq.forEach((val, idx) => {
+                const box = document.createElement('div');
+                box.className = 'pq-item' + (idx === 0 ? ' top' : '');
+                if (idx === 0) {
+                    box.innerHTML = `<span>${val}</span><span class="pq-sub">връх</span>`;
+                } else {
+                    box.innerHTML = `<span>${val}</span>`;
+                }
+                track.appendChild(box);
+            });
+        }
+
+        function updateTraceUI() {
+            const s = traceSteps[curStep];
+            renderCode(s.line);
+            renderPqState(s);
+
+            document.getElementById('st-curr').innerText = s.curr;
+            document.getElementById('st-last').innerText = s.last;
+            document.getElementById('st-cmp').innerText = s.cmp;
+            document.getElementById('st-cnt').innerText = s.cnt;
+            document.getElementById('step-indicator').innerText = `Стъпка ${curStep + 1} от ${traceSteps.length}`;
+            document.getElementById('explanation-box').innerHTML = s.msg;
+
+            document.getElementById('btn-prev').disabled = (curStep === 0);
+            document.getElementById('btn-next').disabled = (curStep === traceSteps.length - 1);
+        }
+
+        function stepTrace(dir) {
+            curStep = Math.max(0, Math.min(traceSteps.length - 1, curStep + dir));
+            updateTraceUI();
+        }
+
+        function resetTrace() {
+            curStep = 0;
+            updateTraceUI();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resetTrace();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение с вектор: Различни числа (CSES 1621) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Анализ на алгоритъма) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #fff;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.25rem;
+        }
+
+        .task-header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            line-height: 1.25;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        h2 { 
+            font-size: 1.3rem; 
+            color: var(--text-main); 
+            margin: 1.8rem 0 0.85rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.02rem; }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.55rem; }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .step-card {
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--highlight);
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .step-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-card h4 span {
+            font-size: 0.78rem;
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.15);
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.3rem;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивен Код и Трасировка) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            background: var(--accent);
+            color: white;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЪСТОЯНИЕ НА ПРОМЕНЛИВИТЕ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.65rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        /* ВИЗУАЛИЗАЦИЯ НА ВЕКТОРА */
+        .arr-track {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 76px;
+            padding: 0.85rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .num-box {
+            min-width: 58px;
+            height: 56px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0 0.5rem;
+            transition: all 0.25s ease;
+        }
+
+        .num-box.current {
+            border-color: var(--warning);
+            background-color: rgba(245, 158, 11, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .num-box.prev-compare {
+            border-color: var(--highlight);
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+
+        .num-box.counted {
+            border-color: var(--success);
+            background-color: rgba(16, 185, 129, 0.18);
+            color: var(--success);
+        }
+
+        .num-box.skipped {
+            border-color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        .box-sub {
+            font-family: system-ui, sans-serif;
+            font-size: 0.65rem;
+            font-weight: normal;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* ИНТЕРАКТИВЕН КОД С ОСВЕТЯВАНЕ РЕД ПО РЕД */
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.6rem;
+            border: 1px solid var(--border);
+            padding: 0.75rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.22rem 1rem;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 32px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #ffffff;
+        }
+
+        /* КУТИЯ ЗА ОБЯСНЕНИЕ */
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: left;
+            font-size: 0.98rem;
+            line-height: 1.55;
+            margin-top: 1rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../tasks/task-8.html">&larr; Към условието</a>
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Разбор на решението -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>Решение с вектор: Различни числа <br><span style="font-size: 1.25rem; color: var(--text-muted); font-weight: normal;">(var1_vector.cpp)</span></h1>
+                <div class="task-meta">
+                    <div>⚡ <strong>Сложност по време:</strong> O(N log N)</div>
+                    <div>💾 <strong>Сложност по памет:</strong> O(N)</div>
+                    <div>📦 <strong>Структура:</strong> std::vector</div>
+                </div>
+            </div>
+
+            <p>Когато търсим колко различни числа се съдържат в голям списък, проверката на всяко число спрямо всички предходни би отнела квадратично време <code>O(N<sup>2</sup>)</code> и ще доведе до превишаване на лимита за време. Затова използваме <strong>динамичен масив (<code>std::vector</code>)</strong> в комбинация със <strong>сортиране</strong>.</p>
+
+            <h2>Основна идея на алгоритъма</h2>
+            <p>След като подредим елементите на вектора във възходящ ред с функцията <code>sort(v.begin(), v.end())</code>, всички еднакви числа застават едно до друго в непрекъснати групи. Така задачата се свежда до едно просто линейно обхождане: всяко число е <strong>нова уникална стойност</strong> точно тогава, когато е първото число в масива или е различно от числото непосредствено преди него.</p>
+
+            <h2>Стъпки на решението (Кликнете за осветяване в кода)</h2>
+
+            <div class="step-card" onclick="highlightLine(8)">
+                <h4>1. Бърз вход и изход <span>Редове 8 – 9</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Тъй като входът съдържа стотици хиляди числа, изключваме синхронизацията между C и C++ потоците чрез <code>ios_base::sync_with_stdio(false);</code> и <code>cin.tie(NULL);</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(12)">
+                <h4>2. Прочитане на данните във вектор <span>Редове 11 – 13</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Прочитаме броя на числата <code>n</code>, заделяме вектор с точно <code>n</code> елемента чрез <code>vector&lt;int&gt; v(n);</code> и попълваме клетките му с цикъл.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(15)">
+                <h4>3. Сортиране чрез итератори <span>Ред 15</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Извикваме <code>sort(v.begin(), v.end());</code>. За примера <code>2 3 2 2 3</code> векторът се пренарежда в <code>2 2 2 3 3</code> за време <code>O(N log N)</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(20)">
+                <h4>4. Преброяване на уникалните елементи <span>Редове 17 – 24</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Обхождаме сортирания вектор от индекс <code>0</code> до <code>n - 1</code>. Условието <code>if(i == 0 || v[i] != v[i - 1])</code> гарантира две неща:</p>
+                <ul style="margin:0.4rem 0 0 1.2rem; font-size:0.92rem;">
+                    <li>При <code>i == 0</code> първият елемент винаги се брои и благодарение на мързеливото оценяване на оператора <code>||</code> не се прави опит за достъп до невалидния индекс <code>v[-1]</code>.</li>
+                    <li>При <code>i &gt; 0</code> увеличаваме брояча <code>cnt++</code> само когато текущият елемент <code>v[i]</code> е различен от своя ляв съсед <code>v[i - 1]</code>.</li>
+                </ul>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(25)">
+                <h4>5. Извеждане на резултата <span>Ред 25</span></h4>
+                <p style="margin:0; font-size:0.95rem;">След края на цикъла в променливата <code>cnt</code> се намира точният брой на различните числа и го отпечатваме на стандартния изход.</p>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Осветяване на кода и трасировка -->
+        <div class="right-panel" id="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">
+                    <span>⚡ Интерактивна трасировка на кода</span>
+                    <span id="step-indicator" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Стъпка 1 от 10</span>
+                </div>
+
+                <div class="controls">
+                    <button class="btn-slate" onclick="stepTrace(-1)" id="btn-prev">&larr; Предишна стъпка</button>
+                    <button class="btn-blue" onclick="stepTrace(1)" id="btn-next">Следваща стъпка &rarr;</button>
+                    <button onclick="resetTrace()">Започни отначало</button>
+                </div>
+
+                <!-- Текущо състояние на променливите -->
+                <div class="state-grid">
+                    <div class="state-box">
+                        <div class="state-label">Размер n</div>
+                        <div class="state-val" id="st-n">5</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Индекс i</div>
+                        <div class="state-val" id="st-i">няма</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Сравнение</div>
+                        <div class="state-val" id="st-cmp" style="font-size:0.95rem;">изчакване</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Брояч cnt</div>
+                        <div class="state-val" id="st-cnt">0</div>
+                    </div>
+                </div>
+
+                <!-- Визуализация на вектора -->
+                <div class="arr-track" id="vec-track"></div>
+
+                <!-- Код ред по ред -->
+                <div class="code-box" id="code-box"></div>
+
+                <!-- Обяснение на текущия ред / стъпка -->
+                <div class="calc-box" id="explanation-box">
+                    Кликнете върху произволен ред от кода или използвайте бутона „Следваща стъпка“, за да проследите изпълнението.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            if (pct < 25) pct = 25;
+            if (pct > 75) pct = 75;
+            leftPanel.style.width = pct + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        // ==========================================
+        // 1. ДАННИ ЗА КОДА И ОБЯСНЕНИЯ НА РЕДОВЕТЕ
+        // ==========================================
+        const codeLines = [
+            { num: 1, text: '#include <iostream>', exp: 'Включваме стандартната библиотека за входно-изходни потоци.' },
+            { num: 2, text: '#include <vector>', exp: 'Включваме библиотеката за работа с динамичния масив std::vector.' },
+            { num: 3, text: '#include <algorithm>', exp: 'Включваме библиотеката с алгоритми, необходима за функцията sort.' },
+            { num: 4, text: 'using namespace std;', exp: 'Използваме стандартното пространство от имена std.' },
+            { num: 5, text: '', exp: 'Празен разделителен ред за по-добра четимост.' },
+            { num: 6, text: 'int main()', exp: 'Начало на главната функция на програмата.' },
+            { num: 7, text: '{', exp: 'Отваряща скоба на тялото на main.' },
+            { num: 8, text: '    ios_base::sync_with_stdio(false);', exp: 'Ускоряваме четенето и писането, като изключваме синхронизацията със стандартните C потоци.' },
+            { num: 9, text: '    cin.tie(NULL);', exp: 'Развързваме потока cin от cout за максимална скорост при голям обем входни данни.' },
+            { num: 10, text: '', exp: 'Празен разделителен ред.' },
+            { num: 11, text: '    int n; cin >> n;', exp: 'Декларираме и прочитаме броя на елементите n от първия ред на входа.' },
+            { num: 12, text: '    vector<int> v(n);', exp: 'Създаваме целочислен вектор v с предварително зададен размер от n елемента.' },
+            { num: 13, text: '    for(int i = 0; i < n; i++) cin >> v[i];', exp: 'Прочитаме последователно всички n числа от входа и ги записваме във вектора v.' },
+            { num: 14, text: '', exp: 'Празен разделителен ред.' },
+            { num: 15, text: '    sort(v.begin(), v.end());', exp: 'Сортираме вектора във възходящ ред чрез итераторите v.begin() и v.end(). Така еднаквите числа се групират едно до друго.' },
+            { num: 16, text: '', exp: 'Празен разделителен ред.' },
+            { num: 17, text: '    int cnt = 0;', exp: 'Инициализираме брояча за различните числа cnt с начална стойност 0.' },
+            { num: 18, text: '    for(int i = 0; i < n; i++)', exp: 'Обхождаме елементите на вече сортирания вектор от индекс 0 до n - 1.' },
+            { num: 19, text: '    {', exp: 'Начало на тялото на цикъла за преброяване.' },
+            { num: 20, text: '        if(i == 0 || v[i] != v[i - 1])', exp: 'Проверяваме дали елементът е първият в масива ИЛИ е различен от предходния елемент.' },
+            { num: 21, text: '        {', exp: 'Начало на блока при открито ново число.' },
+            { num: 22, text: '            cnt++;', exp: 'Увеличаваме брояча на уникалните числа с единица.' },
+            { num: 23, text: '        }', exp: 'Край на условния блок.' },
+            { num: 24, text: '    }', exp: 'Край на цикъла за обхождане на вектора.' },
+            { num: 25, text: '    cout << cnt << "\\n";', exp: 'Отпечатваме крайния брой на различните стойности в списъка.' },
+            { num: 26, text: '}', exp: 'Край на програмата.' }
+        ];
+
+        // ==========================================
+        // 2. СТЪПКИ НА ТРАСИРОВКАТА ЗА ПРИМЕРА (5: 2 3 2 2 3)
+        // ==========================================
+        const traceSteps = [
+            {
+                line: 8,
+                n: 5, i: 'няма', cmp: 'начало', cnt: 0,
+                arr: [], states: [],
+                msg: 'Активираме бързия вход и изход в началото на програмата'
+            },
+            {
+                line: 13,
+                n: 5, i: 'няма', cmp: 'прочитане', cnt: 0,
+                arr: [2, 3, 2, 2, 3], states: ['', '', '', '', ''],
+                msg: 'Прочитаме <strong>n = 5</strong> и записваме входните числа във вектора: <strong>2, 3, 2, 2, 3</strong>'
+            },
+            {
+                line: 15,
+                n: 5, i: 'няма', cmp: 'сортиране', cnt: 0,
+                arr: [2, 2, 2, 3, 3], states: ['', '', '', '', ''],
+                msg: 'След извикване на <strong>sort</strong> елементите се подреждат във възходящ ред: <strong>2, 2, 2, 3, 3</strong>'
+            },
+            {
+                line: 17,
+                n: 5, i: 'няма', cmp: 'подготовка', cnt: 0,
+                arr: [2, 2, 2, 3, 3], states: ['', '', '', '', ''],
+                msg: 'Задаваме начална стойност на брояча за уникални числа <strong>cnt = 0</strong>'
+            },
+            {
+                line: 22,
+                n: 5, i: 0, cmp: 'първи елемент', cnt: 1,
+                arr: [2, 2, 2, 3, 3], states: ['current', '', '', '', ''],
+                msg: 'Индекс <strong>i = 0</strong>: Понеже това е първият елемент във вектора, условието е вярно и увеличаваме <strong>cnt = 1</strong>'
+            },
+            {
+                line: 20,
+                n: 5, i: 1, cmp: '2 е равно на 2', cnt: 1,
+                arr: [2, 2, 2, 3, 3], states: ['counted', 'current', '', '', ''],
+                msg: 'Индекс <strong>i = 1</strong>: Текущото число <strong>2</strong> съвпада с предходното число <strong>2</strong> и не увеличаваме брояча'
+            },
+            {
+                line: 20,
+                n: 5, i: 2, cmp: '2 е равно на 2', cnt: 1,
+                arr: [2, 2, 2, 3, 3], states: ['counted', 'skipped', 'current', '', ''],
+                msg: 'Индекс <strong>i = 2</strong>: Текущото число <strong>2</strong> отново съвпада с предходното и го пропускаме'
+            },
+            {
+                line: 22,
+                n: 5, i: 3, cmp: '3 е различно от 2', cnt: 2,
+                arr: [2, 2, 2, 3, 3], states: ['counted', 'skipped', 'skipped', 'current', ''],
+                msg: 'Индекс <strong>i = 3</strong>: Числото <strong>3</strong> е различно от предходното число <strong>2</strong> — открихме нова стойност и <strong>cnt става 2</strong>'
+            },
+            {
+                line: 20,
+                n: 5, i: 4, cmp: '3 е равно на 3', cnt: 2,
+                arr: [2, 2, 2, 3, 3], states: ['counted', 'skipped', 'skipped', 'counted', 'current'],
+                msg: 'Индекс <strong>i = 4</strong>: Числото <strong>3</strong> е равно на предходното число <strong>3</strong> и не променяме брояча'
+            },
+            {
+                line: 25,
+                n: 5, i: 'край', cmp: 'завършено', cnt: 2,
+                arr: [2, 2, 2, 3, 3], states: ['counted', 'skipped', 'skipped', 'counted', 'skipped'],
+                msg: 'Цикълът приключи и програмата извежда крайния брой различни числа: <strong>2</strong>'
+            }
+        ];
+
+        let curStep = 0;
+
+        function renderCode(activeLineNum) {
+            const box = document.getElementById('code-box');
+            box.innerHTML = codeLines.map(item => `
+                <div class="code-line ${item.num === activeLineNum ? 'active-line' : ''}" onclick="highlightLine(${item.num})">
+                    <span class="line-num">${item.num}</span>
+                    <span class="line-text">${item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                </div>
+            `).join('');
+        }
+
+        function highlightLine(lineNum) {
+            renderCode(lineNum);
+            const found = codeLines.find(x => x.num === lineNum);
+            if (found) {
+                document.getElementById('explanation-box').innerHTML = `<strong>Ред ${lineNum}:</strong> ${found.exp}`;
+            }
+        }
+
+        function renderVectorState(stepObj) {
+            const track = document.getElementById('vec-track');
+            track.innerHTML = '';
+
+            if (stepObj.arr.length === 0) {
+                track.innerHTML = `<span style="color:var(--text-muted); font-size:0.9rem;">Векторът все още не е зареден</span>`;
+                return;
+            }
+
+            stepObj.arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                const st = stepObj.states[idx];
+                let cls = 'num-box';
+                if (st === 'current') cls += ' current';
+                else if (st === 'counted') cls += ' counted';
+                else if (st === 'skipped') cls += ' skipped';
+
+                if (typeof stepObj.i === 'number' && stepObj.i > 0 && idx === stepObj.i - 1) {
+                    cls += ' prev-compare';
+                }
+
+                let subText = `индекс ${idx}`;
+                if (st === 'current') subText = 'текущ';
+                else if (st === 'counted') subText = 'уникално';
+                else if (st === 'skipped') subText = 'дубликат';
+
+                box.className = cls;
+                box.innerHTML = `<span>${val}</span><span class="box-sub">${subText}</span>`;
+                track.appendChild(box);
+            });
+        }
+
+        function updateTraceUI() {
+            const s = traceSteps[curStep];
+            renderCode(s.line);
+            renderVectorState(s);
+
+            document.getElementById('st-n').innerText = s.n;
+            document.getElementById('st-i').innerText = s.i;
+            document.getElementById('st-cmp').innerText = s.cmp;
+            document.getElementById('st-cnt').innerText = s.cnt;
+            document.getElementById('step-indicator').innerText = `Стъпка ${curStep + 1} от ${traceSteps.length}`;
+            document.getElementById('explanation-box').innerHTML = s.msg;
+
+            document.getElementById('btn-prev').disabled = (curStep === 0);
+            document.getElementById('btn-next').disabled = (curStep === traceSteps.length - 1);
+        }
+
+        function stepTrace(dir) {
+            curStep = Math.max(0, Math.min(traceSteps.length - 1, curStep + dir));
+            updateTraceUI();
+        }
+
+        function resetTrace() {
+            curStep = 0;
+            updateTraceUI();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            resetTrace();
+        });
+    </script>
+</body>
+
+</html>
