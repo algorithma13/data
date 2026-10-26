@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 7: Абстрактни типове и STL - Algorithma 13</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0b1120;
+            --panel-bg: #162032;
+            --highlight: #3b82f6;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* НАВИГАЦИЯ */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С РАЗДЕЛИТЕЛ ПО СРЕДАТА */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        /* Вертикална разделителна линия с възможност за преоразмеряване */
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #fff;
+        }
+
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* СТИЛОВЕ ЗА ТЕОРИЯТА (Ляв панел) */
+        .lesson-section { margin-bottom: 4rem; }
+        h1 { font-size: 2.25rem; color: var(--accent); margin-bottom: 1.5rem; line-height: 1.2; }
+        
+        h2 { 
+            font-size: 1.45rem; 
+            color: var(--text-main); 
+            margin-bottom: 1rem; 
+            margin-top: 2.2rem; 
+            padding-bottom: 0.5rem; 
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        h3 { font-size: 1.15rem; color: #60a5fa; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #60a5fa;
+            font-size: 0.92rem;
+            line-height: 1.45;
+        }
+        
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        .note-box h4 { color: var(--accent); margin-bottom: 0.4rem; }
+
+        .warn-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        .warn-box h4 { color: var(--warning); margin-bottom: 0.4rem; }
+
+        .btn-open-tab {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-open-tab:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ТАБОВЕ В ДЕСНИЯ ПАНЕЛ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(15, 23, 42, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.5rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* КАРТИ И КОНТРОЛИ ЗА ВИЗУАЛИЗАЦИИТЕ */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .vis-title::before { content: '⚡'; }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        input[type="text"], input[type="number"], select {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.35rem;
+            font-family: monospace;
+            font-size: 0.95rem;
+            text-align: center;
+            width: 120px;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.35rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover { background-color: var(--accent-hover); }
+        button:disabled { background-color: var(--border); cursor: not-allowed; color: var(--text-muted); }
+        .btn-red { background-color: var(--danger); }
+        .btn-red:hover { background-color: #dc2626; }
+        .btn-blue { background-color: var(--highlight); }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-amber { background-color: var(--warning); }
+        .btn-amber:hover { background-color: #d97706; }
+
+        /* Поправена кутия за обяснения: нормален ред без разпъване на вложените тагове */
+        .calc-box {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--border);
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-top: 1rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        .stats-bar span strong { color: var(--accent); font-family: monospace; font-size: 1rem; }
+
+        /* 1. VECTOR VISUALIZER */
+        .vector-track {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 95px;
+            padding: 1rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .vec-cell {
+            width: 64px;
+            height: 68px;
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .vec-cell.filled {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--accent);
+            color: var(--text-main);
+            animation: popIn 0.25s ease-out;
+        }
+
+        .vec-cell.empty-cap {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 2px dashed var(--border);
+            color: var(--text-muted);
+            opacity: 0.45;
+        }
+
+        .vec-val { font-size: 1.2rem; font-weight: bold; font-family: monospace; }
+        .vec-idx { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* 2. ITERATOR VISUALIZER */
+        .iter-track {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 2.4rem 1rem 1.5rem 1rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .iter-box {
+            width: 68px;
+            height: 60px;
+            background-color: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.15rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .iter-box.end-node {
+            border-style: dashed;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .iter-box.active-it {
+            border-color: var(--warning);
+            background-color: rgba(245, 158, 11, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .iter-ptr {
+            position: absolute;
+            top: -30px;
+            background: var(--warning);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* 3. STACK VISUALIZER */
+        .stack-wrapper {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .stack-container {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 0.35rem;
+            height: 220px;
+            border-left: 3px solid var(--border);
+            border-right: 3px solid var(--border);
+            border-bottom: 3px solid var(--border);
+            border-radius: 0 0 0.5rem 0.5rem;
+            width: 120px;
+            padding: 0.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            overflow-y: auto;
+        }
+
+        .stack-item {
+            width: 100%;
+            background-color: var(--accent);
+            color: #fff;
+            text-align: center;
+            padding: 0.35rem 0.5rem;
+            border-radius: 0.3rem;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            animation: popIn 0.25s ease-out forwards;
+        }
+        
+        .stack-item:last-child {
+            background-color: var(--warning);
+            color: #000;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .stack-top-tag {
+            font-family: system-ui, sans-serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        /* 4. QUEUE VISUALIZER */
+        .queue-track {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            min-height: 95px;
+            padding: 1rem 1.5rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-top: 3px dashed var(--border);
+            border-bottom: 3px dashed var(--border);
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .queue-item {
+            min-width: 72px;
+            height: 60px;
+            background-color: var(--highlight);
+            color: #fff;
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.15rem;
+            padding: 0 0.5rem;
+            position: relative;
+            animation: slideLeft 0.3s ease-out;
+        }
+
+        .queue-item.is-front {
+            background-color: var(--accent);
+            border: 2px solid #fff;
+        }
+
+        .queue-item.is-back {
+            border: 2px solid var(--warning);
+        }
+
+        .q-badge {
+            font-family: system-ui, sans-serif;
+            font-size: 0.68rem;
+            background: rgba(0,0,0,0.35);
+            padding: 1px 6px;
+            border-radius: 3px;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        /* 5. PRIORITY QUEUE VISUALIZER */
+        .pq-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 1.5rem auto;
+            min-height: 85px;
+            padding: 1.25rem;
+            background: rgba(11, 17, 32, 0.5);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .pq-item {
+            width: 58px;
+            height: 58px;
+            background-color: var(--highlight);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.15rem;
+            transition: all 0.3s ease;
+            animation: popIn 0.3s ease-out;
+        }
+
+        .pq-item.top {
+            background-color: var(--warning);
+            color: #000;
+            transform: scale(1.18);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+            z-index: 10;
+        }
+
+        .pq-top-label {
+            font-family: system-ui, sans-serif;
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: translateY(-15px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes slideLeft {
+            from { opacity: 0; transform: translateX(25px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+        
+        <!-- ЛЯВ ПАНЕЛ: ТЕОРИЯ -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-section">
+                <h1>Абстрактни типове и STL</h1>
+                <p>Стандартната шаблонна библиотека (<strong>STL — Standard Template Library</strong>) в C++ ни предоставя готови, силно оптимизирани структури от данни (контейнери). Всяка структура поддържа определени операции много бързо, затова правилният избор на структура често решава задачата!</p>
+                
+                <h2>
+                    <span>1. Типът Vector (Динамичен масив)</span>
+                    <button class="btn-open-tab" onclick="switchTab('tab-vector')">Визуализация &rarr;</button>
+                </h2>
+                <p>Представете си влак, на който можем да закачаме нови вагони в движение. Векторът (<code>#include &lt;vector&gt;</code>) е точно това – масив, който може автоматично да променя размера си. Използваме го, когато <strong>не знаем предварително колко елемента</strong> ще трябва да съхраним.</p>
+                <ul>
+                    <li><code>v.push_back(x)</code>: Добавя елемент <code>x</code> в края на вектора за амортизирано време <strong>O(1)</strong>.</li>
+                    <li><code>v.pop_back()</code>: Премахва последния елемент за <strong>O(1)</strong>.</li>
+                    <li><code>v[i]</code>: Директен достъп до елемент по индекс (от <code>0</code> до <code>v.size() - 1</code>) за <strong>O(1)</strong>.</li>
+                    <li><code>v.size()</code> и <code>v.empty()</code>: Връщат текущия брой елементи и дали векторът е празен за <strong>O(1)</strong>.</li>
+                    <li><code>v.clear()</code>: Изтрива всички елементи и прави размера 0.</li>
+                </ul>
+<pre><code>#include &lt;vector&gt;
+using namespace std;
+
+vector&lt;int&gt; v;          // Празен вектор
+v.push_back(10);        // [10]
+v.push_back(25);        // [10, 25]
+v.push_back(7);         // [10, 25, 7]
+v[1] = 99;              // Променя индекса 1 -> [10, 99, 7]
+v.pop_back();           // Премахва 7 -> [10, 99]</code></pre>
+
+                <div class="warn-box">
+                    <h4>Важно за бързодействието!</h4>
+                    <p>Добавянето и премахването в <strong>края</strong> на вектора е светкавично — <strong>O(1)</strong>. Но вмъкването или изтриването на елемент по <strong>средата</strong> (с <code>v.insert()</code> или <code>v.erase()</code>) изисква изместване на всички следващи елементи и отнема бавното <strong>O(N)</strong> време!</p>
+                </div>
+
+                <h2>
+                    <span>2. Итератори и съкратен цикъл</span>
+                    <button class="btn-open-tab" onclick="switchTab('tab-iter')">Визуализация &rarr;</button>
+                </h2>
+                <p><strong>Итераторът</strong> е специален обект ("указател"), който сочи към конкретен елемент вътре в контейнера и ни позволява да се движим стъпка по стъпка през елементите.</p>
+                <ul>
+                    <li><code>v.begin()</code>: Сочи към <strong>първия</strong> елемент (индекс 0).</li>
+                    <li><code>v.end()</code>: Сочи към позицията <strong>след последния</strong> елемент (служи за стопер на цикъла, не бива да се чете с <code>*</code>!).</li>
+                    <li><code>*it</code>: Достъпва стойността на елемента, към който сочи итераторът <code>it</code>.</li>
+                </ul>
+<pre><code>vector&lt;int&gt; v = { 10, 20, 5, 30 };
+
+// 1. Класическо обхождане с итератор (или с auto it = v.begin())
+for(vector&lt;int&gt;::iterator it = v.begin(); it != v.end(); it++) {
+    cout &lt;&lt; *it &lt;&lt; " ";
+}</code></pre>
+                <div class="note-box">
+                    <h4>Модерният начин: Range-based for цикъл и auto</h4>
+                    <p>В C++11 и по-нови версии използваме ключовата дума <code>auto</code> (която сама познава типа) и съкратен цикъл:</p>
+                    <p><code>for(int el : v) { cout &lt;&lt; el &lt;&lt; " "; }</code> — чете копие на всеки елемент.</p>
+                    <p><code>for(int &amp;el : v) { el *= 2; }</code> — с амперсанд (<code>&amp;</code>) променяме директно самите елементи във вектора!</p>
+                </div>
+
+                <h2>
+                    <span>3. Стек (Stack)</span>
+                    <button class="btn-open-tab" onclick="switchTab('tab-stack')">Визуализация &rarr;</button>
+                </h2>
+                <p>Представете си купчина чинии. Можем да поставим нова чиния само най-отгоре и можем да вземем само най-горната чиния. Този принцип се нарича <strong>LIFO (Last-In, First-Out — Последен влязъл, първи излязъл)</strong>. Включва се с <code>#include &lt;stack&gt;</code>.</p>
+                <ul>
+                    <li><code>s.push(x)</code>: Поставя елемент <code>x</code> най-отгоре за <strong>O(1)</strong>.</li>
+                    <li><code>s.pop()</code>: Премахва най-горния елемент за <strong>O(1)</strong> (не връща стойността му!).</li>
+                    <li><code>s.top()</code>: Връща стойността на най-горния елемент за <strong>O(1)</strong> без да го маха.</li>
+                </ul>
+<pre><code>#include &lt;stack&gt;
+stack&lt;int&gt; s;
+s.push(1);              // [1]
+s.push(13);             // [1, 13] (13 е на върха)
+cout &lt;&lt; s.top();        // Отпечатва 13
+s.pop();                // Премахва 13 -> остава [1]</code></pre>
+                <div class="warn-box">
+                    <h4>Внимание за Runtime Error!</h4>
+                    <p>Никога не извиквайте <code>s.top()</code> или <code>s.pop()</code>, ако стекът е празен! Винаги проверявайте предварително с <code>if (!s.empty())</code>.</p>
+                </div>
+
+                <h2>
+                    <span>4. Опашка (Queue) и Двустранна опашка (Deque)</span>
+                    <button class="btn-open-tab" onclick="switchTab('tab-queue')">Визуализация &rarr;</button>
+                </h2>
+                <p><strong>Опашката (<code>#include &lt;queue&gt;</code>)</strong> работи точно като опашка пред каса в магазин: първият наредил се клиент бива обслужен пръв. Това е принципът <strong>FIFO (First-In, First-Out — Първи влязъл, първи излязъл)</strong>. Използва се масово при обхождане на графи в ширина (BFS).</p>
+                <ul>
+                    <li><code>q.push(x)</code>: Добавя елемент най-отзад на опашката — <strong>O(1)</strong>.</li>
+                    <li><code>q.pop()</code>: Премахва първия елемент (най-отпред) — <strong>O(1)</strong>.</li>
+                    <li><code>q.front()</code> и <code>q.back()</code>: Поглеждат съответно първия и последния елемент — <strong>O(1)</strong>.</li>
+                </ul>
+                <div class="note-box">
+                    <h4>Бонус: Двустранна опашка (std::deque)</h4>
+                    <p>Структурата <code>deque</code> (Double-Ended Queue, <code>#include &lt;deque&gt;</code>) комбинира вектор, стек и опашка! Тя позволява бързо добавяне и триене за <strong>O(1)</strong> както отпред (<code>push_front</code>, <code>pop_front</code>), така и отзад (<code>push_back</code>, <code>pop_back</code>), плюс директен достъп по индекс <code>d[i]</code>.</p>
+                </div>
+
+                <h2>
+                    <span>5. Приоритетна опашка (Priority Queue)</span>
+                    <button class="btn-open-tab" onclick="switchTab('tab-pq')">Визуализация &rarr;</button>
+                </h2>
+                <p>Представете си спешно отделение в болница: пациентите не влизат по реда на пристигане, а според <strong>приоритета (спешността)</strong> си. В C++ <code>priority_queue</code> (част от <code>&lt;queue&gt;</code>) е реализирана чрез двоична пирамида (Heap) и по подразбиране държи <strong>най-големия елемент най-отгоре</strong> (Max-Heap).</p>
+                <ul>
+                    <li><code>pq.push(x)</code>: Добавя елемент и го подрежда на правилното място за <strong>O(log N)</strong>.</li>
+                    <li><code>pq.pop()</code>: Премахва най-големия елемент (от върха) за <strong>O(log N)</strong>.</li>
+                    <li><code>pq.top()</code>: Връща най-големия елемент веднага за <strong>O(1)</strong>.</li>
+                </ul>
+<pre><code>#include &lt;queue&gt;
+
+// 1. Стандартна приоритетна опашка (Max-Heap: най-големият е отгоре)
+priority_queue&lt;int&gt; pq;
+pq.push(10); pq.push(50); pq.push(20);
+cout &lt;&lt; pq.top(); // Извежда 50
+
+// 2. Обратна приоритетна опашка (Min-Heap: най-малкият е отгоре)
+priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; min_pq;
+min_pq.push(10); min_pq.push(50); min_pq.push(20);
+cout &lt;&lt; min_pq.top(); // Извежда 10</code></pre>
+
+                <div class="note-box" style="border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1);">
+                    <h4 style="color: #60a5fa;">Състезателен трик: "Най-малките K елемента"</h4>
+                    <p>Ако търсим K-те най-малки числа в огромен поток от N числа, поддържаме стандартна Max-Heap с размер най-много K. При всяко ново число правим <code>push()</code>, и ако <code>pq.size() &gt; K</code>, веднага правим <code>pq.pop()</code> (изхвърляме най-голямото до момента). Накрая в опашката остават точно K-те най-малки за време <strong>O(N log K)</strong>!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ (Влачене за преоразмеряване) -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване"></div>
+
+        <!-- ДЕСЕН ПАНЕЛ: ТАБОВЕ С ИНТЕРАКТИВНИ ВИЗУАЛИЗАЦИИ -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-vector')" id="btn-tab-vector">1. Вектор</button>
+                <button class="tab-btn" onclick="switchTab('tab-iter')" id="btn-tab-iter">2. Итератори</button>
+                <button class="tab-btn" onclick="switchTab('tab-stack')" id="btn-tab-stack">3. Стек</button>
+                <button class="tab-btn" onclick="switchTab('tab-queue')" id="btn-tab-queue">4. Опашка</button>
+                <button class="tab-btn" onclick="switchTab('tab-pq')" id="btn-tab-pq">5. Приоритетна опашка</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: VECTOR -->
+                <div class="tab-pane active" id="tab-vector">
+                    <div class="vis-card">
+                        <div class="vis-title">Динамичен масив</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Добавяйте и премахвайте елементи в края на масива. Когато свободните клетки свършат, векторът автоматично удвоява своя капацитет.
+                        </p>
+
+                        <div class="input-group">
+                            <input type="number" id="vec-input" value="42" placeholder="Стойност">
+                            <button onclick="vecPush()">Добави в края</button>
+                            <button class="btn-red" onclick="vecPop()">Премахни последния</button>
+                            <button class="btn-blue" onclick="vecModify()">Промени първия</button>
+                            <button style="background:#475569" onclick="vecClear()">Изчисти всички</button>
+                        </div>
+
+                        <div class="stats-bar">
+                            <span>Брой елементи <strong id="vec-size">3</strong></span>
+                            <span>Капацитет <strong id="vec-cap">4</strong></span>
+                            <span>Празен ли е <strong id="vec-empty">не</strong></span>
+                        </div>
+
+                        <div class="vector-track" id="vec-vis"></div>
+
+                        <div class="calc-box" id="vec-calc">
+                            Използвайте бутоните отгоре, за да управлявате елементите на вектора
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: ИТЕРАТОРИ -->
+                <div class="tab-pane" id="tab-iter">
+                    <div class="vis-card">
+                        <div class="vis-title">Обхождане на елементи с итератор</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Проследете как показалецът тръгва от първия елемент, преминава последователно през всички клетки и спира на граничната клетка в края.
+                        </p>
+
+                        <div class="input-group">
+                            <button onclick="iterReset()">В началото</button>
+                            <button id="btn-iter-next" class="btn-blue" onclick="iterStep()">Следващ елемент &rarr;</button>
+                            <button class="btn-amber" onclick="iterDoubleAll()">Удвои всички числа</button>
+                        </div>
+
+                        <div class="iter-track" id="iter-vis"></div>
+
+                        <div class="calc-box" id="iter-calc">
+                            Итераторът сочи към първия елемент в масива
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: СТЕК -->
+                <div class="tab-pane" id="tab-stack">
+                    <div class="vis-card">
+                        <div class="vis-title">Стек и проверка за правилни скоби</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            При отваряща скоба добавяме елемент най-отгоре в стека, а при затваряща скоба премахваме най-горния елемент от стека.
+                        </p>
+
+                        <div class="input-group">
+                            <input type="text" id="bracket-input" value="(())()()" style="width:140px;">
+                            <button onclick="startBracketCheck()">Зареди израза</button>
+                            <button id="btn-bracket-step" class="btn-blue" onclick="stepBracket()">Следваща стъпка &rarr;</button>
+                            <button style="background:#475569" onclick="setBracketPreset('(()())')">Валиден пример</button>
+                            <button style="background:#475569" onclick="setBracketPreset('())(')">Невалиден пример</button>
+                        </div>
+
+                        <div class="stack-wrapper">
+                            <div>
+                                <div style="text-align:center; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.4rem;">Състояние на стека</div>
+                                <div class="stack-container" id="stack-vis"></div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                                <div style="font-size:0.85rem; color:var(--text-muted);">Ръчни действия</div>
+                                <button onclick="manualStackPush()">Постави скоба</button>
+                                <button class="btn-red" onclick="manualStackPop()">Премахни най-горната</button>
+                            </div>
+                        </div>
+
+                        <div class="calc-box" id="bracket-calc">
+                            Натиснете „Следваща стъпка“, за да проверите израза със скоби
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 4: ОПАШКА -->
+                <div class="tab-pane" id="tab-queue">
+                    <div class="vis-card">
+                        <div class="vis-title">Опашка — Първи влязъл, първи излязъл</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Новите елементи винаги се нареждат най-отзад на опашката, а обслужването и излизането става само най-отпред.
+                        </p>
+
+                        <div class="input-group">
+                            <input type="number" id="q-input" value="50" style="width:100px;">
+                            <button onclick="enqueueItem()">Добави най-отзад</button>
+                            <button class="btn-red" onclick="dequeueItem()">Обслужи първия</button>
+                            <button class="btn-amber" onclick="rotateQueue()">Премести първия отзад</button>
+                        </div>
+
+                        <div class="stats-bar">
+                            <span>Първи елемент <strong id="q-front">-</strong></span>
+                            <span>Последен елемент <strong id="q-back">-</strong></span>
+                            <span>Общо в опашката <strong id="q-size">0</strong></span>
+                        </div>
+
+                        <div class="queue-track" id="queue-vis"></div>
+
+                        <div class="calc-box" id="queue-calc">
+                            Опашката е готова за работа
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 5: ПРИОРИТЕТНА ОПАШКА -->
+                <div class="tab-pane" id="tab-pq">
+                    <div class="vis-card">
+                        <div class="vis-title">Приоритетна опашка</div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Добавяйте числа в произволен ред. Структурата автоматично подрежда елементите така, че най-приоритетният винаги да бъде на върха в оранжево.
+                        </p>
+
+                        <div class="input-group">
+                            <select id="pq-mode" onchange="changePQMode()" style="width:190px;">
+                                <option value="max">Най-голям на върха</option>
+                                <option value="min">Най-малък на върха</option>
+                            </select>
+                            <input type="number" id="pq-input" value="42" style="width:90px;">
+                            <button onclick="pushPQ()">Добави число</button>
+                            <button class="btn-red" onclick="popPQ()">Премахни върха</button>
+                        </div>
+
+                        <div class="pq-container" id="pq-vis"></div>
+
+                        <div class="calc-box" id="pq-calc">
+                            На върха винаги стои елементът с най-висок приоритет
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 0. ЛОГИКА ЗА ПРЕОРАЗМЕРЯВАНЕ НА ПАНЕЛИТЕ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const containerRect = container.getBoundingClientRect();
+            let newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+            if (newLeftWidth < 25) newLeftWidth = 25;
+            if (newLeftWidth > 75) newLeftWidth = 75;
+            leftPanel.style.width = newLeftWidth + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ВИЗУАЛИЗАЦИЯ НА VECTOR
+        // ==========================================
+        let vecData = [10, 25, 7];
+        let vecCapacity = 4;
+
+        function renderVector() {
+            const track = document.getElementById('vec-vis');
+            track.innerHTML = '';
+
+            for (let i = 0; i < vecCapacity; i++) {
+                const cell = document.createElement('div');
+                if (i < vecData.length) {
+                    cell.className = 'vec-cell filled';
+                    cell.innerHTML = `<span class="vec-val">${vecData[i]}</span><span class="vec-idx">индекс ${i}</span>`;
+                } else {
+                    cell.className = 'vec-cell empty-cap';
+                    cell.innerHTML = `<span class="vec-val"></span><span class="vec-idx">свободно</span>`;
+                }
+                track.appendChild(cell);
+            }
+
+            document.getElementById('vec-size').innerText = vecData.length;
+            document.getElementById('vec-cap').innerText = vecCapacity;
+            document.getElementById('vec-empty').innerText = vecData.length === 0 ? 'да' : 'не';
+        }
+
+        function vecPush() {
+            const val = parseInt(document.getElementById('vec-input').value);
+            if (isNaN(val)) return;
+
+            let msg = `Добавихме числото <strong>${val}</strong> в края на вектора на индекс <strong>${vecData.length}</strong>`;
+            if (vecData.length === vecCapacity) {
+                vecCapacity = vecCapacity === 0 ? 1 : vecCapacity * 2;
+                msg += `<br><span style="color:var(--warning)">Капацитетът се удвои автоматично на ${vecCapacity} клетки</span>`;
+            }
+            vecData.push(val);
+            document.getElementById('vec-input').value = Math.floor(Math.random() * 90) + 10;
+            renderVector();
+            document.getElementById('vec-calc').innerHTML = msg;
+        }
+
+        function vecPop() {
+            if (vecData.length === 0) {
+                document.getElementById('vec-calc').innerHTML = `<span style="color:var(--danger)">Векторът е празен и няма елемент за премахване</span>`;
+                return;
+            }
+            const removed = vecData.pop();
+            renderVector();
+            document.getElementById('vec-calc').innerHTML = `Премахнахме последния елемент <strong>${removed}</strong> от края на вектора`;
+        }
+
+        function vecModify() {
+            if (vecData.length === 0) {
+                document.getElementById('vec-calc').innerHTML = `<span style="color:var(--danger)">Векторът е празен и няма първи елемент</span>`;
+                return;
+            }
+            const val = parseInt(document.getElementById('vec-input').value) || 99;
+            vecData[0] = val;
+            renderVector();
+            document.getElementById('vec-calc').innerHTML = `Променихме стойността на индекс 0 на <strong>${val}</strong>`;
+        }
+
+        function vecClear() {
+            vecData = [];
+            renderVector();
+            document.getElementById('vec-calc').innerHTML = `Всички елементи от вектора бяха изчистени`;
+        }
+
+        // ==========================================
+        // 2. ВИЗУАЛИЗАЦИЯ НА ИТЕРАТОРИ
+        // ==========================================
+        let iterArr = [10, 20, 5, 30];
+        let iterPos = 0;
+
+        function renderIterator() {
+            const track = document.getElementById('iter-vis');
+            track.innerHTML = '';
+
+            for (let i = 0; i <= iterArr.length; i++) {
+                const box = document.createElement('div');
+                const isEnd = (i === iterArr.length);
+                box.className = 'iter-box' + (isEnd ? ' end-node' : '') + (i === iterPos ? ' active-it' : '');
+                
+                if (i === iterPos) {
+                    const lbl = i === 0 ? 'начало' : (isEnd ? 'край' : 'итератор');
+                    box.innerHTML += `<div class="iter-ptr">${lbl}</div>`;
+                }
+
+                if (isEnd) {
+                    box.innerHTML += `<span>край</span>`;
+                } else {
+                    box.innerHTML += `<span style="font-family:monospace">${iterArr[i]}</span><span style="font-size:0.68rem; color:var(--text-muted); font-weight:normal">индекс ${i}</span>`;
+                }
+                track.appendChild(box);
+            }
+        }
+
+        function iterReset() {
+            iterPos = 0;
+            renderIterator();
+            document.getElementById('btn-iter-next').disabled = false;
+            document.getElementById('iter-calc').innerHTML = `Итераторът е в началото и сочи към първия елемент със стойност <strong>${iterArr[0]}</strong>`;
+        }
+
+        function iterStep() {
+            if (iterPos < iterArr.length) {
+                iterPos++;
+                renderIterator();
+                if (iterPos === iterArr.length) {
+                    document.getElementById('iter-calc').innerHTML = `<span style="color:var(--accent)">Итераторът достигна позицията след последния елемент и цикълът приключва</span>`;
+                    document.getElementById('btn-iter-next').disabled = true;
+                } else {
+                    document.getElementById('iter-calc').innerHTML = `Итераторът се премести напред към индекс ${iterPos} със стойност <strong>${iterArr[iterPos]}</strong>`;
+                }
+            }
+        }
+
+        function iterDoubleAll() {
+            iterArr = iterArr.map(x => x * 2);
+            renderIterator();
+            document.getElementById('iter-calc').innerHTML = `Умножихме всички елементи във вектора по 2`;
+        }
+
+        // ==========================================
+        // 3. ВИЗУАЛИЗАЦИЯ НА СТЕК (Правилни скоби)
+        // ==========================================
+        let brackets = "(())()()";
+        let bIdx = 0;
+        let stackItems = [];
+
+        function renderStackVis() {
+            const vis = document.getElementById('stack-vis');
+            vis.innerHTML = '';
+            stackItems.forEach((ch, idx) => {
+                const item = document.createElement('div');
+                item.className = 'stack-item';
+                if (idx === stackItems.length - 1) {
+                    item.innerHTML = `<span>${ch}</span><span class="stack-top-tag">връх</span>`;
+                } else {
+                    item.innerHTML = `<span>${ch}</span>`;
+                }
+                vis.appendChild(item);
+            });
+        }
+
+        function setBracketPreset(expr) {
+            document.getElementById('bracket-input').value = expr;
+            startBracketCheck();
+        }
+
+        function startBracketCheck() {
+            brackets = document.getElementById('bracket-input').value.trim();
+            bIdx = 0;
+            stackItems = [];
+            renderStackVis();
+            document.getElementById('btn-bracket-step').disabled = false;
+            document.getElementById('bracket-calc').innerHTML = `Зареден израз <strong>${brackets}</strong> — натиснете „Следваща стъпка“`;
+        }
+
+        function stepBracket() {
+            const calc = document.getElementById('bracket-calc');
+
+            if (bIdx >= brackets.length) {
+                if (stackItems.length === 0) {
+                    calc.innerHTML = `<span style="color:var(--accent); font-weight:bold;">Обходихме целия израз и стекът е празен — скобите са правилни</span>`;
+                } else {
+                    calc.innerHTML = `<span style="color:var(--danger); font-weight:bold;">В стека останаха ${stackItems.length} незатворени скоби — изразът е невалиден</span>`;
+                }
+                document.getElementById('btn-bracket-step').disabled = true;
+                return;
+            }
+
+            const c = brackets[bIdx];
+            const highlighted = brackets.substring(0, bIdx) + `<strong style="color:var(--warning); text-decoration:underline;">${c}</strong>` + brackets.substring(bIdx + 1);
+
+            if (c === '(') {
+                stackItems.push('(');
+                renderStackVis();
+                calc.innerHTML = `Израз ${highlighted}<br>Стъпка ${bIdx + 1}: Срещаме отваряща скоба и я добавяме на върха на стека`;
+            } else if (c === ')') {
+                if (stackItems.length === 0) {
+                    calc.innerHTML = `Израз ${highlighted}<br><span style="color:var(--danger); font-weight:bold;">Стъпка ${bIdx + 1}: Срещаме затваряща скоба, но стекът е празен — изразът е невалиден</span>`;
+                    document.getElementById('btn-bracket-step').disabled = true;
+                    return;
+                }
+                stackItems.pop();
+                renderStackVis();
+                calc.innerHTML = `Израз ${highlighted}<br>Стъпка ${bIdx + 1}: Срещаме затваряща скоба и премахваме най-горната скоба от стека`;
+            } else {
+                calc.innerHTML = `Стъпка ${bIdx + 1}: Пропускаме символа ${c}`;
+            }
+            bIdx++;
+        }
+
+        function manualStackPush() {
+            stackItems.push('(');
+            renderStackVis();
+            document.getElementById('bracket-calc').innerHTML = `Поставихме нова скоба най-отгоре в стека — общо елементи <strong>${stackItems.length}</strong>`;
+        }
+
+        function manualStackPop() {
+            if (stackItems.length === 0) {
+                document.getElementById('bracket-calc').innerHTML = `<span style="color:var(--danger)">Стекът вече е празен и няма какво да премахнем</span>`;
+                return;
+            }
+            stackItems.pop();
+            renderStackVis();
+            document.getElementById('bracket-calc').innerHTML = `Премахнахме най-горния елемент от стека — остават <strong>${stackItems.length}</strong>`;
+        }
+
+        // ==========================================
+        // 4. ВИЗУАЛИЗАЦИЯ НА ОПАШКА (QUEUE)
+        // ==========================================
+        let queueData = [15, 30, 45];
+
+        function renderQueue() {
+            const track = document.getElementById('queue-vis');
+            track.innerHTML = '';
+
+            queueData.forEach((val, idx) => {
+                const item = document.createElement('div');
+                const isFront = (idx === 0);
+                const isBack = (idx === queueData.length - 1);
+                item.className = 'queue-item' + (isFront ? ' is-front' : '') + (isBack ? ' is-back' : '');
+                
+                let badge = '';
+                if (isFront && isBack) badge = '<span class="q-badge">първи и последен</span>';
+                else if (isFront) badge = '<span class="q-badge">първи</span>';
+                else if (isBack) badge = '<span class="q-badge">последен</span>';
+
+                item.innerHTML = `<span>${val}</span>${badge}`;
+                track.appendChild(item);
+            });
+
+            document.getElementById('q-front').innerText = queueData.length > 0 ? queueData[0] : 'няма';
+            document.getElementById('q-back').innerText = queueData.length > 0 ? queueData[queueData.length - 1] : 'няма';
+            document.getElementById('q-size').innerText = queueData.length;
+        }
+
+        function enqueueItem() {
+            const val = parseInt(document.getElementById('q-input').value);
+            if (isNaN(val)) return;
+            queueData.push(val);
+            document.getElementById('q-input').value = Math.floor(Math.random() * 80) + 10;
+            renderQueue();
+            document.getElementById('queue-calc').innerHTML = `Числото <strong>${val}</strong> се нареди най-отзад на опашката`;
+        }
+
+        function dequeueItem() {
+            if (queueData.length === 0) {
+                document.getElementById('queue-calc').innerHTML = `<span style="color:var(--danger)">Опашката е празна и няма чакащи елементи</span>`;
+                return;
+            }
+            const first = queueData.shift();
+            renderQueue();
+            document.getElementById('queue-calc').innerHTML = `Първият елемент <strong>${first}</strong> беше обслужен и излезе от опашката`;
+        }
+
+        function rotateQueue() {
+            if (queueData.length === 0) return;
+            const first = queueData.shift();
+            queueData.push(first);
+            renderQueue();
+            document.getElementById('queue-calc').innerHTML = `Първият елемент <strong>${first}</strong> излезе отпред и се нареди най-отзад`;
+        }
+
+        // ==========================================
+        // 5. ВИЗУАЛИЗАЦИЯ НА ПРИОРИТЕТНА ОПАШКА
+        // ==========================================
+        let pqArr = [10, 50, 20];
+
+        function renderPQ() {
+            const container = document.getElementById('pq-vis');
+            const mode = document.getElementById('pq-mode').value;
+            container.innerHTML = '';
+            
+            if (mode === 'max') {
+                pqArr.sort((a, b) => b - a);
+            } else {
+                pqArr.sort((a, b) => a - b);
+            }
+
+            pqArr.forEach((val, i) => {
+                const box = document.createElement('div');
+                box.className = 'pq-item' + (i === 0 ? ' top' : '');
+                if (i === 0) {
+                    box.innerHTML = `<span>${val}</span><span class="pq-top-label">връх</span>`;
+                } else {
+                    box.innerHTML = `<span>${val}</span>`;
+                }
+                container.appendChild(box);
+            });
+        }
+
+        function changePQMode() {
+            renderPQ();
+            const mode = document.getElementById('pq-mode').value;
+            if (pqArr.length > 0) {
+                const modeText = mode === 'max' ? 'най-големият елемент' : 'най-малкият елемент';
+                document.getElementById('pq-calc').innerHTML = `Режимът е сменен — на върха вече стои ${modeText} <strong>${pqArr[0]}</strong>`;
+            }
+        }
+
+        function pushPQ() {
+            const val = parseInt(document.getElementById('pq-input').value);
+            if (isNaN(val)) return;
+
+            pqArr.push(val);
+            document.getElementById('pq-input').value = Math.floor(Math.random() * 95) + 5;
+            renderPQ();
+            
+            document.getElementById('pq-calc').innerHTML = `Добавихме числото <strong>${val}</strong> и на върха на опашката стои <strong>${pqArr[0]}</strong>`;
+        }
+
+        function popPQ() {
+            if (pqArr.length === 0) {
+                document.getElementById('pq-calc').innerHTML = `<span style="color:var(--danger)">Приоритетната опашка е празна</span>`;
+                return;
+            }
+            const removed = pqArr.shift(); 
+            renderPQ();
+            
+            if (pqArr.length > 0) {
+                document.getElementById('pq-calc').innerHTML = `Премахнахме върха <strong>${removed}</strong> и новият елемент най-отгоре е <strong>${pqArr[0]}</strong>`;
+            } else {
+                document.getElementById('pq-calc').innerHTML = `Премахнахме последния елемент <strong>${removed}</strong> и опашката вече е празна`;
+            }
+        }
+
+        // Инициализация на всички визуализации при зареждане
+        window.addEventListener('DOMContentLoaded', () => {
+            renderVector();
+            iterReset();
+            startBracketCheck();
+            renderQueue();
+            renderPQ();
+        });
+    </script>
+</body>
+</html>
