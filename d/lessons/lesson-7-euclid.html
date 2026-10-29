@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 3: Алгоритъм на Евклид. Приложения - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --group-d: #f59e0b;
+            --group-d-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--group-d);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--group-d);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Пълен текст от презентацията) */
+        .left-panel {
+            width: 50%;
+            min-width: 300px;
+            max-width: 75%;
+            padding: 2.5rem 3rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--group-d);
+            border-color: var(--group-d);
+        }
+
+        .resizer:hover::after, .resizer.dragging::after { color: #fff; }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .lesson-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.25rem;
+        }
+        
+        .lesson-header h1 {
+            font-size: 2.25rem;
+            color: var(--group-d);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        h2 { 
+            font-size: 1.4rem; 
+            color: var(--text-main); 
+            margin: 2.25rem 0 1rem 0; 
+            border-left: 4px solid var(--group-d);
+            padding-left: 0.75rem;
+        }
+        
+        h3 {
+            font-size: 1.15rem;
+            color: var(--accent);
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        p { margin-bottom: 0.9rem; color: var(--text-muted); font-size: 1.03rem; }
+        ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+            font-size: 0.95em;
+        }
+
+        .formula-box {
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.25rem;
+            font-family: 'Consolas', monospace;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        .warn-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 1.15rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+        }
+
+        .warn-box strong { color: var(--danger); }
+
+        .table-compare {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .table-compare th, .table-compare td {
+            padding: 0.9rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            font-size: 0.95rem;
+        }
+
+        .table-compare th {
+            background-color: rgba(255, 255, 255, 0.05);
+            font-weight: 700;
+        }
+
+        .table-compare th:nth-child(1) { color: var(--success); width: 42%; }
+        .table-compare th:nth-child(2) { color: var(--danger); width: 58%; }
+        .table-compare tr:last-child td { border-bottom: none; }
+
+        .btn-jump {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--group-d);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.45rem 0.9rem;
+            border-radius: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .btn-jump:hover {
+            background: var(--group-d);
+            color: #000;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивни табове) */
+        .right-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.85rem 1.25rem;
+            background-color: rgba(11, 17, 32, 0.9);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.8rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--group-d);
+        }
+
+        .tab-btn.active {
+            background-color: var(--group-d);
+            color: #000;
+            border-color: var(--group-d);
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.25);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ВИЗУАЛИЗАЦИОННИ КАРТИ И ДЕБЪГЕРИ */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.4rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.8rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 0.45rem 0.65rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            width: 110px;
+        }
+
+        button {
+            padding: 0.45rem 0.9rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            background: var(--group-d);
+            color: #000;
+        }
+
+        button:hover { background: var(--group-d-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background: var(--accent); color: #fff; }
+        .btn-blue:hover { background: var(--accent-hover); }
+        .btn-slate { background: #475569; color: #fff; }
+        .btn-slate:hover { background: #334155; }
+
+        /* ПРОМЕНЛИВИ И ВХОД/ИЗХОД В ДЕБЪГЕРА */
+        .io-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .io-mini {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.45rem;
+            padding: 0.6rem 0.85rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+        }
+
+        .io-mini-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-family: system-ui, sans-serif;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .var-tracker {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .var-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.85rem;
+            border-radius: 0.45rem;
+            text-align: center;
+            min-width: 78px;
+        }
+
+        .var-name { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
+        .var-val { font-size: 1.1rem; font-weight: bold; color: var(--group-d); font-family: 'Consolas', monospace; }
+
+        /* КОД С ОСВЕТЯВАНЕ НА РЕДОВЕ */
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.65rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.86rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.18rem 0.9rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+            cursor: pointer;
+        }
+
+        .code-line:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .code-line.active-line {
+            background-color: rgba(245, 158, 11, 0.22);
+            border-left-color: var(--group-d);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .line-num { width: 30px; color: #64748b; user-select: none; flex-shrink: 0; }
+        .line-text { white-space: pre; color: #e2e8f0; }
+
+        .calc-box {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.95rem 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-left: 4px solid var(--group-d);
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.55;
+            color: var(--text-main);
+        }
+
+        .calc-box strong { color: var(--group-d); font-family: 'Consolas', monospace; }
+
+        /* СЛАЙД 6 ПОСТЪПКОВИ КАРТИ */
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        .gcd-step {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Consolas', monospace;
+            font-size: 1rem;
+            transition: all 0.25s;
+            opacity: 0.55;
+        }
+
+        .gcd-step.active {
+            opacity: 1;
+            border-color: var(--group-d);
+            background: rgba(245, 158, 11, 0.14);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+
+        .gcd-step.done {
+            opacity: 1;
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--success);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            background-color: var(--bg-primary);
+            flex-shrink: 0;
+        }
+        
+        footer p { font-size: 0.65rem; margin: 0; opacity: 0.6; }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Теория на числата</span>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ПЪЛЕН ТЕКСТ ОТ ПРЕЗЕНТАЦИЯТА (СЛАЙДОВЕ 1-16)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-header">
+                <h1>Алгоритъм на Евклид – намиране на НОД</h1>
+            </div>
+
+            <!-- Слайд 2 -->
+            <h2>НОД: Математика срещу информатика</h2>
+            <ul>
+                <li>В математиката НОД(24, 36) – разлагаме на прости множители.</li>
+                <li>В състезателната информатика числата рядко са малки.</li>
+                <li>Ако пуснем обикновен цикъл, който проверява от 1 до по-малкото от двете, при вход 10<sup>18</sup> програмата ни ще получи TLE.</li>
+                <li>За да решим задачата за части от милисекундата, използваме един от най-старите и гениални алгоритми в историята – <strong>Алгоритъм на Евклид</strong>.</li>
+            </ul>
+
+            <!-- Слайд 3 и 4 -->
+            <h2>Идеята на Евклид</h2>
+            <p>НОД на две числа не се променя, ако от по-голямото извадим по-малкото:</p>
+            <div class="formula-box">НОД(A, B) = НОД(A &minus; B, B)</div>
+
+            <div class="warn-box">
+                <strong>Капанът:</strong><br>
+                Търсим НОД(10<sup>18</sup>, 1).<br>
+                Ако използваме изваждане ще трябва да извадим единицата 10<sup>18</sup> пъти.<br>
+                <strong>Сигурен TLE.</strong>
+            </div>
+
+            <p><strong style="color: var(--group-d);">Най-бързият вариант: Евклид с деление по модул (%)</strong></p>
+
+            <!-- Слайд 5 -->
+            <h2>Евклид с деление по модул</h2>
+            <p>Вместо да изваждаме B от A многократно, можем наведнъж да махнем всички възможни пъти, в които B се съдържа в A.</p>
+            <p>Какво остава след това?</p>
+            <p>Точно остатъкът при деление на A на B.</p>
+            <p>Основната формула на бързия алгоритъм на Евклид е:</p>
+            <div class="formula-box">НОД(a, b) = НОД(b, a mod b)</div>
+            <p>Този процес се повтаря, докато остатъкът стане 0. Тогава другото число е търсеният НОД:</p>
+            <div class="formula-box">НОД(a, 0) = a</div>
+
+            <!-- Слайд 6 -->
+            <h2>Пример: НОД(1071, 462)</h2>
+            <ul>
+                <li>НОД(1071, 462) &rarr; 1071 % 462 = 147 &rarr; преминаваме към НОД(462, 147)</li>
+                <li>НОД(462, 147) &rarr; 462 % 147 = 21 &rarr; преминаваме към НОД(147, 21)</li>
+                <li>НОД(147, 21) &rarr; 147 % 21 = 0 &rarr; преминаваме към НОД(21, 0)</li>
+                <li>Второто число е 0, спираме! <strong>Отговор: 21</strong></li>
+            </ul>
+            <button class="btn-jump" onclick="switchTab('tab-s6')">Отвори интерактивната визуализация (Слайд 6) &rarr;</button>
+
+            <!-- Слайд 7 -->
+            <h2>Реализация</h2>
+            <ul>
+                <li>Не се налага да проверяваме кое от двете числа е по-голямо в началото.</li>
+                <li>Ако <code>a &lt; b</code>, още на първата стъпка операцията <code>a % b</code> ще е равна на <code>a</code> и алгоритъмът автоматично ще размени местата им.</li>
+            </ul>
+
+            <!-- Слайд 8 -->
+            <h2>GCD: Итеративен алгоритъм</h2>
+<pre><code>long long gcd_it(long long a, long long b)
+{
+    while(b != 0)
+    {
+        long long r = a % b;
+        a = b;
+        b = r;
+    }
+    return a;
+}
+int main()
+{
+    long long a, b;
+    cin >> a >> b;
+    cout << gcd_it(a, b) << "\n";
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-s8')">Отвори дебъгера за Слайд 8 &rarr;</button>
+
+            <!-- Слайд 9 -->
+            <h2>Вградената функция __gcd</h2>
+            <ul>
+                <li>Съществува вградена функция за намиране на НОД, която се нарича <code>__gcd(a, b)</code>.</li>
+                <li><strong>Внимание:</strong> Името започва с две долни черти.</li>
+            </ul>
+
+            <!-- Слайд 10 -->
+            <h2>Пример с __gcd</h2>
+<pre><code>int main()
+{
+    long long a, b;
+    cin >> a >> b;
+    cout << __gcd(a, b) << "\n";
+
+    long long c; cin >> c;
+    cout << __gcd(__gcd(a, b), c) << "\n";
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-s10')">Отвори дебъгера за Слайд 10 &rarr;</button>
+
+            <!-- Слайд 11 -->
+            <h2>Плюсове и минуси на вградената функция __gcd</h2>
+            <table class="table-compare">
+                <tr>
+                    <th>Плюсове</th>
+                    <th>Минуси</th>
+                </tr>
+                <tr>
+                    <td>Пести време за писане</td>
+                    <td><strong>Шаблонна функция:</strong> ако напишете <code>__gcd(a, b)</code>, където <code>a</code> е <code>int</code>, а <code>b</code> е <code>long long</code>, програмата няма да се компилира. Двете променливи трябва да са от абсолютно един и същ тип.</td>
+                </tr>
+                <tr>
+                    <td>Нулев шанс за техническа грешка.</td>
+                    <td><strong>Проблем при отрицателни числа:</strong> Ако подадете отрицателно число, функцията може да върне отрицателен резултат, докато математически НОД е винаги положително число. Винаги слагайте <code>abs()</code>, ако входът може да е отрицателен.</td>
+                </tr>
+                <tr>
+                    <td>Оптимизирана скорост</td>
+                    <td>-</td>
+                </tr>
+            </table>
+
+            <!-- Слайд 12 -->
+            <h2>Приложение 1: Намиране на НОК</h2>
+            <ul>
+                <li>От математиката: <code>НОК(a, b) = (a . b) / НОД(a, b)</code></li>
+                <li><strong>Уловка:</strong> Ако <code>a = 10<sup>10</sup></code> и <code>b = 10<sup>10</sup></code>, произведението <code>a * b</code> става <code>10<sup>20</sup></code>, което препълва <code>long long</code>.</li>
+                <li><strong>Трик:</strong> Първо делим на НОД, а след това умножаваме</li>
+            </ul>
+<pre><code>long long lcm(long long a, long long b)
+{
+    if (a == 0 || b == 0) return 0;
+    return (a / __gcd(a, b)) * b;
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-app1')">Виж Приложение 1 (НОК) в дебъгера &rarr;</button>
+
+            <!-- Слайд 13 -->
+            <h2>Приложение 2: Съкращаване на обикновени дроби</h2>
+            <ul>
+                <li>В много задачи трябва да съберем две дроби <code>a/b + c/d</code> и да изведем резултата като несъкратима дроб.</li>
+                <li>За да стане дробта <code>числител/знаменател</code> несъкратима, просто делим и числителя, и знаменателя на техния НОД.</li>
+            </ul>
+<pre><code>long long num = 24, den = 36; // Дробта 24/36
+long long g = __gcd(abs(num), abs(den));
+num /= g; // става 2
+den /= g; // става 3
+// Резултат: 2/3</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-app2')">Виж Приложение 2 (Дроби) в дебъгера &rarr;</button>
+
+            <!-- Слайд 14 -->
+            <h2>Приложение 3: НОД на масив от числа</h2>
+            <p>Имаме редица от N числа <code>[ a<sub>1</sub>, a<sub>2</sub>, &hellip;, a<sub>N</sub> ]</code> и търсим най-големия общ делител на всички тях:</p>
+<pre><code>long long ans = a[1];
+for (int i = 2; i <= n; i++)
+{
+    ans = __gcd(ans, a[i]);
+    if (ans == 1) break; // Оптимизация: НОД не може да стане по-малък от 1!
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-app3')">Виж Приложение 3 (Масив) в дебъгера &rarr;</button>
+
+            <!-- Слайд 15 и 16 -->
+            <h2>Приложение 4: Целочислени точки върху отсечка</h2>
+            <ul>
+                <li>Дадена е координатна система и отсечка с краища в точки с цели координати <code>A(x<sub>1</sub>, y<sub>1</sub>)</code> и <code>B(x<sub>2</sub>, y<sub>2</sub>)</code>.</li>
+                <li><strong>Въпрос:</strong> Колко точки с точни координати лежат точно върху отсечката AB (включително краищата)?</li>
+                <li>Вместо да проверяваме точки с цикли, отговорът се намира директно чрез Евклид:</li>
+            </ul>
+            <div class="formula-box">Брой точки = НОД(|x<sub>1</sub> &minus; x<sub>2</sub>|, |y<sub>1</sub> &minus; y<sub>2</sub>|) + 1</div>
+<pre><code>long long points_on_seg(long long x1, long long y1, long long x2, long long y2)
+{
+    return __gcd(abs(x1 - x2), abs(y1 - y2)) + 1;
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-app4')">Виж Приложение 4 (Точки върху отсечка) в дебъгера &rarr;</button>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: 7 ТАБА (СЛАЙД 6, СЛАЙД 8, СЛАЙД 10, ПРИЛ. 1-4)
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-s6')" id="btn-tab-s6">Слайд 6: Симулация</button>
+                <button class="tab-btn" onclick="switchTab('tab-s8')" id="btn-tab-s8">Слайд 8: gcd_it</button>
+                <button class="tab-btn" onclick="switchTab('tab-s10')" id="btn-tab-s10">Слайд 10: __gcd</button>
+                <button class="tab-btn" onclick="switchTab('tab-app1')" id="btn-tab-app1">Прил. 1: НОК</button>
+                <button class="tab-btn" onclick="switchTab('tab-app2')" id="btn-tab-app2">Прил. 2: Дроби</button>
+                <button class="tab-btn" onclick="switchTab('tab-app3')" id="btn-tab-app3">Прил. 3: Масив</button>
+                <button class="tab-btn" onclick="switchTab('tab-app4')" id="btn-tab-app4">Прил. 4: Отсечка</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: СЛАЙД 6 (ПОСТЪПКОВА ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ) -->
+                <div class="tab-pane active" id="tab-s6">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Слайд 6: Постъпкова визуализация на НОД(A, B)</span>
+                            <span id="s6-badge" style="font-size:0.85rem; color:var(--group-d); font-family:monospace;">Стъпка 0</span>
+                        </div>
+                        <p style="font-size:0.9rem; margin-bottom:1rem;">
+                            Проследете как на всяка стъпка намираме частното <code>q = a / b</code> и остатъка <code>r = a % b</code> от равенството <code>a = b &middot; q + r</code>, след което преминаваме към <code>НОД(b, r)</code>.
+                        </p>
+
+                        <div class="controls">
+                            <div class="input-group">A: <input type="number" id="s6-a" value="1071"></div>
+                            <div class="input-group">B: <input type="number" id="s6-b" value="462"></div>
+                            <button onclick="initSlide6()">Зареди числата</button>
+                            <button class="btn-slate" id="s6-prev" onclick="moveSlide6(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="s6-next" onclick="moveSlide6(1)">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="var-tracker">
+                            <div class="var-box"><div class="var-name">Текущо A</div><div class="var-val" id="s6-va">1071</div></div>
+                            <div class="var-box"><div class="var-name">Текущо B</div><div class="var-val" id="s6-vb">462</div></div>
+                            <div class="var-box"><div class="var-name">Частно (A / B)</div><div class="var-val" id="s6-vq">2</div></div>
+                            <div class="var-box"><div class="var-name">Остатък (A % B)</div><div class="var-val" id="s6-vr">147</div></div>
+                        </div>
+
+                        <div class="step-container" id="s6-list"></div>
+
+                        <div class="calc-box" id="s6-exp">
+                            Натиснете „Следваща стъпка“, за да изпълните първото деление по модул.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: СЛАЙД 8 (ДЕБЪГЕР ИТЕРАТИВЕН GCD) -->
+                <div class="tab-pane" id="tab-s8"></div>
+
+                <!-- ТАБ 3: СЛАЙД 10 (ДЕБЪГЕР __gcd) -->
+                <div class="tab-pane" id="tab-s10"></div>
+
+                <!-- ТАБ 4: ПРИЛОЖЕНИЕ 1 (НОК) -->
+                <div class="tab-pane" id="tab-app1"></div>
+
+                <!-- ТАБ 5: ПРИЛОЖЕНИЕ 2 (СЪКРАЩАВАНЕ НА ДРОБИ) -->
+                <div class="tab-pane" id="tab-app2"></div>
+
+                <!-- ТАБ 6: ПРИЛОЖЕНИЕ 3 (НОД НА МАСИВ) -->
+                <div class="tab-pane" id="tab-app3"></div>
+
+                <!-- ТАБ 7: ПРИЛОЖЕНИЕ 4 (ТОЧКИ ВЪРХУ ОТСЕЧКА) -->
+                <div class="tab-pane" id="tab-app4"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            leftPanel.style.width = Math.max(25, Math.min(75, pct)) + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. СЛАЙД 6: ПОСТЪПКОВА ВИЗУАЛИЗАЦИЯ
+        // ==========================================
+        let s6History = [];
+        let s6Idx = 0;
+
+        function initSlide6() {
+            let a = Math.abs(parseInt(document.getElementById('s6-a').value) || 0);
+            let b = Math.abs(parseInt(document.getElementById('s6-b').value) || 0);
+            s6History = [];
+
+            let ca = a, cb = b;
+            while (cb !== 0) {
+                let q = Math.floor(ca / cb);
+                let r = ca % cb;
+                s6History.push({
+                    a: ca, b: cb, q: q, r: r, done: false,
+                    text: `НОД(${ca}, ${cb}) &rarr; ${ca} % ${cb} = ${r} &rarr; преминаваме към НОД(${cb}, ${r})`,
+                    exp: `Делим <strong>${ca}</strong> на <strong>${cb}</strong>: получаваме частно <strong>${q}</strong> и остатък <strong>${r}</strong> (${ca} = ${cb} &middot; ${q} + ${r}). Заменяме двойката (${ca}, ${cb}) с (${cb}, ${r}).`
+                });
+                ca = cb;
+                cb = r;
+            }
+            s6History.push({
+                a: ca, b: 0, q: '-', r: 0, done: true,
+                text: `НОД(${ca}, 0) &rarr; Второто число е 0, спираме! Отговор: ${ca}`,
+                exp: `Второто число стана <strong>0</strong>! Алгоритъмът на Евклид приключва и връща първото число като най-голям общ делител: <strong>${ca}</strong>.`
+            });
+
+            s6Idx = 0;
+            renderSlide6();
+        }
+
+        function renderSlide6() {
+            const list = document.getElementById('s6-list');
+            list.innerHTML = '';
+
+            for (let i = 0; i <= s6Idx; i++) {
+                const item = s6History[i];
+                const div = document.createElement('div');
+                let cls = 'gcd-step';
+                if (item.done && i === s6Idx) cls += ' done';
+                else if (i === s6Idx) cls += ' active';
+
+                div.className = cls;
+                div.innerHTML = `<span>${item.text}</span><span style="font-size:0.8rem; opacity:0.8;">Стъпка ${i + 1}</span>`;
+                list.appendChild(div);
+            }
+
+            const cur = s6History[s6Idx];
+            document.getElementById('s6-va').innerText = cur.a;
+            document.getElementById('s6-vb').innerText = cur.b;
+            document.getElementById('s6-vq').innerText = cur.q;
+            document.getElementById('s6-vr').innerText = cur.r;
+            document.getElementById('s6-badge').innerText = `Стъпка ${s6Idx + 1} от ${s6History.length}`;
+            document.getElementById('s6-exp').innerHTML = cur.exp;
+
+            document.getElementById('s6-prev').disabled = (s6Idx === 0);
+            document.getElementById('s6-next').disabled = (s6Idx === s6History.length - 1);
+        }
+
+        function moveSlide6(dir) {
+            s6Idx = Math.max(0, Math.min(s6History.length - 1, s6Idx + dir));
+            renderSlide6();
+        }
+
+        // ==========================================
+        // 2. УНИВЕРСАЛЕН ГЕНЕРАТОР НА ДЕБЪГЕР ТАБОВЕ
+        // ==========================================
+        const debuggers = {
+            'tab-s8': {
+                title: '⚡ Слайд 8: Итеративен алгоритъм gcd_it(a, b)',
+                inputVal: '1071 462',
+                outVal: '21',
+                code: [
+                    '#include <iostream>',
+                    'using namespace std;',
+                    '',
+                    'long long gcd_it(long long a, long long b)',
+                    '{',
+                    '    while(b != 0)',
+                    '    {',
+                    '        long long r = a % b;',
+                    '        a = b;',
+                    '        b = r;',
+                    '    }',
+                    '    return a;',
+                    '}',
+                    'int main()',
+                    '{',
+                    '    long long a, b;',
+                    '    cin >> a >> b;',
+                    '    cout << gcd_it(a, b) << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 17, vars: { a: 1071, b: 462, r: '-' }, out: 'изчакване...', msg: 'Прочитаме входните числа <strong>a = 1071</strong> и <strong>b = 462</strong> от стандартния вход.' },
+                    { line: 18, vars: { a: 1071, b: 462, r: '-' }, out: 'изчакване...', msg: 'Извикваме функцията <strong>gcd_it(1071, 462)</strong>.' },
+                    { line: 6, vars: { a: 1071, b: 462, r: '-' }, out: 'изчакване...', msg: 'Проверяваме условието на цикъла: <strong>b != 0</strong> (462 != 0 е вярно).' },
+                    { line: 8, vars: { a: 1071, b: 462, r: 147 }, out: 'изчакване...', msg: 'Пресмятаме остатъка <strong>r = 1071 % 462 = 147</strong>.' },
+                    { line: 9, vars: { a: 462, b: 462, r: 147 }, out: 'изчакване...', msg: 'Записваме старата стойност на b в a: <strong>a = 462</strong>.' },
+                    { line: 10, vars: { a: 462, b: 147, r: 147 }, out: 'изчакване...', msg: 'Записваме остатъка r в b: <strong>b = 147</strong>.' },
+                    { line: 6, vars: { a: 462, b: 147, r: 147 }, out: 'изчакване...', msg: 'Втора итерация: <strong>b != 0</strong> (147 != 0 е вярно).' },
+                    { line: 8, vars: { a: 462, b: 147, r: 21 }, out: 'изчакване...', msg: 'Пресмятаме новия остатък <strong>r = 462 % 147 = 21</strong>.' },
+                    { line: 9, vars: { a: 147, b: 147, r: 21 }, out: 'изчакване...', msg: 'Обновяваме <strong>a = 147</strong>.' },
+                    { line: 10, vars: { a: 147, b: 21, r: 21 }, out: 'изчакване...', msg: 'Обновяваме <strong>b = 21</strong>.' },
+                    { line: 8, vars: { a: 147, b: 21, r: 0 }, out: 'изчакване...', msg: 'Трета итерация: пресмятаме остатъка <strong>r = 147 % 21 = 0</strong>.' },
+                    { line: 10, vars: { a: 21, b: 0, r: 0 }, out: 'изчакване...', msg: 'След размяната имаме <strong>a = 21</strong> и <strong>b = 0</strong>.' },
+                    { line: 6, vars: { a: 21, b: 0, r: 0 }, out: 'изчакване...', msg: 'Проверяваме <strong>b != 0</strong>: тъй като b е 0, цикълът while приключва!' },
+                    { line: 12, vars: { a: 21, b: 0, r: 0 }, out: 'изчакване...', msg: 'Функцията връща намерения НОД: <strong>return 21;</strong>' },
+                    { line: 18, vars: { a: 1071, b: 462, r: '-' }, out: '21', msg: 'В main отпечатваме резултата <strong>21</strong> на стандартния изход.' }
+                ]
+            },
+            'tab-s10': {
+                title: '⚡ Слайд 10: Вградената функция __gcd',
+                inputVal: '24 36 18',
+                outVal: '12 | 6',
+                code: [
+                    '#include <iostream>',
+                    '#include <algorithm>',
+                    'using namespace std;',
+                    '',
+                    'int main()',
+                    '{',
+                    '    long long a, b;',
+                    '    cin >> a >> b;',
+                    '    cout << __gcd(a, b) << "\\n";',
+                    '',
+                    '    long long c; cin >> c;',
+                    '    cout << __gcd(__gcd(a, b), c) << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 8, vars: { a: 24, b: 36, c: '-' }, out: 'изчакване...', msg: 'Прочитаме първите две числа: <strong>a = 24</strong> и <strong>b = 36</strong>.' },
+                    { line: 9, vars: { a: 24, b: 36, c: '-' }, out: '12', msg: 'Извикваме <strong>__gcd(24, 36)</strong>. Функцията връща <strong>12</strong> и го отпечатваме на първия ред.' },
+                    { line: 11, vars: { a: 24, b: 36, c: 18 }, out: '12', msg: 'Декларираме и прочитаме третото число <strong>c = 18</strong>.' },
+                    { line: 12, vars: { a: 24, b: 36, c: 18 }, out: '12\n6', msg: 'Пресмятаме <strong>__gcd(__gcd(24, 36), 18) = __gcd(12, 18) = 6</strong> и извеждаме <strong>6</strong>.' }
+                ]
+            },
+            'tab-app1': {
+                title: '⚡ Приложение 1: Намиране на НОК без препълване',
+                inputVal: '12 18',
+                outVal: '36',
+                code: [
+                    '#include <iostream>',
+                    '#include <algorithm>',
+                    'using namespace std;',
+                    '',
+                    'long long lcm(long long a, long long b)',
+                    '{',
+                    '    if (a == 0 || b == 0) return 0;',
+                    '    return (a / __gcd(a, b)) * b;',
+                    '}',
+                    '',
+                    'int main()',
+                    '{',
+                    '    long long a, b;',
+                    '    cin >> a >> b;',
+                    '    cout << lcm(a, b) << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 14, vars: { a: 12, b: 18, gcd: '-', lcm: '-' }, out: 'изчакване...', msg: 'Прочитаме входните числа <strong>a = 12</strong> и <strong>b = 18</strong>.' },
+                    { line: 15, vars: { a: 12, b: 18, gcd: '-', lcm: '-' }, out: 'изчакване...', msg: 'Извикваме функцията <strong>lcm(12, 18)</strong>.' },
+                    { line: 7, vars: { a: 12, b: 18, gcd: '-', lcm: '-' }, out: 'изчакване...', msg: 'Проверяваме дали някое от числата е 0. И двете са ненулеви, продължаваме.' },
+                    { line: 8, vars: { a: 12, b: 18, gcd: 6, lcm: 36 }, out: 'изчакване...', msg: 'Първо намираме <strong>__gcd(12, 18) = 6</strong>, делим <strong>12 / 6 = 2</strong> и чак след това умножаваме <strong>2 * 18 = 36</strong> (избягваме препълване!).' },
+                    { line: 15, vars: { a: 12, b: 18, gcd: 6, lcm: 36 }, out: '36', msg: 'Отпечатваме намереното най-малко общо кратно: <strong>36</strong>.' }
+                ]
+            },
+            'tab-app2': {
+                title: '⚡ Приложение 2: Съкращаване на обикновени дроби',
+                inputVal: '24 36',
+                outVal: '2/3',
+                code: [
+                    '#include <iostream>',
+                    '#include <algorithm>',
+                    '#include <cmath>',
+                    'using namespace std;',
+                    '',
+                    'int main()',
+                    '{',
+                    '    long long num, den;',
+                    '    cin >> num >> den;',
+                    '    long long g = __gcd(abs(num), abs(den));',
+                    '    num /= g;',
+                    '    den /= g;',
+                    '    cout << num << "/" << den << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 9, vars: { num: 24, den: 36, g: '-' }, out: 'изчакване...', msg: 'Прочитаме числителя <strong>num = 24</strong> и знаменателя <strong>den = 36</strong> (дробта 24/36).' },
+                    { line: 10, vars: { num: 24, den: 36, g: 12 }, out: 'изчакване...', msg: 'Намираме НОД на абсолютните им стойности: <strong>g = __gcd(24, 36) = 12</strong>.' },
+                    { line: 11, vars: { num: 2, den: 36, g: 12 }, out: 'изчакване...', msg: 'Делим числителя на НОД: <strong>num = 24 / 12 = 2</strong>.' },
+                    { line: 12, vars: { num: 2, den: 3, g: 12 }, out: 'изчакване...', msg: 'Делим знаменателя на НОД: <strong>den = 36 / 12 = 3</strong>.' },
+                    { line: 13, vars: { num: 2, den: 3, g: 12 }, out: '2/3', msg: 'Извеждаме несъкратимата дроб <strong>2/3</strong>.' }
+                ]
+            },
+            'tab-app3': {
+                title: '⚡ Приложение 3: НОД на масив от числа',
+                inputVal: '4 | 24 36 15 99',
+                outVal: '3',
+                code: [
+                    '#include <iostream>',
+                    '#include <algorithm>',
+                    'using namespace std;',
+                    '',
+                    'long long a[100005];',
+                    'int main()',
+                    '{',
+                    '    int n; cin >> n;',
+                    '    for (int i = 1; i <= n; i++) cin >> a[i];',
+                    '',
+                    '    long long ans = a[1];',
+                    '    for (int i = 2; i <= n; i++)',
+                    '    {',
+                    '        ans = __gcd(ans, a[i]);',
+                    '        if (ans == 1) break;',
+                    '    }',
+                    '    cout << ans << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 9, vars: { n: 4, i: '-', 'a[i]': '-', ans: '-' }, out: 'изчакване...', msg: 'Прочитаме <strong>n = 4</strong> и елементите на масива: <strong>[24, 36, 15, 99]</strong>.' },
+                    { line: 11, vars: { n: 4, i: '-', 'a[1]': 24, ans: 24 }, out: 'изчакване...', msg: 'Инициализираме текущия НОД с първия елемент: <strong>ans = a[1] = 24</strong>.' },
+                    { line: 14, vars: { n: 4, i: 2, 'a[2]': 36, ans: 12 }, out: 'изчакване...', msg: 'За <strong>i = 2</strong>: пресмятаме <strong>ans = __gcd(24, 36) = 12</strong>.' },
+                    { line: 15, vars: { n: 4, i: 2, 'a[2]': 36, ans: 12 }, out: 'изчакване...', msg: 'Проверяваме дали <strong>ans == 1</strong> (12 != 1, продължаваме цикъла).' },
+                    { line: 14, vars: { n: 4, i: 3, 'a[3]': 15, ans: 3 }, out: 'изчакване...', msg: 'За <strong>i = 3</strong>: пресмятаме <strong>ans = __gcd(12, 15) = 3</strong>.' },
+                    { line: 14, vars: { n: 4, i: 4, 'a[4]': 99, ans: 3 }, out: 'изчакване...', msg: 'За <strong>i = 4</strong>: пресмятаме <strong>ans = __gcd(3, 99) = 3</strong>.' },
+                    { line: 17, vars: { n: 4, i: 'край', 'a[i]': '-', ans: 3 }, out: '3', msg: 'Цикълът завършва и отпечатваме общия НОД на целия масив: <strong>3</strong>.' }
+                ]
+            },
+            'tab-app4': {
+                title: '⚡ Приложение 4: Целочислени точки върху отсечка',
+                inputVal: '1 1 7 5',
+                outVal: '3',
+                code: [
+                    '#include <iostream>',
+                    '#include <algorithm>',
+                    '#include <cmath>',
+                    'using namespace std;',
+                    '',
+                    'long long points_on_seg(long long x1, long long y1, long long x2, long long y2)',
+                    '{',
+                    '    return __gcd(abs(x1 - x2), abs(y1 - y2)) + 1;',
+                    '}',
+                    '',
+                    'int main()',
+                    '{',
+                    '    long long x1, y1, x2, y2;',
+                    '    cin >> x1 >> y1 >> x2 >> y2;',
+                    '    cout << points_on_seg(x1, y1, x2, y2) << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 14, vars: { 'A(x1,y1)': '(1, 1)', 'B(x2,y2)': '(7, 5)', dx: '-', dy: '-' }, out: 'изчакване...', msg: 'Прочитаме координатите на двете крайни точки: <strong>A(1, 1)</strong> и <strong>B(7, 5)</strong>.' },
+                    { line: 15, vars: { 'A(x1,y1)': '(1, 1)', 'B(x2,y2)': '(7, 5)', dx: '-', dy: '-' }, out: 'изчакване...', msg: 'Извикваме функцията <strong>points_on_seg(1, 1, 7, 5)</strong>.' },
+                    { line: 8, vars: { 'A(x1,y1)': '(1, 1)', 'B(x2,y2)': '(7, 5)', dx: 6, dy: 4 }, out: 'изчакване...', msg: 'Пресмятаме разликите по осите: <strong>|1 - 7| = 6</strong> и <strong>|1 - 5| = 4</strong>. Търсим <strong>__gcd(6, 4) + 1 = 2 + 1 = 3</strong>.' },
+                    { line: 15, vars: { 'A(x1,y1)': '(1, 1)', 'B(x2,y2)': '(7, 5)', dx: 6, dy: 4 }, out: '3', msg: 'Отпечатваме отговора <strong>3</strong> (точките с цели координати върху отсечката са (1,1), (4,3) и (7,5)).' }
+                ]
+            }
+        };
+
+        const debState = {};
+
+        function buildDebuggerTabs() {
+            Object.keys(debuggers).forEach(tabId => {
+                const cfg = debuggers[tabId];
+                debState[tabId] = 0;
+                const pane = document.getElementById(tabId);
+
+                pane.innerHTML = `
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>${cfg.title}</span>
+                            <span id="${tabId}-step-lbl" style="font-size:0.85rem; color:var(--group-d); font-family:monospace;"></span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="${tabId}-prev" onclick="stepDeb('${tabId}', -1)">&larr; Предишна стъпка</button>
+                            <button class="btn-blue" id="${tabId}-next" onclick="stepDeb('${tabId}', 1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetDeb('${tabId}')">Отначало</button>
+                        </div>
+
+                        <div class="io-bar">
+                            <div class="io-mini">
+                                <div class="io-mini-label">Примерен вход (stdin)</div>
+                                <div style="color:#38bdf8;">${cfg.inputVal}</div>
+                            </div>
+                            <div class="io-mini">
+                                <div class="io-mini-label">Изход на програмата (stdout)</div>
+                                <div id="${tabId}-out" style="color:var(--success); font-weight:bold;"></div>
+                            </div>
+                        </div>
+
+                        <div class="var-tracker" id="${tabId}-vars"></div>
+                        <div class="code-box" id="${tabId}-code"></div>
+                        <div class="calc-box" id="${tabId}-exp"></div>
+                    </div>
+                `;
+
+                renderDeb(tabId);
+            });
+        }
+
+        function renderDeb(tabId) {
+            const cfg = debuggers[tabId];
+            const idx = debState[tabId];
+            const step = cfg.steps[idx];
+
+            document.getElementById(`${tabId}-step-lbl`).innerText = `Стъпка ${idx + 1} от ${cfg.steps.length}`;
+            document.getElementById(`${tabId}-out`).innerText = step.out;
+            document.getElementById(`${tabId}-exp`).innerHTML = step.msg;
+
+            // Променливи
+            const varsEl = document.getElementById(`${tabId}-vars`);
+            varsEl.innerHTML = Object.entries(step.vars).map(([k, v]) => `
+                <div class="var-box">
+                    <div class="var-name">${k}</div>
+                    <div class="var-val">${v}</div>
+                </div>
+            `).join('');
+
+            // Код с осветяване
+            const codeEl = document.getElementById(`${tabId}-code`);
+            codeEl.innerHTML = cfg.code.map((lineTxt, i) => {
+                const ln = i + 1;
+                const active = (ln === step.line) ? 'active-line' : '';
+                const safeTxt = lineTxt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                    <div class="code-line ${active}">
+                        <span class="line-num">${ln}</span>
+                        <span class="line-text">${safeTxt}</span>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById(`${tabId}-prev`).disabled = (idx === 0);
+            document.getElementById(`${tabId}-next`).disabled = (idx === cfg.steps.length - 1);
+        }
+
+        function stepDeb(tabId, dir) {
+            const max = debuggers[tabId].steps.length - 1;
+            debState[tabId] = Math.max(0, Math.min(max, debState[tabId] + dir));
+            renderDeb(tabId);
+        }
+
+        function resetDeb(tabId) {
+            debState[tabId] = 0;
+            renderDeb(tabId);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initSlide6();
+            buildDebuggerTabs();
+        });
+    </script>
+</body>
+
+</html>
