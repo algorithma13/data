@@ -494,7 +494,7 @@
 
         .calc-box strong { color: var(--group-d); font-family: 'Consolas', monospace; }
 
-        /* СЛАЙД 6 ПОСТЪПКОВИ КАРТИ */
+        /* АКЦЕНТ 1 ПОСТЪПКОВИ КАРТИ */
         .step-container {
             display: flex;
             flex-direction: column;
@@ -579,14 +579,13 @@
     <div class="lesson-container" id="lesson-container">
 
         <!-- =======================================================
-             ЛЯВ ПАНЕЛ: ПЪЛЕН ТЕКСТ ОТ ПРЕЗЕНТАЦИЯТА (СЛАЙДОВЕ 1-16)
+             ЛЯВ ПАНЕЛ: ПЪЛЕН ТЕКСТ ОТ ПРЕЗЕНТАЦИЯТА
         ======================================================== -->
         <div class="left-panel" id="left-panel">
             <div class="lesson-header">
                 <h1>Алгоритъм на Евклид – намиране на НОД</h1>
             </div>
 
-            <!-- Слайд 2 -->
             <h2>НОД: Математика срещу информатика</h2>
             <ul>
                 <li>В математиката НОД(24, 36) – разлагаме на прости множители.</li>
@@ -595,7 +594,6 @@
                 <li>За да решим задачата за части от милисекундата, използваме един от най-старите и гениални алгоритми в историята – <strong>Алгоритъм на Евклид</strong>.</li>
             </ul>
 
-            <!-- Слайд 3 и 4 -->
             <h2>Идеята на Евклид</h2>
             <p>НОД на две числа не се променя, ако от по-голямото извадим по-малкото:</p>
             <div class="formula-box">НОД(A, B) = НОД(A &minus; B, B)</div>
@@ -609,7 +607,6 @@
 
             <p><strong style="color: var(--group-d);">Най-бързият вариант: Евклид с деление по модул (%)</strong></p>
 
-            <!-- Слайд 5 -->
             <h2>Евклид с деление по модул</h2>
             <p>Вместо да изваждаме B от A многократно, можем наведнъж да махнем всички възможни пъти, в които B се съдържа в A.</p>
             <p>Какво остава след това?</p>
@@ -619,7 +616,6 @@
             <p>Този процес се повтаря, докато остатъкът стане 0. Тогава другото число е търсеният НОД:</p>
             <div class="formula-box">НОД(a, 0) = a</div>
 
-            <!-- Слайд 6 -->
             <h2>Пример: НОД(1071, 462)</h2>
             <ul>
                 <li>НОД(1071, 462) &rarr; 1071 % 462 = 147 &rarr; преминаваме към НОД(462, 147)</li>
@@ -627,16 +623,14 @@
                 <li>НОД(147, 21) &rarr; 147 % 21 = 0 &rarr; преминаваме към НОД(21, 0)</li>
                 <li>Второто число е 0, спираме! <strong>Отговор: 21</strong></li>
             </ul>
-            <button class="btn-jump" onclick="switchTab('tab-s6')">Отвори интерактивната визуализация (Слайд 6) &rarr;</button>
+            <button class="btn-jump" onclick="switchTab('tab-s6')">Отвори интерактивната визуализация (Акцент 1) &rarr;</button>
 
-            <!-- Слайд 7 -->
             <h2>Реализация</h2>
             <ul>
                 <li>Не се налага да проверяваме кое от двете числа е по-голямо в началото.</li>
                 <li>Ако <code>a &lt; b</code>, още на първата стъпка операцията <code>a % b</code> ще е равна на <code>a</code> и алгоритъмът автоматично ще размени местата им.</li>
             </ul>
 
-            <!-- Слайд 8 -->
             <h2>GCD: Итеративен алгоритъм</h2>
 <pre><code>long long gcd_it(long long a, long long b)
 {
@@ -654,16 +648,14 @@ int main()
     cin >> a >> b;
     cout << gcd_it(a, b) << "\n";
 }</code></pre>
-            <button class="btn-jump" onclick="switchTab('tab-s8')">Отвори дебъгера за Слайд 8 &rarr;</button>
+            <button class="btn-jump" onclick="switchTab('tab-s8')">Отвори дебъгера за Акцент 2 &rarr;</button>
 
-            <!-- Слайд 9 -->
             <h2>Вградената функция __gcd</h2>
             <ul>
                 <li>Съществува вградена функция за намиране на НОД, която се нарича <code>__gcd(a, b)</code>.</li>
                 <li><strong>Внимание:</strong> Името започва с две долни черти.</li>
             </ul>
 
-            <!-- Слайд 10 -->
             <h2>Пример с __gcd</h2>
 <pre><code>int main()
 {
@@ -674,9 +666,8 @@ int main()
     long long c; cin >> c;
     cout << __gcd(__gcd(a, b), c) << "\n";
 }</code></pre>
-            <button class="btn-jump" onclick="switchTab('tab-s10')">Отвори дебъгера за Слайд 10 &rarr;</button>
+            <button class="btn-jump" onclick="switchTab('tab-s10')">Отвори дебъгера за Акцент 3 &rarr;</button>
 
-            <!-- Слайд 11 -->
             <h2>Плюсове и минуси на вградената функция __gcd</h2>
             <table class="table-compare">
                 <tr>
@@ -697,7 +688,6 @@ int main()
                 </tr>
             </table>
 
-            <!-- Слайд 12 -->
             <h2>Приложение 1: Намиране на НОК</h2>
             <ul>
                 <li>От математиката: <code>НОК(a, b) = (a . b) / НОД(a, b)</code></li>
@@ -711,7 +701,6 @@ int main()
 }</code></pre>
             <button class="btn-jump" onclick="switchTab('tab-app1')">Виж Приложение 1 (НОК) в дебъгера &rarr;</button>
 
-            <!-- Слайд 13 -->
             <h2>Приложение 2: Съкращаване на обикновени дроби</h2>
             <ul>
                 <li>В много задачи трябва да съберем две дроби <code>a/b + c/d</code> и да изведем резултата като несъкратима дроб.</li>
@@ -724,7 +713,6 @@ den /= g; // става 3
 // Резултат: 2/3</code></pre>
             <button class="btn-jump" onclick="switchTab('tab-app2')">Виж Приложение 2 (Дроби) в дебъгера &rarr;</button>
 
-            <!-- Слайд 14 -->
             <h2>Приложение 3: НОД на масив от числа</h2>
             <p>Имаме редица от N числа <code>[ a<sub>1</sub>, a<sub>2</sub>, &hellip;, a<sub>N</sub> ]</code> и търсим най-големия общ делител на всички тях:</p>
 <pre><code>long long ans = a[1];
@@ -735,7 +723,6 @@ for (int i = 2; i <= n; i++)
 }</code></pre>
             <button class="btn-jump" onclick="switchTab('tab-app3')">Виж Приложение 3 (Масив) в дебъгера &rarr;</button>
 
-            <!-- Слайд 15 и 16 -->
             <h2>Приложение 4: Целочислени точки върху отсечка</h2>
             <ul>
                 <li>Дадена е координатна система и отсечка с краища в точки с цели координати <code>A(x<sub>1</sub>, y<sub>1</sub>)</code> и <code>B(x<sub>2</sub>, y<sub>2</sub>)</code>.</li>
@@ -754,14 +741,14 @@ for (int i = 2; i <= n; i++)
         <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
 
         <!-- =======================================================
-             ДЕСЕН ПАНЕЛ: 7 ТАБА (СЛАЙД 6, СЛАЙД 8, СЛАЙД 10, ПРИЛ. 1-4)
+             ДЕСЕН ПАНЕЛ: 7 ТАБА (АКЦЕНТ 1-3, ПРИЛ. 1-4)
         ======================================================== -->
         <div class="right-panel" id="right-panel">
             
             <div class="tabs-header">
-                <button class="tab-btn active" onclick="switchTab('tab-s6')" id="btn-tab-s6">Слайд 6: Симулация</button>
-                <button class="tab-btn" onclick="switchTab('tab-s8')" id="btn-tab-s8">Слайд 8: gcd_it</button>
-                <button class="tab-btn" onclick="switchTab('tab-s10')" id="btn-tab-s10">Слайд 10: __gcd</button>
+                <button class="tab-btn active" onclick="switchTab('tab-s6')" id="btn-tab-s6">Акцент 1: Симулация</button>
+                <button class="tab-btn" onclick="switchTab('tab-s8')" id="btn-tab-s8">Акцент 2: gcd_it</button>
+                <button class="tab-btn" onclick="switchTab('tab-s10')" id="btn-tab-s10">Акцент 3: __gcd</button>
                 <button class="tab-btn" onclick="switchTab('tab-app1')" id="btn-tab-app1">Прил. 1: НОК</button>
                 <button class="tab-btn" onclick="switchTab('tab-app2')" id="btn-tab-app2">Прил. 2: Дроби</button>
                 <button class="tab-btn" onclick="switchTab('tab-app3')" id="btn-tab-app3">Прил. 3: Масив</button>
@@ -770,11 +757,11 @@ for (int i = 2; i <= n; i++)
 
             <div class="tabs-content">
 
-                <!-- ТАБ 1: СЛАЙД 6 (ПОСТЪПКОВА ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ) -->
+                <!-- ТАБ 1: АКЦЕНТ 1 (ПОСТЪПКОВА ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ) -->
                 <div class="tab-pane active" id="tab-s6">
                     <div class="vis-card">
                         <div class="vis-title">
-                            <span>⚡ Слайд 6: Постъпкова визуализация на НОД(A, B)</span>
+                            <span>⚡ Акцент 1: Постъпкова визуализация на НОД(A, B)</span>
                             <span id="s6-badge" style="font-size:0.85rem; color:var(--group-d); font-family:monospace;">Стъпка 0</span>
                         </div>
                         <p style="font-size:0.9rem; margin-bottom:1rem;">
@@ -804,10 +791,10 @@ for (int i = 2; i <= n; i++)
                     </div>
                 </div>
 
-                <!-- ТАБ 2: СЛАЙД 8 (ДЕБЪГЕР ИТЕРАТИВЕН GCD) -->
+                <!-- ТАБ 2: АКЦЕНТ 2 (ДЕБЪГЕР ИТЕРАТИВЕН GCD) -->
                 <div class="tab-pane" id="tab-s8"></div>
 
-                <!-- ТАБ 3: СЛАЙД 10 (ДЕБЪГЕР __gcd) -->
+                <!-- ТАБ 3: АКЦЕНТ 3 (ДЕБЪГЕР __gcd) -->
                 <div class="tab-pane" id="tab-s10"></div>
 
                 <!-- ТАБ 4: ПРИЛОЖЕНИЕ 1 (НОК) -->
@@ -874,7 +861,7 @@ for (int i = 2; i <= n; i++)
         }
 
         // ==========================================
-        // 1. СЛАЙД 6: ПОСТЪПКОВА ВИЗУАЛИЗАЦИЯ
+        // 1. АКЦЕНТ 1: ПОСТЪПКОВА ВИЗУАЛИЗАЦИЯ
         // ==========================================
         let s6History = [];
         let s6Idx = 0;
@@ -944,7 +931,7 @@ for (int i = 2; i <= n; i++)
         // ==========================================
         const debuggers = {
             'tab-s8': {
-                title: '⚡ Слайд 8: Итеративен алгоритъм gcd_it(a, b)',
+                title: '⚡ Акцент 2: Итеративен алгоритъм gcd_it(a, b)',
                 inputVal: '1071 462',
                 outVal: '21',
                 code: [
@@ -987,7 +974,7 @@ for (int i = 2; i <= n; i++)
                 ]
             },
             'tab-s10': {
-                title: '⚡ Слайд 10: Вградената функция __gcd',
+                title: '⚡ Акцент 3: Вградената функция __gcd',
                 inputVal: '24 36 18',
                 outVal: '12 | 6',
                 code: [
