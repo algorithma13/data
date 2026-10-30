@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача D11: Граница (COCI 2007/2008) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Условие) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #000;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.04rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        .io-container {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0.75rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background-color: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.5rem;
+            margin-top: 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация с табове) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.9rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 0.45rem 0.65rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.92rem;
+            text-align: center;
+        }
+
+        input[type="text"] { width: 175px; }
+        input[type="number"] { width: 78px; }
+
+        button {
+            padding: 0.5rem 0.95rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-green { background-color: var(--success); color: #fff; }
+        .btn-green:hover { background: #059669; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* КАРТИ ЗА ЧИСЛАТА И ОСТАТЪЦИТЕ */
+        .arr-track {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 92px;
+            padding: 1.15rem;
+            background: rgba(11, 17, 32, 0.55);
+            border-radius: 0.6rem;
+            border: 1px solid var(--border);
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .num-card {
+            min-width: 115px;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            padding: 0.75rem 0.9rem;
+            text-align: center;
+            transition: all 0.25s;
+        }
+
+        .num-card.valid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.14);
+        }
+
+        .num-card.invalid {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        .num-val {
+            font-size: 1.35rem;
+            font-weight: 800;
+            font-family: 'Consolas', monospace;
+            color: var(--text-main);
+        }
+
+        .num-eq {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-family: 'Consolas', monospace;
+            margin-top: 3px;
+        }
+
+        .num-rem {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.35rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent);
+        }
+
+        .num-card.valid .num-rem {
+            background: rgba(16, 185, 129, 0.25);
+            color: var(--success);
+        }
+
+        .num-card.invalid .num-rem {
+            background: rgba(239, 68, 68, 0.25);
+            color: var(--danger);
+        }
+
+        /* ТАБ 2: РАЗЛИКИ И НОД */
+        .diff-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            align-items: center;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .diff-pill {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #93c5fd;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.4rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .div-pill {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.4rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .div-pill:hover {
+            transform: scale(1.08);
+            background: var(--success);
+            color: #000;
+        }
+
+        .calc-box {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: center;
+            font-size: 0.96rem;
+            line-height: 1.55;
+            margin-top: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Теория на числата</span>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: УСЛОВИЕ НА ЗАДАЧАТА (COCI 2007/2008 ГРАНИЦА)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА 11: COCI 2007/2008 - 6. Граница <br><span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">(Granica)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1 с.</div>
+                    <div>💾 <strong>Памет:</strong> 64 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>🏆 <strong>Източник:</strong> COCI 2007/2008</div>
+                </div>
+            </div>
+
+            <p>Дадена е редица от <code>N</code> различни положителни числа. Искаме да намерим всички числа <code>M</code> (<code>M &gt; 1</code>), които притежават следното математическо свойство: когато разделим всяко от <code>N</code>-те числа от редицата на <code>M</code>, получаваме един и същ остатък.</p>
+            
+            <p>Да се напише програма <code>granica</code>, която по дадена редица от <code>N</code> числа намира и извежда всички възможни стойности на <code>M</code>, отговарящи на условието.</p>
+
+            <h2>Вход</h2>
+            <p>От първия ред на стандартния вход се въвежда едно цяло число <code>N</code> — броят на елементите в редицата. Следват <code>N</code> положителни цели числа, разделени с интервал — елементите на редицата.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на стандартния изход програмата трябва да отпечатва всички възможни стойности на <code>M</code>, подредени в строго нарастващ ред и разделени с по един интервал.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>2 &le; <code>N</code> &le; 100</li>
+                <li>Елементите на редицата са в интервала <code>[1, 1 000 000 000]</code></li>
+                <li>Всички елементи в редицата са строго различни.</li>
+                <li>Гарантирано е, че винаги съществува поне едно решение.</li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход</div>
+                    <pre>3
+38 26 14</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера</div>
+                    <pre>2 3 4 6 12</pre>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Обяснение на примера:</strong><br>
+                Когато разделим числата 38, 26 и 14 на 2, всички те дават остатък 0. Когато разделим числата 38, 26 и 14 на 3, всички те дават остатък 2. Когато ги разделим на 12, всички дават остатък 2 (<code>38 = 3.12 + 2</code>; <code>26 = 2.12 + 2</code>; <code>14 = 1.12 + 2</code>). Останалите валидни делители <code>M</code>, които дават еднакви остатъци за трите числа, са 4 (остатък 2) и 6 (остатък 2).
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-mod')" id="btn-tab-mod">1. Лаборатория за остатъци (Тествай M)</button>
+                <button class="tab-btn" onclick="switchTab('tab-diff')" id="btn-tab-diff">2. Тайната на разликите и НОД</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ТЕСТВАНЕ НА РАЗЛИЧНИ ДЕЛИТЕЛИ M -->
+                <div class="tab-pane active" id="tab-mod">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🔍 Експериментирайте с делителя M</span>
+                            <span id="mod-badge" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">M = 12</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Изберете стойност за <code>M</code> или натиснете някой от бързите бутони, за да проверите дали всички числа от редицата дават <strong>един и същ остатък</strong> при деление на <code>M</code>!
+                        </p>
+
+                        <div class="controls">
+                            <div class="input-group">Редица: <input type="text" id="seq-input" value="38 26 14"></div>
+                            <div class="input-group">Делител M: <input type="number" id="m-input" value="12" min="2"></div>
+                            <button onclick="evaluateM()">Провери M</button>
+                        </div>
+
+                        <div class="controls">
+                            <span style="font-size:0.82rem; color:var(--text-muted);">Бърз тест за (38, 26, 14):</span>
+                            <button class="btn-green" onclick="quickM(2)">M = 2</button>
+                            <button class="btn-green" onclick="quickM(3)">M = 3</button>
+                            <button class="btn-green" onclick="quickM(4)">M = 4</button>
+                            <button class="btn-slate" onclick="quickM(5)">M = 5</button>
+                            <button class="btn-green" onclick="quickM(6)">M = 6</button>
+                            <button class="btn-slate" onclick="quickM(7)">M = 7</button>
+                            <button class="btn-green" onclick="quickM(12)">M = 12</button>
+                        </div>
+
+                        <div class="arr-track" id="mod-cards"></div>
+
+                        <div class="calc-box" id="mod-status"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: ИДЕЯТА С РАЗЛИКИТЕ МЕЖДУ ЧИСЛАТА -->
+                <div class="tab-pane" id="tab-diff">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>💡 Защо остатъкът изчезва при изваждане?</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Ако две числа <code>A</code> и <code>B</code> дават един и същ остатък <code>r</code> при деление на <code>M</code>:<br>
+                            <code>A = q<sub>1</sub> &middot; M + r</code> и <code>B = q<sub>2</sub> &middot; M + r</code>.<br>
+                            Когато ги извадим едно от друго, остатъкът <code>r</code> се унищожава: <code>|A &minus; B| = |q<sub>1</sub> &minus; q<sub>2</sub>| &middot; M</code>! Това означава, че <strong>всяко валидно M трябва да дели разликата между всеки две числа в редицата</strong>.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" onclick="loadDiffPreset('38 26 14')">Пример от условието: 38 26 14</button>
+                            <button class="btn-slate" onclick="loadDiffPreset('6 34 38')">Нов пример: 6 34 38</button>
+                            <button class="btn-slate" onclick="loadDiffPreset('15 45 75 120')">4 числа: 15 45 75 120</button>
+                        </div>
+
+                        <div style="font-size:0.84rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">1. Сортирани числа и разлики между съседните елементи</div>
+                        <div class="diff-row" id="diff-list"></div>
+
+                        <div style="font-size:0.84rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">2. Най-голям общ делител (НОД) на всички разлики</div>
+                        <div class="diff-row" id="gcd-result"></div>
+
+                        <div style="font-size:0.84rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">3. Всички делители на НОД (M &gt; 1) — кликнете за проверка в Таб 1!</div>
+                        <div class="diff-row" id="divisors-list"></div>
+
+                        <div class="calc-box" id="diff-explanation"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            leftPanel.style.width = Math.max(25, Math.min(75, pct)) + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        function gcd(a, b) {
+            a = Math.abs(a); b = Math.abs(b);
+            while (b !== 0) {
+                let t = a % b;
+                a = b;
+                b = t;
+            }
+            return a;
+        }
+
+        function parseSeq() {
+            const raw = document.getElementById('seq-input').value.trim();
+            const arr = raw.split(/\s+/).map(Number).filter(n => !isNaN(n) && n > 0);
+            return arr.length >= 2 ? arr : [38, 26, 14];
+        }
+
+        // ==========================================
+        // 1. ТАБ 1: ЛАБОРАТОРИЯ ЗА ОСТАТЪЦИ
+        // ==========================================
+        function quickM(mVal) {
+            document.getElementById('m-input').value = mVal;
+            evaluateM();
+        }
+
+        function evaluateM() {
+            const arr = parseSeq();
+            const M = Math.max(2, parseInt(document.getElementById('m-input').value) || 2);
+            document.getElementById('mod-badge').innerText = `M = ${M}`;
+
+            const rems = arr.map(x => x % M);
+            const allEqual = rems.every(r => r === rems[0]);
+
+            const track = document.getElementById('mod-cards');
+            track.innerHTML = '';
+
+            arr.forEach((x, idx) => {
+                const q = Math.floor(x / M);
+                const r = rems[idx];
+                const card = document.createElement('div');
+                card.className = 'num-card ' + (allEqual ? 'valid' : 'invalid');
+                card.innerHTML = `
+                    <div class="num-val">${x}</div>
+                    <div class="num-eq">${x} = ${q} &middot; ${M} + ${r}</div>
+                    <div class="num-rem">остатък ${r}</div>
+                `;
+                track.appendChild(card);
+            });
+
+            const status = document.getElementById('mod-status');
+            if (allEqual) {
+                status.innerHTML = `✅ <strong>M = ${M} е ВАЛИДНО решение!</strong> Всички числа дават един и същ остатък <strong>${rems[0]}</strong> при деление на ${M}.`;
+            } else {
+                const uniqueRems = [...new Set(rems)].join(', ');
+                status.innerHTML = `❌ <strong>M = ${M} НЕ е решение.</strong> Получават се различни остатъци (${uniqueRems}).`;
+            }
+
+            updateDiffVisualizer(arr);
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: РАЗЛИКИ И НОД
+        // ==========================================
+        function loadDiffPreset(str) {
+            document.getElementById('seq-input').value = str;
+            evaluateM();
+        }
+
+        function updateDiffVisualizer(arr) {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const diffs = [];
+            for (let i = 1; i < sorted.length; i++) {
+                diffs.push({
+                    a: sorted[i],
+                    b: sorted[i - 1],
+                    d: Math.abs(sorted[i] - sorted[i - 1])
+                });
+            }
+
+            const diffList = document.getElementById('diff-list');
+            diffList.innerHTML = diffs.map(item => `
+                <span class="diff-pill">|${item.a} &minus; ${item.b}| = ${item.d}</span>
+            `).join('');
+
+            let g = diffs[0].d;
+            for (let i = 1; i < diffs.length; i++) {
+                g = gcd(g, diffs[i].d);
+            }
+
+            document.getElementById('gcd-result').innerHTML = `
+                <span class="diff-pill" style="border-color:var(--accent); color:var(--accent); font-size:1.05rem;">
+                    G = НОД(${diffs.map(x => x.d).join(', ')}) = ${g}
+                </span>
+            `;
+
+            const divs = [];
+            for (let d = 2; d * d <= g; d++) {
+                if (g % d === 0) {
+                    divs.push(d);
+                    if (d * d !== g) divs.push(g / d);
+                }
+            }
+            if (g > 1) divs.push(g);
+            divs.sort((a, b) => a - b);
+
+            const divContainer = document.getElementById('divisors-list');
+            divContainer.innerHTML = divs.map(d => `
+                <span class="div-pill" onclick="jumpToTestM(${d})" title="Кликнете за тест на M = ${d}">M = ${d}</span>
+            `).join('');
+
+            document.getElementById('diff-explanation').innerHTML = `
+                Търсените числа <strong>M</strong> са точно <strong>всички делители на G = ${g}</strong> (по-големи от 1): <strong>${divs.join(' ')}</strong>.
+            `;
+        }
+
+        function jumpToTestM(mVal) {
+            switchTab('tab-mod');
+            quickM(mVal);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            evaluateM();
+        });
+    </script>
+</body>
+
+</html>
