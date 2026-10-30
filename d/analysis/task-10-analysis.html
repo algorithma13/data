@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ D10: Трансформиране на двойки (USACO 2025) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Анализ) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #000;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .analysis-tag {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            padding: 0.2rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.65rem;
+        }
+
+        .task-header h1 {
+            font-size: 1.9rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.04rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.55rem; }
+
+        .analysis-box {
+            background-color: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 4px solid var(--accent);
+            padding: 1.35rem 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .analysis-box p {
+            color: #e2e8f0;
+            margin-bottom: 0.75rem;
+        }
+
+        .analysis-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .rule-card {
+            background: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--highlight);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .rule-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+            font-size: 1rem;
+        }
+
+        .io-container {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0.75rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивен Анализ) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.9rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        input[type="number"] {
+            padding: 0.45rem 0.6rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.92rem;
+            text-align: center;
+            width: 82px;
+        }
+
+        button {
+            padding: 0.5rem 0.95rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЪСТОЯНИЕ НА ПРОМЕНЛИВИТЕ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.65rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        /* СТЪПКИ НА АНАЛИЗА */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-row {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            transition: all 0.25s;
+            opacity: 0.55;
+        }
+
+        .step-row.active {
+            opacity: 1;
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.14);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+
+        .step-row.success {
+            opacity: 1;
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--success);
+        }
+
+        .step-row.fail {
+            opacity: 1;
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.14);
+            color: var(--danger);
+        }
+
+        .calc-box {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: left;
+            font-size: 0.96rem;
+            line-height: 1.55;
+            margin-top: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ДИАГРАМА НА ПРАВИЛАТА */
+        .decision-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .decision-card {
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            padding: 1rem;
+            transition: all 0.25s;
+        }
+
+        .decision-card.highlighted {
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .decision-card h5 {
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .decision-card p {
+            font-size: 0.86rem;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .header-center-badge { position: static; transform: none; }
+            .state-grid, .decision-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Теория на числата</span>
+        <div class="nav-controls">
+            <a href="../tasks/task-10.html">&larr; Към условието</a>
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: АНАЛИЗ ОТ ДОКУМЕНТА
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <span class="analysis-tag">Анализ</span>
+                <h1>ЗАДАЧА 10: USACO 2025. Февруарско състезание, Сребърна група. Трансформиране на двойки <br><span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">(Transforming Pairs)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 2 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>⚡ <strong>Сложност:</strong> O(log(max(c, d)))</div>
+                </div>
+            </div>
+
+            <h2>Вход</h2>
+            <p>Първият ред на входа въвежда четири цели числа <code>a</code>, <code>b</code>, <code>c</code> и <code>d</code>, разделени с интервал.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на стандартния изход програмата да извежда едно цяло число — търсеният минимален брой операции.</p>
+
+            <h2>Анализ</h2>
+            <div class="analysis-box">
+                <p>Движим се отзад напред: от <code>(c, d)</code> към <code>(a, b)</code>. Проверяваме дали сме достигнали точно началната двойка. Ако първото число вече съвпада, проверяваме дали можем да намалим второто до <code>b</code>. Ако второто число вече съвпада, проверяваме дали можем да намалим първото до <code>a</code>.</p>
+                <p>Прилагаме бързата стъпка на Евклид с деление. Ако <code>c == d</code>, но не сме достигнали <code>a</code> и <code>b</code>, не можем да продължим.</p>
+            </div>
+
+            <h2>Разбивка на случаите при движение назад</h2>
+
+            <div class="rule-card">
+                <h4>1. Проверка за успех или невъзможност</h4>
+                <p style="margin:0; font-size:0.95rem;">Ако <code>c == a</code> и <code>d == b</code>, сме достигнали целта! Ако обаче в някой момент <code>c &lt; a</code> или <code>d &lt; b</code>, значи сме подминали началните стойности и връщаме <code>-1</code>.</p>
+            </div>
+
+            <div class="rule-card">
+                <h4>2. Когато едното число вече съвпада (c == a или d == b)</h4>
+                <p style="margin:0; font-size:0.95rem;">Ако <code>c == a</code>, повече не бива да променяме първото число. Остава единствено да проверим дали разликата <code>d - b</code> се дели точно на <code>c</code>: ако <code>(d - b) % c == 0</code>, добавяме <code>(d - b) / c</code> операции и приключваме. Аналогично, ако <code>d == b</code>, проверяваме дали <code>(c - a) % d == 0</code>.</p>
+            </div>
+
+            <div class="rule-card">
+                <h4>3. Бърза стъпка на Евклид с деление</h4>
+                <p style="margin:0; font-size:0.95rem;">Когато и двете числа са по-големи от началните: ако <code>c &gt; d</code>, добавяме <code>c / d</code> към броя на операциите и заменяме <code>c</code> с остатъка <code>c % d</code>. Ако <code>d &gt; c</code>, добавяме <code>d / c</code> към операциите и заменяме <code>d</code> с <code>d % c</code>. Ако <code>c == d</code>, спираме с <code>-1</code>.</p>
+            </div>
+
+            <h2>Примери</h2>
+            
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 1</div>
+                    <pre>5 3 5 2</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 1</div>
+                    <pre>-1</pre>
+                </div>
+            </div>
+
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 2</div>
+                    <pre>5 3 8 19</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 2</div>
+                    <pre>3</pre>
+                </div>
+            </div>
+
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 3</div>
+                    <pre>5 3 19 8</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 3</div>
+                    <pre>-1</pre>
+                </div>
+            </div>
+
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 4</div>
+                    <pre>3 5 3 5</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 4</div>
+                    <pre>0</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ НА АНАЛИЗА
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-sim')" id="btn-tab-sim">1. Постъпков симулатор на анализа</button>
+                <button class="tab-btn" onclick="switchTab('tab-cases')" id="btn-tab-cases">2. Дърво на случаите в алгоритъма</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ПОСТЪПКОВ СИМУЛАТОР НА АНАЛИЗА -->
+                <div class="tab-pane active" id="tab-sim">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Трасиране от (c, d) към (a, b)</span>
+                            <span id="sim-step-badge" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Изберете един от примерите или въведете собствени числа, за да видите как алгоритъмът прилага граничните проверки и бързата стъпка на Евклид с деление.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" onclick="loadExample(5, 3, 5, 2)">Пример 1: 5 3 5 2</button>
+                            <button class="btn-slate" onclick="loadExample(5, 3, 8, 19)">Пример 2: 5 3 8 19</button>
+                            <button class="btn-slate" onclick="loadExample(5, 3, 19, 8)">Пример 3: 5 3 19 8</button>
+                            <button class="btn-slate" onclick="loadExample(3, 5, 3, 5)">Пример 4: 3 5 3 5</button>
+                        </div>
+
+                        <div class="controls">
+                            <div class="input-group">a: <input type="number" id="an-a" value="5"></div>
+                            <div class="input-group">b: <input type="number" id="an-b" value="3"></div>
+                            <div class="input-group">c: <input type="number" id="an-c" value="8"></div>
+                            <div class="input-group">d: <input type="number" id="an-d" value="19"></div>
+                            <button onclick="buildAnalysisTrace()">Анализирай</button>
+                            <button class="btn-slate" id="btn-an-prev" onclick="moveTrace(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="btn-an-next" onclick="moveTrace(1)">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Начална (a, b)</div>
+                                <div class="state-val" id="st-ab">(5, 3)</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Текуща (c, d)</div>
+                                <div class="state-val" id="st-cd">(8, 19)</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Активно правило</div>
+                                <div class="state-val" id="st-rule" style="font-size:0.9rem;">Старт</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Операции ans</div>
+                                <div class="state-val" id="st-ans">0</div>
+                            </div>
+                        </div>
+
+                        <div class="step-list" id="trace-list"></div>
+
+                        <div class="calc-box" id="trace-exp">
+                            Натиснете „Следваща стъпка“, за да проследите анализа.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: ВИЗУАЛНА СХЕМА НА СЛУЧАИТЕ -->
+                <div class="tab-pane" id="tab-cases">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🧭 Как алгоритъмът избира следващия ход?</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            На всяка итерация от цикъла програмата проверява следните условия в точен ред. Кликнете върху някой от бутоните по-долу, за да осветите кой случай се задейства!
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" onclick="highlightCase(1)">Случай: c == a</button>
+                            <button class="btn-slate" onclick="highlightCase(2)">Случай: d == b</button>
+                            <button class="btn-slate" onclick="highlightCase(3)">Случай: c &gt; d (Евклид)</button>
+                            <button class="btn-slate" onclick="highlightCase(4)">Случай: d &gt; c (Евклид)</button>
+                        </div>
+
+                        <div class="decision-grid">
+                            <div class="decision-card" id="dcard-1">
+                                <h5>1. Първото число съвпада (c == a)</h5>
+                                <p>Вече не променяме <code>c</code>. Проверяваме дали <code>(d - b) % a == 0</code>. Ако да, добавяме <code>(d - b) / a</code> стъпки и успяваме! Иначе извеждаме <code>-1</code>.</p>
+                            </div>
+                            <div class="decision-card" id="dcard-2">
+                                <h5>2. Второто число съвпада (d == b)</h5>
+                                <p>Вече не променяме <code>d</code>. Проверяваме дали <code>(c - a) % b == 0</code>. Ако да, добавяме <code>(c - a) / b</code> стъпки и успяваме! Иначе извеждаме <code>-1</code>.</p>
+                            </div>
+                            <div class="decision-card" id="dcard-3">
+                                <h5>3. Първото е по-голямо (c &gt; d)</h5>
+                                <p>Прилагаме бързата стъпка на Евклид: добавяме <code>c / d</code> към брояча на операциите и намаляваме <code>c = c % d</code>.</p>
+                            </div>
+                            <div class="decision-card" id="dcard-4">
+                                <h5>4. Второто е по-голямо (d &gt; c)</h5>
+                                <p>Прилагаме бързата стъпка на Евклид: добавяме <code>d / c</code> към брояча на операциите и намаляваме <code>d = d % c</code>.</p>
+                            </div>
+                        </div>
+
+                        <div class="calc-box" id="case-detail">
+                            <strong>Защо не правим просто <code>c % d</code>, когато <code>d == b</code>?</strong><br>
+                            Ако <code>a = 5, b = 3</code> и сме стигнали до <code>c = 8, d = 3</code>, операцията <code>8 % 3</code> би намалила <code>c</code> директно на <code>2</code>, прескачайки началната стойност <code>a = 5</code>! Затова проверката за съвпадение на едното число винаги се прави <strong>преди</strong> общата стъпка на Евклид.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            leftPanel.style.width = Math.max(25, Math.min(75, pct)) + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ТАБ 1: ГЕНЕРИРАНЕ НА СТЪПКИТЕ НА АНАЛИЗА
+        // ==========================================
+        let anTrace = [];
+        let anIdx = 0;
+
+        function loadExample(a, b, c, d) {
+            document.getElementById('an-a').value = a;
+            document.getElementById('an-b').value = b;
+            document.getElementById('an-c').value = c;
+            document.getElementById('an-d').value = d;
+            buildAnalysisTrace();
+        }
+
+        function buildAnalysisTrace() {
+            let a = Math.max(1, parseInt(document.getElementById('an-a').value) || 1);
+            let b = Math.max(1, parseInt(document.getElementById('an-b').value) || 1);
+            let c = Math.max(1, parseInt(document.getElementById('an-c').value) || 1);
+            let d = Math.max(1, parseInt(document.getElementById('an-d').value) || 1);
+
+            anTrace = [];
+            let ans = 0;
+
+            anTrace.push({
+                ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'Начало', ans: 0, status: 'active',
+                label: `Старт от (c, d) = (${c}, ${d}) към (a, b) = (${a}, ${b})`,
+                exp: `Тръгваме отзад напред от целевата двойка <strong>(${c}, ${d})</strong> и търсим дали можем да стигнем до <strong>(${a}, ${b})</strong>.`
+            });
+
+            let stepsGuard = 0;
+            while (stepsGuard < 40) {
+                stepsGuard++;
+
+                if (c === a && d === b) {
+                    anTrace.push({
+                        ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'Успех!', ans: ans, status: 'success',
+                        label: `Съвпадение (${c}, ${d}) == (${a}, ${b}) &rarr; Отговор: ${ans}`,
+                        exp: `✅ Двойката <strong>(${c}, ${d})</strong> съвпада точно с началната <strong>(${a}, ${b})</strong>! Минималният брой операции е <strong>${ans}</strong>.`
+                    });
+                    break;
+                }
+
+                if (c < a || d < b) {
+                    anTrace.push({
+                        ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'Под началното', ans: -1, status: 'fail',
+                        label: `(${c}, ${d}) падна под (${a}, ${b}) &rarr; Отговор: -1`,
+                        exp: `❌ Поне едно от числата в <strong>(${c}, ${d})</strong> е по-малко от съответното в <strong>(${a}, ${b})</strong>. Тъй като операциите само увеличават числата, решението е <strong>-1</strong>.`
+                    });
+                    break;
+                }
+
+                if (c === a) {
+                    if ((d - b) % c === 0) {
+                        let add = Math.floor((d - b) / c);
+                        ans += add;
+                        d = b;
+                        anTrace.push({
+                            ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'c == a', ans: ans, status: 'success',
+                            label: `c == a (${c}): (d - b) % ${c} == 0 &rarr; +${add} оп. &rarr; Отговор: ${ans}`,
+                            exp: `Първото число вече съвпада (<strong>c = a = ${a}</strong>). Проверяваме дали можем да намалим второто до <strong>b = ${b}</strong>: разликата <strong>d - b = ${ add * c }</strong> се дели точно на ${c}. Добавяме <strong>${add}</strong> операции и получаваме отговор <strong>${ans}</strong>!`
+                        });
+                    } else {
+                        anTrace.push({
+                            ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'c == a (Грешка)', ans: -1, status: 'fail',
+                            label: `c == a (${c}), но (${d} - ${b}) не се дели на ${c} &rarr; Отговор: -1`,
+                            exp: `❌ Първото число вече съвпада (<strong>c = a = ${a}</strong>), но разликата <strong>d - b = ${d - b}</strong> не се дели точно на <strong>${c}</strong>. Извеждаме <strong>-1</strong>.`
+                        });
+                    }
+                    break;
+                }
+
+                if (d === b) {
+                    if ((c - a) % d === 0) {
+                        let add = Math.floor((c - a) / d);
+                        ans += add;
+                        c = a;
+                        anTrace.push({
+                            ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'd == b', ans: ans, status: 'success',
+                            label: `d == b (${d}): (c - a) % ${d} == 0 &rarr; +${add} оп. &rarr; Отговор: ${ans}`,
+                            exp: `Второто число вече съвпада (<strong>d = b = ${b}</strong>). Проверяваме дали можем да намалим първото до <strong>a = ${a}</strong>: разликата <strong>c - a = ${ add * d }</strong> се дели точно на ${d}. Добавяме <strong>${add}</strong> операции и получаваме отговор <strong>${ans}</strong>!`
+                        });
+                    } else {
+                        anTrace.push({
+                            ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'd == b (Грешка)', ans: -1, status: 'fail',
+                            label: `d == b (${d}), но (${c} - ${a}) не се дели на ${d} &rarr; Отговор: -1`,
+                            exp: `❌ Второто число вече съвпада (<strong>d = b = ${b}</strong>), но разликата <strong>c - a = ${c - a}</strong> не се дели точно на <strong>${d}</strong>. Извеждаме <strong>-1</strong>.`
+                        });
+                    }
+                    break;
+                }
+
+                if (c === d) {
+                    anTrace.push({
+                        ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'c == d', ans: -1, status: 'fail',
+                        label: `c == d (${c}), но не сме в (${a}, ${b}) &rarr; Отговор: -1`,
+                        exp: `❌ Двете числа са равни (<strong>c == d == ${c}</strong>), но не сме достигнали <strong>(${a}, ${b})</strong>. Следващо изваждане би дало 0, затова връщаме <strong>-1</strong>.`
+                    });
+                    break;
+                }
+
+                if (c > d) {
+                    let q = Math.floor(c / d);
+                    let r = c % d;
+                    let oldC = c;
+                    ans += q;
+                    c = r;
+                    anTrace.push({
+                        ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'Евклид (c > d)', ans: ans, status: 'active',
+                        label: `c > d: ${oldC} / ${d} = ${q} оп., c става ${oldC} % ${d} = ${r} &rarr; (${c}, ${d})`,
+                        exp: `Тъй като <strong>c &gt; d</strong> (${oldC} &gt; ${d}), прилагаме бързата стъпка на Евклид: добавяме <strong>${oldC} / ${d} = ${q}</strong> операции и заменяме <strong>c = ${oldC} % ${d} = ${r}</strong>.`
+                    });
+                } else {
+                    let q = Math.floor(d / c);
+                    let r = d % c;
+                    let oldD = d;
+                    ans += q;
+                    d = r;
+                    anTrace.push({
+                        ab: `(${a}, ${b})`, cd: `(${c}, ${d})`, rule: 'Евклид (d > c)', ans: ans, status: 'active',
+                        label: `d > c: ${oldD} / ${c} = ${q} оп., d става ${oldD} % ${c} = ${r} &rarr; (${c}, ${d})`,
+                        exp: `Тъй като <strong>d &gt; c</strong> (${oldD} &gt; ${c}), прилагаме бързата стъпка на Евклид: добавяме <strong>${oldD} / ${c} = ${q}</strong> операции и заменяме <strong>d = ${oldD} % ${c} = ${r}</strong>.`
+                    });
+                }
+            }
+
+            anIdx = 0;
+            renderAnalysisTrace();
+        }
+
+        function renderAnalysisTrace() {
+            const list = document.getElementById('trace-list');
+            list.innerHTML = '';
+
+            for (let i = 0; i <= anIdx; i++) {
+                const item = anTrace[i];
+                const row = document.createElement('div');
+                let cls = 'step-row';
+                if (i === anIdx) {
+                    cls += ' ' + item.status;
+                }
+                row.className = cls;
+                row.innerHTML = `<span>${item.label}</span><span style="font-size:0.8rem; opacity:0.8;">Стъпка ${i + 1}</span>`;
+                list.appendChild(row);
+            }
+
+            const cur = anTrace[anIdx];
+            document.getElementById('st-ab').innerText = cur.ab;
+            document.getElementById('st-cd').innerText = cur.cd;
+            document.getElementById('st-rule').innerText = cur.rule;
+            document.getElementById('st-ans').innerText = cur.ans;
+            document.getElementById('sim-step-badge').innerText = `Стъпка ${anIdx + 1} от ${anTrace.length}`;
+            document.getElementById('trace-exp').innerHTML = cur.exp;
+
+            document.getElementById('btn-an-prev').disabled = (anIdx === 0);
+            document.getElementById('btn-an-next').disabled = (anIdx === anTrace.length - 1);
+        }
+
+        function moveTrace(dir) {
+            anIdx = Math.max(0, Math.min(anTrace.length - 1, anIdx + dir));
+            renderAnalysisTrace();
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: ОСВЕТЯВАНЕ НА СЛУЧАИТЕ
+        // ==========================================
+        const caseMessages = {
+            1: `<strong>Случай 1 (c == a):</strong> Когато първото число вече е равно на <strong>a</strong>, нямаме право да го намаляваме повече. Остава само да проверим дали <strong>(d - b)</strong> се дели без остатък на <strong>a</strong>.`,
+            2: `<strong>Случай 2 (d == b):</strong> Когато второто число вече е равно на <strong>b</strong>, нямаме право да го намаляваме повече. Остава само да проверим дали <strong>(c - a)</strong> се дели без остатък на <strong>b</strong>.`,
+            3: `<strong>Случай 3 (c &gt; d):</strong> И двете числа са над началните и първото е по-голямо. Намаляваме го наведнъж с деление по модул: <strong>ans += c / d; c %= d;</strong>`,
+            4: `<strong>Случай 4 (d &gt; c):</strong> И двете числа са над началните и второто е по-голямо. Намаляваме го наведнъж с деление по модул: <strong>ans += d / c; d %= c;</strong>`
+        };
+
+        function highlightCase(num) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('dcard-' + i).classList.toggle('highlighted', i === num);
+            }
+            document.getElementById('case-detail').innerHTML = caseMessages[num];
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buildAnalysisTrace();
+        });
+    </script>
+</body>
+
+</html>
