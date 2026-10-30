@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение D10: Трансформиране на двойки (USACO 2025) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Разбор на решението) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #000;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.25rem;
+        }
+
+        .task-header h1 {
+            font-size: 1.9rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            line-height: 1.25;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        h2 { 
+            font-size: 1.3rem; 
+            color: var(--text-main); 
+            margin: 1.8rem 0 0.85rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.02rem; }
+        ul, ol { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.55rem; }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .step-card {
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--highlight);
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(245, 158, 11, 0.08);
+        }
+
+        .step-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-card h4 span {
+            font-size: 0.78rem;
+            color: var(--accent);
+            background: rgba(245, 158, 11, 0.15);
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.3rem;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивен Код и Трасировка) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input[type="number"] {
+            padding: 0.4rem 0.55rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.88rem;
+            text-align: center;
+            width: 72px;
+        }
+
+        button {
+            padding: 0.45rem 0.9rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЪСТОЯНИЕ НА ПРОМЕНЛИВИТЕ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.65rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 1.12rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        /* ИНТЕРАКТИВЕН КОД С ОСВЕТЯВАНЕ РЕД ПО РЕД */
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.6rem;
+            border: 1px solid var(--border);
+            padding: 0.65rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.86rem;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.18rem 1rem;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .code-line.active-line {
+            background-color: rgba(245, 158, 11, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 32px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #ffffff;
+        }
+
+        /* КУТИЯ ЗА ОБЯСНЕНИЕ */
+        .calc-box {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: left;
+            font-size: 0.96rem;
+            line-height: 1.55;
+            margin-top: 1rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Теория на числата</span>
+        <div class="nav-controls">
+            <a href="../tasks/task-10.html">&larr; Към условието</a>
+            <a href="../analysis/task-10-analysis.html">&larr; Към анализа</a>
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- ЛЯВ ПАНЕЛ: Разбор на решението -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>Решение на задачата: Трансформиране на двойки <br><span style="font-size: 1.25rem; color: var(--text-muted); font-weight: normal;">(transforming.cpp)</span></h1>
+                <div class="task-meta">
+                    <div>⚡ <strong>Сложност по време:</strong> O(log(max(c, d)))</div>
+                    <div>💾 <strong>Сложност по памет:</strong> O(1)</div>
+                    <div>📦 <strong>Алгоритъм:</strong> Евклид отзад напред</div>
+                </div>
+            </div>
+
+            <p>За да избегнем превишаване на лимита за време при големи числа до 10<sup>18</sup>, решението се движи <strong>отзад напред: от целевата двойка <code>(c, d)</code> към началната <code>(a, b)</code></strong>. На всяка стъпка по-голямото от двете числа <code>c</code> и <code>d</code> се намалява чрез бързо целочислено деление и остатък (<code>%</code>), точно както в <strong>Алгоритъма на Евклид</strong>.</p>
+
+            <h2>Стъпки на решението (Кликнете за осветяване в кода)</h2>
+
+            <div class="step-card" onclick="highlightLine(6)">
+                <h4>1. Бърз вход и изход <span>Редове 6 – 7</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Изключваме синхронизацията на стандартните потоци чрез <code>ios_base::sync_with_stdio(false);</code> и <code>cin.tie(NULL);</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(10)">
+                <h4>2. Четене на входните данни <span>Редове 9 – 11</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Прочитаме четирите 64-битови цели числа <code>a, b, c, d</code> (тип <code>long long</code>) и инициализираме брояча на операциите <code>steps = 0</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(13)">
+                <h4>3. Основен цикъл while <span>Ред 13</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Цикълът <code>while(c &gt;= a &amp;&amp; d &gt;= b)</code> продължава, докато и двете текущи числа са не по-малки от началните стойности <code>a</code> и <code>b</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(15)">
+                <h4>4. Проверка за точно съвпадение <span>Редове 15 – 19</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Ако <code>c == a &amp;&amp; d == b</code>, значи сме достигнали точно началната двойка! Отпечатваме <code>steps</code> и прекратяваме програмата с <code>return 0;</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(20)">
+                <h4>5. Гранична проверка при d == b <span>Редове 20 – 31</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Когато второто число вече съвпада с <code>b</code> (<code>d == b</code>), проверяваме дали оставащата разлика <code>(c - a)</code> се дели без остатък на <code>b</code>. Ако <code>(c - a) % b == 0</code>, извеждаме <code>steps + (c - a) / b</code>, а в противен случай извеждаме <code>-1</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(32)">
+                <h4>6. Бърза стъпка на Евклид <span>Редове 32 – 45</span></h4>
+                <p style="margin:0; font-size:0.95rem;">Ако <code>c &gt; d</code>, прибавяме <code>c / d</code> към <code>steps</code> и вземаме остатъка <code>c %= d</code>. Ако <code>d &gt; c</code>, прибавяме <code>d / c</code> към <code>steps</code> и вземаме <code>d %= c</code>. Ако <code>c == d</code>, прекъсваме цикъла с <code>break;</code> и извеждаме <code>-1</code> на ред 47.</p>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- ДЕСЕН ПАНЕЛ: Осветяване на кода и трасировка -->
+        <div class="right-panel" id="right-panel">
+            <div class="vis-card">
+                <div class="vis-title">
+                    <span>⚡ Интерактивна трасировка ред по ред</span>
+                    <span id="step-indicator" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                </div>
+
+                <!-- Бърз избор на примерите от условието -->
+                <div class="controls">
+                    <button class="btn-slate" onclick="loadExample(5, 3, 5, 2)">Пример 1: 5 3 5 2</button>
+                    <button class="btn-slate" onclick="loadExample(5, 3, 8, 19)">Пример 2: 5 3 8 19</button>
+                    <button class="btn-slate" onclick="loadExample(5, 3, 19, 8)">Пример 3: 5 3 19 8</button>
+                    <button class="btn-slate" onclick="loadExample(3, 5, 3, 5)">Пример 4: 3 5 3 5</button>
+                </div>
+
+                <!-- Въвеждане на произволни числа и навигация -->
+                <div class="controls">
+                    <div class="input-group">a: <input type="number" id="in-a" value="5"></div>
+                    <div class="input-group">b: <input type="number" id="in-b" value="3"></div>
+                    <div class="input-group">c: <input type="number" id="in-c" value="8"></div>
+                    <div class="input-group">d: <input type="number" id="in-d" value="19"></div>
+                    <button onclick="buildDynamicTrace()">Зареди входа</button>
+                    <button class="btn-slate" onclick="stepTrace(-1)" id="btn-prev">&larr; Назад</button>
+                    <button class="btn-blue" onclick="stepTrace(1)" id="btn-next">Следваща стъпка &rarr;</button>
+                </div>
+
+                <!-- Текущо състояние на променливите -->
+                <div class="state-grid">
+                    <div class="state-box">
+                        <div class="state-label">Начални (a, b)</div>
+                        <div class="state-val" id="st-ab">(5, 3)</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Текущи (c, d)</div>
+                        <div class="state-val" id="st-cd">(8, 19)</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Брояч steps</div>
+                        <div class="state-val" id="st-steps">0</div>
+                    </div>
+                    <div class="state-box">
+                        <div class="state-label">Изход (stdout)</div>
+                        <div class="state-val" id="st-out" style="color:var(--success);">-</div>
+                    </div>
+                </div>
+
+                <!-- Код ред по ред -->
+                <div class="code-box" id="code-box"></div>
+
+                <!-- Обяснение на текущия ред / стъпка -->
+                <div class="calc-box" id="explanation-box">
+                    Кликнете върху произволен ред от кода или използвайте бутона „Следваща стъпка“, за да проследите изпълнението.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            leftPanel.style.width = Math.max(25, Math.min(75, pct)) + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        // ==========================================
+        // 1. ТОЧЕН КОД ОТ transforming_2.cpp И ОБЯСНЕНИЯ
+        // ==========================================
+        const codeLines = [
+            { num: 1, text: '#include <iostream>', exp: 'Включваме стандартната библиотека за входно-изходни потоци.' },
+            { num: 2, text: 'using namespace std;', exp: 'Използваме стандартното пространство от имена std.' },
+            { num: 3, text: '', exp: 'Празен разделителен ред.' },
+            { num: 4, text: 'int main()', exp: 'Начало на главната функция main.' },
+            { num: 5, text: '{', exp: 'Отваряща скоба на main.' },
+            { num: 6, text: '    ios_base::sync_with_stdio(false);', exp: 'Изключваме синхронизацията между C и C++ потоците за по-бърз вход и изход.' },
+            { num: 7, text: '    cin.tie(NULL);', exp: 'Развързваме cin от cout.' },
+            { num: 8, text: '', exp: 'Празен разделителен ред.' },
+            { num: 9, text: '    long long a, b, c, d;', exp: 'Декларираме 64-битови целочислени променливи за началните (a, b) и целевите (c, d) купчини.' },
+            { num: 10, text: '    cin >> a >> b >> c >> d;', exp: 'Прочитаме четирите числа от стандартния вход.' },
+            { num: 11, text: '    long long steps = 0;', exp: 'Инициализираме брояча за минималния брой операции steps = 0.' },
+            { num: 12, text: '', exp: 'Празен разделителен ред.' },
+            { num: 13, text: '    while(c >= a && d >= b)', exp: 'Повтаряме цикъла, докато текущите стойности c и d са поне колкото началните a и b.' },
+            { num: 14, text: '    {', exp: 'Начало на тялото на цикъла while.' },
+            { num: 15, text: '        if(c == a && d == b)', exp: 'Проверяваме дали сме достигнали точно началната двойка (a, b).' },
+            { num: 16, text: '        {', exp: 'Начало на блока при пълно съвпадение.' },
+            { num: 17, text: '            cout << steps << "\\n";', exp: 'Извеждаме натрупания брой операции steps.' },
+            { num: 18, text: '            return 0;', exp: 'Приключваме успешно програмата.' },
+            { num: 19, text: '        }', exp: 'Край на проверката за пълно съвпадение.' },
+            { num: 20, text: '        if(d == b)', exp: 'Проверяваме дали второто число вече е станало равно на b.' },
+            { num: 21, text: '        {', exp: 'Начало на граничния блок при d == b.' },
+            { num: 22, text: '            if((c - a) % b == 0)', exp: 'Проверяваме дали оставащата разлика (c - a) се дели точно на b.' },
+            { num: 23, text: '            {', exp: 'Ако се дели без остатък:' },
+            { num: 24, text: '                cout << steps + (c - a) / b << "\\n";', exp: 'Прибавяме нужните (c - a) / b стъпки и отпечатваме крайния отговор.' },
+            { num: 25, text: '            }', exp: 'Край на блока при точно деление.' },
+            { num: 26, text: '            else', exp: 'В противен случай (остатъкът е различен от 0):' },
+            { num: 27, text: '            {', exp: 'Начало на блока else.' },
+            { num: 28, text: '                cout << -1 << "\\n";', exp: 'Извеждаме -1, тъй като не можем да достигнем точно a.' },
+            { num: 29, text: '            }', exp: 'Край на блока else.' },
+            { num: 30, text: '            return 0;', exp: 'Прекратяваме изпълнението на програмата.' },
+            { num: 31, text: '        }', exp: 'Край на проверката if(d == b).' },
+            { num: 32, text: '        if(c > d)', exp: 'Проверяваме дали първата купчина c е по-голяма от втората d.' },
+            { num: 33, text: '        {', exp: 'Начало на блока при c > d.' },
+            { num: 34, text: '            steps += c / d;', exp: 'Увеличаваме брояча steps с частното c / d.' },
+            { num: 35, text: '            c %= d;', exp: 'Заменяме c с остатъка от делението c % d (бърза стъпка на Евклид).' },
+            { num: 36, text: '        }', exp: 'Край на блока при c > d.' },
+            { num: 37, text: '        else if(d > c)', exp: 'Проверяваме дали втората купчина d е по-голяма от първата c.' },
+            { num: 38, text: '        {', exp: 'Начало на блока при d > c.' },
+            { num: 39, text: '            steps += d / c;', exp: 'Увеличаваме брояча steps с частното d / c.' },
+            { num: 40, text: '            d %= c;', exp: 'Заменяме d с остатъка от делението d % c (бърза стъпка на Евклид).' },
+            { num: 41, text: '        }', exp: 'Край на блока при d > c.' },
+            { num: 42, text: '        else', exp: 'Ако c == d (и двете числа са равни, но не са равни на a и b):' },
+            { num: 43, text: '        {', exp: 'Начало на блока else.' },
+            { num: 44, text: '            break;', exp: 'Прекъсваме цикъла while, защото следващо изваждане би дало 0.' },
+            { num: 45, text: '        }', exp: 'Край на блока else.' },
+            { num: 46, text: '    }', exp: 'Край на цикъла while.' },
+            { num: 47, text: '    cout << -1 << "\\n";', exp: 'Извеждаме -1, тъй като цикълът е приключил без да достигнем (a, b).' },
+            { num: 48, text: '    return 0;', exp: 'Успешно приключване на main.' },
+            { num: 49, text: '}', exp: 'Затваряща скоба на програмата.' }
+        ];
+
+        // ==========================================
+        // 2. ДИНАМИЧЕН ГЕНЕРАТОР НА ТРАСИРОВКАТА РЕД ПО РЕД
+        // ==========================================
+        let traceSteps = [];
+        let curStep = 0;
+
+        function loadExample(a, b, c, d) {
+            document.getElementById('in-a').value = a;
+            document.getElementById('in-b').value = b;
+            document.getElementById('in-c').value = c;
+            document.getElementById('in-d').value = d;
+            buildDynamicTrace();
+        }
+
+        function buildDynamicTrace() {
+            let a = Math.max(1, parseInt(document.getElementById('in-a').value) || 1);
+            let b = Math.max(1, parseInt(document.getElementById('in-b').value) || 1);
+            let c = Math.max(1, parseInt(document.getElementById('in-c').value) || 1);
+            let d = Math.max(1, parseInt(document.getElementById('in-d').value) || 1);
+            let steps = 0;
+
+            traceSteps = [];
+            const pushStep = (line, msg, outVal = '-') => {
+                traceSteps.push({
+                    line: line,
+                    ab: `(${a}, ${b})`,
+                    cd: `(${c}, ${d})`,
+                    steps: steps,
+                    out: outVal,
+                    msg: msg
+                });
+            };
+
+            pushStep(6, 'Активираме бързия вход и изход в началото на програмата.');
+            pushStep(10, `Прочитаме входните числа: <strong>a = ${a}, b = ${b}, c = ${c}, d = ${d}</strong>.`);
+            pushStep(11, 'Инициализираме брояча на операциите <strong>steps = 0</strong>.');
+
+            let guard = 0;
+            let terminated = false;
+
+            while (guard < 35) {
+                guard++;
+                const condWhile = (c >= a && d >= b);
+                pushStep(13, `Проверяваме условието на while: <strong>c &gt;= a &amp;&amp; d &gt;= b</strong> (${c} &gt;= ${a} &amp;&amp; ${d} &gt;= ${b}) &rarr; <strong>${condWhile ? 'ИСТИНА' : 'ЛЪЖА'}</strong>.`);
+
+                if (!condWhile) {
+                    break;
+                }
+
+                const condMatch = (c === a && d === b);
+                pushStep(15, `Проверяваме дали сме в началната двойка: <strong>c == a &amp;&amp; d == b</strong> (${c} == ${a} &amp;&amp; ${d} == ${b}) &rarr; <strong>${condMatch ? 'ИСТИНА' : 'ЛЪЖА'}</strong>.`);
+                if (condMatch) {
+                    pushStep(17, `Достигнахме точно началната двойка! Извеждаме <strong>steps = ${steps}</strong>.`, `${steps}`);
+                    pushStep(18, 'Прекратяваме програмата с <strong>return 0;</strong>.', `${steps}`);
+                    terminated = true;
+                    break;
+                }
+
+                const condDB = (d === b);
+                pushStep(20, `Проверяваме дали второто число съвпада: <strong>d == b</strong> (${d} == ${b}) &rarr; <strong>${condDB ? 'ИСТИНА' : 'ЛЪЖА'}</strong>.`);
+                if (condDB) {
+                    const rem = (c - a) % b;
+                    const divOk = (rem === 0);
+                    pushStep(22, `Проверяваме дали <strong>(c - a) % b == 0</strong>: (${c} - ${a}) % ${b} = ${c - a} % ${b} = <strong>${rem}</strong> &rarr; <strong>${divOk ? 'ИСТИНА' : 'ЛЪЖА'}</strong>.`);
+                    if (divOk) {
+                        const finalAns = steps + Math.floor((c - a) / b);
+                        pushStep(24, `Дели се точно! Извеждаме <strong>steps + (c - a) / b = ${steps} + ${(c - a) / b} = ${finalAns}</strong>.`, `${finalAns}`);
+                        pushStep(30, 'Прекратяваме програмата с <strong>return 0;</strong>.', `${finalAns}`);
+                    } else {
+                        pushStep(28, `Не се дели точно — не можем да достигнем a = ${a}. Извеждаме <strong>-1</strong>.`, '-1');
+                        pushStep(30, 'Прекратяваме програмата с <strong>return 0;</strong>.', '-1');
+                    }
+                    terminated = true;
+                    break;
+                }
+
+                if (c > d) {
+                    pushStep(32, `Проверяваме <strong>c &gt; d</strong> (${c} &gt; ${d}) &rarr; <strong>ИСТИНА</strong>.`);
+                    const add = Math.floor(c / d);
+                    steps += add;
+                    pushStep(34, `Прибавяме частното към брояча: <strong>steps += ${c} / ${d}</strong> (+${add}) &rarr; <strong>steps = ${steps}</strong>.`);
+                    const oldC = c;
+                    c = c % d;
+                    pushStep(35, `Намаляваме c по модул: <strong>c = ${oldC} % ${d} = ${c}</strong>. Текущата двойка става <strong>(${c}, ${d})</strong>.`);
+                } else if (d > c) {
+                    pushStep(32, `Проверяваме <strong>c &gt; d</strong> (${c} &gt; ${d}) &rarr; <strong>ЛЪЖА</strong>.`);
+                    pushStep(37, `Проверяваме <strong>else if(d &gt; c)</strong> (${d} &gt; ${c}) &rarr; <strong>ИСТИНА</strong>.`);
+                    const add = Math.floor(d / c);
+                    steps += add;
+                    pushStep(39, `Прибавяме частното към брояча: <strong>steps += ${d} / ${c}</strong> (+${add}) &rarr; <strong>steps = ${steps}</strong>.`);
+                    const oldD = d;
+                    d = d % c;
+                    pushStep(40, `Намаляваме d по модул: <strong>d = ${oldD} % ${c} = ${d}</strong>. Текущата двойка става <strong>(${c}, ${d})</strong>.`);
+                } else {
+                    pushStep(32, `Проверяваме <strong>c &gt; d</strong> (${c} &gt; ${d}) &rarr; <strong>ЛЪЖА</strong>.`);
+                    pushStep(37, `Проверяваме <strong>else if(d &gt; c)</strong> (${d} &gt; ${c}) &rarr; <strong>ЛЪЖА</strong>.`);
+                    pushStep(44, `Двете числа са равни (<strong>c == d == ${c}</strong>), прекъсваме цикъла с <strong>break;</strong>.`);
+                    break;
+                }
+            }
+
+            if (!terminated) {
+                pushStep(47, 'Излязохме от цикъла while без да достигнем началната двойка — извеждаме <strong>-1</strong>.', '-1');
+                pushStep(48, 'Програмата приключва с <strong>return 0;</strong>.', '-1');
+            }
+
+            curStep = 0;
+            updateTraceUI();
+        }
+
+        function renderCode(activeLineNum) {
+            const box = document.getElementById('code-box');
+            box.innerHTML = codeLines.map(item => `
+                <div class="code-line ${item.num === activeLineNum ? 'active-line' : ''}" onclick="highlightLine(${item.num})">
+                    <span class="line-num">${item.num}</span>
+                    <span class="line-text">${item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                </div>
+            `).join('');
+        }
+
+        function highlightLine(lineNum) {
+            renderCode(lineNum);
+            const found = codeLines.find(x => x.num === lineNum);
+            if (found) {
+                document.getElementById('explanation-box').innerHTML = `<strong>Ред ${lineNum}:</strong> ${found.exp}`;
+            }
+        }
+
+        function updateTraceUI() {
+            const s = traceSteps[curStep];
+            renderCode(s.line);
+
+            document.getElementById('st-ab').innerText = s.ab;
+            document.getElementById('st-cd').innerText = s.cd;
+            document.getElementById('st-steps').innerText = s.steps;
+            document.getElementById('st-out').innerText = s.out;
+            document.getElementById('step-indicator').innerText = `Стъпка ${curStep + 1} от ${traceSteps.length}`;
+            document.getElementById('explanation-box').innerHTML = `<strong>Ред ${s.line}:</strong> ${s.msg}`;
+
+            document.getElementById('btn-prev').disabled = (curStep === 0);
+            document.getElementById('btn-next').disabled = (curStep === traceSteps.length - 1);
+        }
+
+        function stepTrace(dir) {
+            curStep = Math.max(0, Math.min(traceSteps.length - 1, curStep + dir));
+            updateTraceUI();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buildDynamicTrace();
+        });
+    </script>
+</body>
+
+</html>
