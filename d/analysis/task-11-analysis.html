@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ D11: Граница (COCI 2007/2008) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b; /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Анализ) */
+        .left-panel {
+            width: 50%;
+            min-width: 280px;
+            max-width: 75%;
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 8px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::after,
+        .resizer.dragging::after {
+            color: #000;
+        }
+
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .analysis-tag {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            padding: 0.2rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.65rem;
+        }
+
+        .task-header h1 {
+            font-size: 1.9rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.04rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.55rem; }
+
+        .analysis-box {
+            background-color: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 4px solid var(--accent);
+            padding: 1.35rem 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .analysis-box p {
+            color: #e2e8f0;
+            margin-bottom: 0.75rem;
+        }
+
+        .analysis-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .rule-card {
+            background: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--highlight);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .rule-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+            font-size: 1rem;
+        }
+
+        .io-container {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0.75rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивен Анализ) */
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.9rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 0.45rem 0.65rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.92rem;
+            text-align: center;
+        }
+
+        input[type="text"] { width: 175px; }
+        input[type="number"] { width: 90px; }
+
+        button {
+            padding: 0.5rem 0.95rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЪСТОЯНИЕ НА ПРОМЕНЛИВИТЕ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.65rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 1.12rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        /* СТЪПКИ НА АНАЛИЗА */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-row {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Consolas', monospace;
+            font-size: 0.94rem;
+            transition: all 0.25s;
+            opacity: 0.55;
+        }
+
+        .step-row.active {
+            opacity: 1;
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.14);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+
+        .step-row.success {
+            opacity: 1;
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--success);
+        }
+
+        .pairs-track {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            justify-content: center;
+            padding: 1rem;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pair-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.6rem 0.9rem;
+            text-align: center;
+            font-family: 'Consolas', monospace;
+            min-width: 110px;
+        }
+
+        .pair-card.found {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.14);
+        }
+
+        .calc-box {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: left;
+            font-size: 0.96rem;
+            line-height: 1.55;
+            margin-top: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100%; }
+            .resizer { display: none; }
+            .header-center-badge { position: static; transform: none; }
+            .state-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Теория на числата</span>
+        <div class="nav-controls">
+            <a href="../tasks/task-11.html">&larr; Към условието</a>
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: АНАЛИЗ ОТ ДОКУМЕНТА
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <span class="analysis-tag">Анализ</span>
+                <h1>ЗАДАЧА 11: COCI 2007/2008. Състезание 6. Граница <br><span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">(Granica)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1 с.</div>
+                    <div>💾 <strong>Памет:</strong> 64 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>⚡ <strong>Сложност:</strong> O(N log(max A) + &radic;G)</div>
+                </div>
+            </div>
+
+            <h2>Вход</h2>
+            <p>От първия ред на стандартния вход се въвежда едно цяло число <code>N</code> — броят на елементите в редицата. Следват <code>N</code> положителни цели числа, разделени с интервал — елементите на редицата.</p>
+
+            <h2>Изход</h2>
+            <p>На единствения ред на стандартния изход програмата трябва да отпечатва всички възможни стойности на <code>M</code>, подредени в строго нарастващ ред и разделени с по един интервал.</p>
+
+            <h2>Анализ</h2>
+            <div class="analysis-box">
+                <p><strong>Концепция: Най-голям общ делител и остатъци.</strong></p>
+                <p>За да дават еднакъв остатък, разликата между всеки две числа трябва да се дели точно на <code>M</code>. Следователно най-голямото такова <code>M</code> е точно НОД на разликите на числата.</p>
+                <p>Задачата е класика за приложение на алгоритъма на Евклид върху масив.</p>
+            </div>
+
+            <h2>Стъпки на алгоритъма</h2>
+
+            <div class="rule-card">
+                <h4>1. Защо са достатъчни само съседните разлики?</h4>
+                <p style="margin:0; font-size:0.95rem;">Ако сортираме числата (или вземем разликите спрямо първия елемент <code>|a[i] - a[i-1]|</code>), всяка друга разлика между произволни два елемента е сума от съседни разлики. Затова е напълно достатъчно да намерим НОД на <code>N - 1</code> разлики между съседните числа.</p>
+            </div>
+
+            <div class="rule-card">
+                <h4>2. Намиране на G = НОД на масива от разлики</h4>
+                <p style="margin:0; font-size:0.95rem;">Инициализираме <code>g = abs(a[2] - a[1])</code> и с един цикъл за <code>i = 3...N</code> обновяваме <code>g = __gcd(g, abs(a[i] - a[i-1]))</code>. Полученото число <code>g</code> е най-голямото валидно <code>M</code>.</p>
+            </div>
+
+            <div class="rule-card">
+                <h4>3. Откриване на всички делители на G за O(&radic;G)</h4>
+                <p style="margin:0; font-size:0.95rem;">Всяко число <code>M &gt; 1</code>, което дели <code>g</code>, също дели всички разлики! Тъй като <code>g</code> може да достигне <code>10<sup>9</sup></code>, търсим делителите му с цикъл до <code>d * d &le; g</code>, добавяйки <code>d</code> и <code>g / d</code>, след което ги сортираме и отпечатваме (заедно със самото <code>g</code>).</p>
+            </div>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход</div>
+                    <pre>3
+38 26 14</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера</div>
+                    <pre>2 3 4 6 12</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ -->
+        <div class="resizer" id="resizer" title="Влачете за преоразмеряване (Двоен клик за 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ НА АНАЛИЗА
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-gcd')" id="btn-tab-gcd">1. НОД върху разликите на масива</button>
+                <button class="tab-btn" onclick="switchTab('tab-div')" id="btn-tab-div">2. Намиране на делителите за O(&radic;G)</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ПОСТЪПКОВ СИМУЛАТОР НА НОД ВЪРХУ РАЗЛИКИТЕ -->
+                <div class="tab-pane active" id="tab-gcd">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Трасиране на НОД върху разликите</span>
+                            <span id="gcd-step-badge" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Проследете как от входния масив образуваме разликите между съседните елементи и намираме техния общ НОД чрез алгоритъма на Евклид.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" onclick="loadGcdPreset('38 26 14')">Пример: 38 26 14</button>
+                            <button class="btn-slate" onclick="loadGcdPreset('6 34 38')">Пример: 6 34 38</button>
+                            <button class="btn-slate" onclick="loadGcdPreset('17 47 77 122')">4 числа: 17 47 77 122</button>
+                        </div>
+
+                        <div class="controls">
+                            <div class="input-group">Числа: <input type="text" id="an-seq" value="38 26 14"></div>
+                            <button onclick="buildGcdSteps()">Анализирай</button>
+                            <button class="btn-slate" id="btn-gcd-prev" onclick="moveGcdStep(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="btn-gcd-next" onclick="moveGcdStep(1)">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Текуща двойка</div>
+                                <div class="state-val" id="st-pair">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Разлика |a[i] - a[i-1]|</div>
+                                <div class="state-val" id="st-diff">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Натрупан НОД (G)</div>
+                                <div class="state-val" id="st-g">-</div>
+                            </div>
+                        </div>
+
+                        <div class="step-list" id="gcd-trace-list"></div>
+
+                        <div class="calc-box" id="gcd-trace-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: БЪРЗО НАМИРАНЕ НА ДЕЛИТЕЛИТЕ ЗА O(sqrt(G)) -->
+                <div class="tab-pane" id="tab-div">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🔍 Намиране на всички делители на G до &radic;G</span>
+                            <span id="div-badge" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">G = 12</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Тъй като <code>G</code> може да бъде до <code>10<sup>9</sup></code>, обикновен цикъл до <code>G</code> ще получи TLE! Вместо това проверяваме само числата <code>d</code> от <code>2</code> до <code>&radic;G</code> и при всяко попадение записваме както <code>d</code>, така и парния му делител <code>G / d</code>.
+                        </p>
+
+                        <div class="controls">
+                            <div class="input-group">Стойност на G: <input type="number" id="in-g" value="12" min="2"></div>
+                            <button onclick="visualizeDivisors()">Разложи за O(&radic;G)</button>
+                            <button class="btn-slate" onclick="setGAndRun(12)">G = 12</button>
+                            <button class="btn-slate" onclick="setGAndRun(36)">G = 36</button>
+                            <button class="btn-slate" onclick="setGAndRun(100)">G = 100</button>
+                        </div>
+
+                        <div style="font-size:0.84rem; color:var(--text-muted); text-align:center; margin-bottom:0.4rem;">Проверени кандидати d (2 &le; d &le; &radic;G)</div>
+                        <div class="pairs-track" id="sqrt-pairs"></div>
+
+                        <div class="calc-box" id="sqrt-summary"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ПРЕОРАЗМЕРЯЕМ РАЗДЕЛИТЕЛ (50/50)
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        resizer.addEventListener('mousedown', () => {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            let pct = ((e.clientX - rect.left) / rect.width) * 100;
+            leftPanel.style.width = Math.max(25, Math.min(75, pct)) + '%';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        resizer.addEventListener('dblclick', () => {
+            leftPanel.style.width = '50%';
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        function gcd(a, b) {
+            a = Math.abs(a); b = Math.abs(b);
+            while (b !== 0) {
+                let t = a % b;
+                a = b;
+                b = t;
+            }
+            return a;
+        }
+
+        function getAllDivisorsGreater1(g) {
+            const divs = [];
+            for (let d = 2; d * d <= g; d++) {
+                if (g % d === 0) {
+                    divs.push(d);
+                    if (d * d !== g) divs.push(g / d);
+                }
+            }
+            if (g > 1) divs.push(g);
+            return divs.sort((a, b) => a - b);
+        }
+
+        // ==========================================
+        // 1. ТАБ 1: ПОСТЪПКОВ СИМУЛАТОР НА НОД
+        // ==========================================
+        let gcdTrace = [];
+        let gcdIdx = 0;
+
+        function loadGcdPreset(str) {
+            document.getElementById('an-seq').value = str;
+            buildGcdSteps();
+        }
+
+        function buildGcdSteps() {
+            const raw = document.getElementById('an-seq').value.trim();
+            let arr = raw.split(/\s+/).map(Number).filter(n => !isNaN(n) && n > 0);
+            if (arr.length < 2) arr = [38, 26, 14];
+
+            gcdTrace = [];
+            gcdTrace.push({
+                pair: '-', diff: '-', g: '-', status: 'active',
+                label: `Входен масив: [${arr.join(', ')}]`,
+                exp: `Прочитаме редицата от <strong>N = ${arr.length}</strong> числа: <strong>[${arr.join(', ')}]</strong>.`
+            });
+
+            let firstDiff = Math.abs(arr[1] - arr[0]);
+            let curG = firstDiff;
+
+            gcdTrace.push({
+                pair: `(${arr[1]}, ${arr[0]})`, diff: firstDiff, g: curG, status: 'active',
+                label: `i = 2: |${arr[1]} - ${arr[0]}| = ${firstDiff} &rarr; Начално G = ${curG}`,
+                exp: `Пресмятаме първата разлика между съседни елементи: <strong>|${arr[1]} &minus; ${arr[0]}| = ${firstDiff}</strong>. Инициализираме <strong>G = ${curG}</strong>.`
+            });
+
+            for (let i = 2; i < arr.length; i++) {
+                let diff = Math.abs(arr[i] - arr[i - 1]);
+                let oldG = curG;
+                curG = gcd(curG, diff);
+                gcdTrace.push({
+                    pair: `(${arr[i]}, ${arr[i - 1]})`, diff: diff, g: curG, status: 'active',
+                    label: `i = ${i + 1}: |${arr[i]} - ${arr[i - 1]}| = ${diff} &rarr; НОД(${oldG}, ${diff}) = ${curG}`,
+                    exp: `Следваща разлика: <strong>|${arr[i]} &minus; ${arr[i - 1]}| = ${diff}</strong>. Обновяваме <strong>G = __gcd(${oldG}, ${diff}) = ${curG}</strong>.`
+                });
+            }
+
+            const divs = getAllDivisorsGreater1(curG);
+            gcdTrace.push({
+                pair: 'Край', diff: '-', g: curG, status: 'success',
+                label: `Общ НОД G = ${curG} &rarr; Делители (M > 1): ${divs.join(' ')}`,
+                exp: `✅ Намерихме най-голямото валидно <strong>M = G = ${curG}</strong>! Всички търсени стойности на M са делителите на ${curG}, по-големи от 1: <strong>${divs.join(' ')}</strong>.`
+            });
+
+            gcdIdx = 0;
+            renderGcdTrace();
+            document.getElementById('in-g').value = curG;
+            visualizeDivisors();
+        }
+
+        function renderGcdTrace() {
+            const list = document.getElementById('gcd-trace-list');
+            list.innerHTML = '';
+
+            for (let i = 0; i <= gcdIdx; i++) {
+                const item = gcdTrace[i];
+                const row = document.createElement('div');
+                let cls = 'step-row';
+                if (i === gcdIdx) cls += ' ' + item.status;
+                row.className = cls;
+                row.innerHTML = `<span>${item.label}</span><span style="font-size:0.8rem; opacity:0.8;">Стъпка ${i + 1}</span>`;
+                list.appendChild(row);
+            }
+
+            const cur = gcdTrace[gcdIdx];
+            document.getElementById('st-pair').innerText = cur.pair;
+            document.getElementById('st-diff').innerText = cur.diff;
+            document.getElementById('st-g').innerText = cur.g;
+            document.getElementById('gcd-step-badge').innerText = `Стъпка ${gcdIdx + 1} от ${gcdTrace.length}`;
+            document.getElementById('gcd-trace-exp').innerHTML = cur.exp;
+
+            document.getElementById('btn-gcd-prev').disabled = (gcdIdx === 0);
+            document.getElementById('btn-gcd-next').disabled = (gcdIdx === gcdTrace.length - 1);
+        }
+
+        function moveGcdStep(dir) {
+            gcdIdx = Math.max(0, Math.min(gcdTrace.length - 1, gcdIdx + dir));
+            renderGcdTrace();
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: НАМИРАНЕ НА ДЕЛИТЕЛИТЕ ЗА O(sqrt(G))
+        // ==========================================
+        function setGAndRun(val) {
+            document.getElementById('in-g').value = val;
+            visualizeDivisors();
+        }
+
+        function visualizeDivisors() {
+            const g = Math.max(2, parseInt(document.getElementById('in-g').value) || 12);
+            document.getElementById('div-badge').innerText = `G = ${g}`;
+
+            const track = document.getElementById('sqrt-pairs');
+            track.innerHTML = '';
+
+            let checkedCount = 0;
+            for (let d = 2; d * d <= g; d++) {
+                checkedCount++;
+                const card = document.createElement('div');
+                if (g % d === 0) {
+                    const other = g / d;
+                    card.className = 'pair-card found';
+                    card.innerHTML = `
+                        <div style="font-size:0.8rem; color:var(--text-muted);">d = ${d} (дели!)</div>
+                        <div style="font-size:1.1rem; font-weight:800; color:var(--success); margin-top:3px;">
+                            ${d === other ? d : `${d} и ${other}`}
+                        </div>
+                    `;
+                } else {
+                    card.className = 'pair-card';
+                    card.innerHTML = `
+                        <div style="font-size:0.8rem; color:var(--text-muted);">d = ${d}</div>
+                        <div style="font-size:0.9rem; color:var(--danger); margin-top:3px;">${g} % ${d} = ${g % d}</div>
+                    `;
+                }
+                track.appendChild(card);
+            }
+
+            const selfCard = document.createElement('div');
+            selfCard.className = 'pair-card found';
+            selfCard.innerHTML = `
+                <div style="font-size:0.8rem; color:var(--text-muted);">Самото G</div>
+                <div style="font-size:1.1rem; font-weight:800; color:var(--success); margin-top:3px;">${g}</div>
+            `;
+            track.appendChild(selfCard);
+
+            const allDivs = getAllDivisorsGreater1(g);
+            document.getElementById('sqrt-summary').innerHTML = `
+                За <strong>G = ${g}</strong> проверихме само <strong>${checkedCount}</strong> стойности (до &radic;${g} &approx; ${Math.floor(Math.sqrt(g))}).<br>
+                След сортиране получаваме крайния изход: <strong>${allDivs.join(' ')}</strong>.
+            `;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buildGcdSteps();
+        });
+    </script>
+</body>
+
+</html>
