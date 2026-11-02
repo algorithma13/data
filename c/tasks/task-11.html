@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C11: Хвани ме (ОПСИ 2022) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.04rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        .io-container {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0.75rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация с табове) */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.9rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.5rem 0.95rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЦЕНА СЪС СТОЛОВЕТЕ */
+        .chairs-stage {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.8rem 1rem 0.9rem 1rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 0.75rem;
+            min-height: 245px;
+            position: relative;
+        }
+
+        .chair-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .chair-col:hover {
+            transform: translateY(-4px);
+        }
+
+        .chair-bar {
+            width: 44px;
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            border: 2px solid #60a5fa;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 6px;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #fff;
+            transition: all 0.25s;
+            position: relative;
+        }
+
+        .chair-bar.selected-endpoint {
+            background: linear-gradient(180deg, #10b981, #047857);
+            border-color: #34d399;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.55);
+        }
+
+        .chair-bar.blocker {
+            background: linear-gradient(180deg, #ef4444, #b91c1c);
+            border-color: #fca5a5;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.55);
+        }
+
+        .chair-bar.between-ok {
+            background: linear-gradient(180deg, #f59e0b, #b45309);
+            border-color: #fcd34d;
+            opacity: 0.85;
+        }
+
+        .chair-bar.dimmed {
+            opacity: 0.35;
+        }
+
+        .chair-lbl {
+            font-family: 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* ТАБ 2: СПИСЪК С ВАЛИДНИ ДВОЙКИ */
+        .pairs-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .pair-chip {
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+            padding: 0.35rem 0.7rem;
+            border-radius: 0.4rem;
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pair-chip:hover, .pair-chip.active-chip {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            transform: scale(1.06);
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: center;
+            font-size: 0.96rem;
+            line-height: 1.55;
+            margin-top: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Структури от данни</span>
+        <div class="nav-controls">
+            <a href="../sol/task-11-solution.html">Към решението &rarr;</a>
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: УСЛОВИЕ НА ЗАДАЧАТА (ОПСИ 2022 - ХВАНИ МЕ)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>Задача С2. ХВАНИ МЕ <br><span style="font-size: 1.25rem; color: var(--text-muted); font-weight: normal;">(Открито първенство на София по информатика – 01.04.2022 г.)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1.0 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🎓 <strong>Група C:</strong> 7–8 клас</div>
+                    <div>📄 <strong>Програма:</strong> cheating.cpp</div>
+                </div>
+            </div>
+
+            <p>Сашка участва на EJOI 2542 в Ароуленд, но има предчувствието, че няма да ѝ се паднат нейния тип задачи. Тя иска да препише. В залата на състезанието има <code>N</code> места за състезатели, подредени в редица. Местата са номерирани с целите числа от <code>1</code> до <code>N</code> отляво-надясно. Столът на <code>i</code>-та позиция е висок <code>a<sub>i</sub></code> метра.</p>
+            
+            <p>Ако Сашка седи на позиция <code>l</code>, тя би могла да препише от някоя позиция <code>r</code>, само ако <code>l &lt; r</code> и няма строго по-висок стол между <code>l</code> и <code>r</code> от едновременно <code>a<sub>l</sub></code> и <code>a<sub>r</sub></code> (тоест за всяко междинно място <code>k</code> в интервала <code>l &lt; k &lt; r</code> е изпълнено <code>a<sub>k</sub> &le; min(a<sub>l</sub>, a<sub>r</sub>)</code>). В противен случай някой би я видял и би станало грозно.</p>
+
+            <p>Заради това, напишете програма <code>cheating</code>, която намира броя ненаредени двойки места <code>(l, r)</code>, <code>1 &le; l &lt; r &le; N</code>, отговарящи на условието.</p>
+
+            <h2>Вход</h2>
+            <p>На първия ред от стандартния вход се въвежда едно цяло, положително число <code>N</code>.</p>
+            <p>На втория ред от стандартния вход се въвеждат <code>N</code> цели, положителни числа, съответно <code>a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, ..., a<sub>N</sub></code>.</p>
+
+            <h2>Изход</h2>
+            <p>На стандартния изход се очаква търсената стойност.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <code>N</code> &le; 2 &times; 10<sup>6</sup></li>
+                <li>1 &le; <code>a<sub>i</sub></code> &le; 10<sup>9</sup></li>
+            </ul>
+
+            <h2>Оценяване</h2>
+            <p>Тестовете ще са групирани в групи по 2 или 3 теста.</p>
+            <ul>
+                <li>В първата група се съдържат тестовите примери и носи 0 точки.</li>
+                <li>В групи, носещи 10% от точките: <code>N &le; 700</code></li>
+                <li>В групи, носещи 20% от точките: <code>N &le; 2000</code></li>
+                <li>В групи, носещи 40% от точките: <code>N &le; 200 000</code> и няма две кули с равна височина</li>
+                <li>В групи, носещи 20% от точките: <code>N &le; 200 000</code></li>
+                <li>В останалите групи, носещи 10% от точките, няма допълнителни ограничения.</li>
+            </ul>
+
+            <h2>Примери</h2>
+            
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 1</div>
+                    <pre>7
+7 6 8 9 4 5 3</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 1</div>
+                    <pre>11</pre>
+                </div>
+            </div>
+            <div class="explanation">
+                <strong>Обяснение на първия пример:</strong><br>
+                Двойките столове са: <code>(1,2); (1,3); (1,4); (2,3); (2,4); (3,4); (4,5); (4,6); (4,7); (5,6); (6,7)</code>.
+            </div>
+
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход 2</div>
+                    <pre>9
+7 8 6 7 3 9 4 5 6</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера 2</div>
+                    <pre>20</pre>
+                </div>
+            </div>
+            <div class="explanation">
+                <strong>Обяснение на втория пример:</strong><br>
+                Две от валидните двойки столове (с равни височини на краищата) са: <code>(3,6)</code> и <code>(7,9)</code>.
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-check')" id="btn-tab-check">1. Интерактивен тестер на двойки (l, r)</button>
+                <button class="tab-btn" onclick="switchTab('tab-all')" id="btn-tab-all">2. Всички валидни двойки от примерите</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ИЗБЕРИ ДВА СТОЛА И ПРОВЕРИ ДАЛИ СЕ ВИЖДАТ -->
+                <div class="tab-pane active" id="tab-check">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>👀 Провери дали столове l и r се виждат</span>
+                            <span id="pair-badge" style="font-size:0.88rem; color:var(--accent); font-family:monospace;">Избрани: (1, 3)</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Кликнете последователно върху <strong>два стола</strong> от редицата по-долу, за да проверите дали между тях има строго по-висок стол, който пречи на Сашка да препише!
+                        </p>
+
+                        <div class="controls">
+                            <button onclick="loadExample(1)">Пример 1: 7 стола (Отговор: 11)</button>
+                            <button class="btn-blue" onclick="loadExample(2)">Пример 2: 9 стола (Отговор: 20)</button>
+                        </div>
+
+                        <div class="controls">
+                            <span style="font-size:0.82rem; color:var(--text-muted);">Интересни двойки:</span>
+                            <button class="btn-slate" onclick="testPair(1, 3)">Тест (1, 3) ✅</button>
+                            <button class="btn-slate" onclick="testPair(1, 5)">Тест (1, 5) ❌</button>
+                            <button class="btn-slate" onclick="testPair(4, 7)">Тест (4, 7) ✅</button>
+                            <button class="btn-slate" onclick="testPair(2, 6)">Тест (2, 6) ❌</button>
+                        </div>
+
+                        <div class="chairs-stage" id="chairs-stage"></div>
+
+                        <div class="calc-box" id="check-status"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: ВСИЧКИ ВАЛИДНИ ДВОЙКИ В ПРИМЕРА -->
+                <div class="tab-pane" id="tab-all">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📋 Всички валидни двойки (l, r)</span>
+                            <span id="total-pairs-badge" style="font-size:0.88rem; color:var(--accent); font-family:monospace;">Общо: 11 двойки</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Кликнете върху някоя от валидните двойки по-долу, за да я осветите директно върху диаграмата със столовете! Забележете как всеки стол вижда първия по-висок или равен вляво, както и всички междинни столове от монотонния стек.
+                        </p>
+
+                        <div class="controls">
+                            <button onclick="loadExample(1)">Зареди Пример 1 (11 двойки)</button>
+                            <button class="btn-blue" onclick="loadExample(2)">Зареди Пример 2 (20 двойки)</button>
+                        </div>
+
+                        <div class="pairs-grid" id="valid-pairs-grid"></div>
+
+                        <div class="chairs-stage" id="all-stage" style="min-height:210px;"></div>
+
+                        <div class="calc-box" id="all-status">
+                            Изберете двойка от списъка по-горе, за да видите защо тя отговаря на условието.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПЛАВЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ДАННИ И СИМУЛАЦИЯ НА СТОЛОВЕТЕ
+        // ==========================================
+        const examples = {
+            1: [7, 6, 8, 9, 4, 5, 3],
+            2: [7, 8, 6, 7, 3, 9, 4, 5, 6]
+        };
+
+        let curArr = [...examples[1]];
+        let selL = 1;
+        let selR = 3;
+        let nextClickIsFirst = true;
+
+        function loadExample(num) {
+            curArr = [...examples[num]];
+            selL = 1;
+            selR = 3;
+            nextClickIsFirst = true;
+            renderInteractiveStage();
+            buildValidPairsList();
+        }
+
+        function onChairClick(idx1Based) {
+            if (nextClickIsFirst) {
+                selL = idx1Based;
+                selR = idx1Based;
+                nextClickIsFirst = false;
+            } else {
+                if (idx1Based === selL) {
+                    nextClickIsFirst = true;
+                    return;
+                }
+                if (idx1Based < selL) {
+                    selR = selL;
+                    selL = idx1Based;
+                } else {
+                    selR = idx1Based;
+                }
+                nextClickIsFirst = true;
+            }
+            renderInteractiveStage();
+        }
+
+        function testPair(l, r) {
+            if (r > curArr.length) return;
+            selL = Math.min(l, r);
+            selR = Math.max(l, r);
+            nextClickIsFirst = true;
+            renderInteractiveStage();
+        }
+
+        function checkVisibility(arr, l, r) {
+            const hL = arr[l - 1];
+            const hR = arr[r - 1];
+            const limit = Math.min(hL, hR);
+            const blockers = [];
+            let maxBetween = 0;
+
+            for (let k = l + 1; k <= r - 1; k++) {
+                const hk = arr[k - 1];
+                if (hk > maxBetween) maxBetween = hk;
+                if (hk > hL || hk > hR) {
+                    blockers.push(k);
+                }
+            }
+            return {
+                valid: blockers.length === 0,
+                blockers: blockers,
+                limit: limit,
+                maxBetween: maxBetween
+            };
+        }
+
+        function renderInteractiveStage() {
+            const stage = document.getElementById('chairs-stage');
+            stage.innerHTML = '';
+
+            if (selL === selR) {
+                document.getElementById('pair-badge').innerText = `Избран първи стол: ${selL} (кликнете втори стол)`;
+                curArr.forEach((h, i) => {
+                    const idx = i + 1;
+                    const cls = (idx === selL) ? 'chair-bar selected-endpoint' : 'chair-bar';
+                    const col = document.createElement('div');
+                    col.className = 'chair-col';
+                    col.onclick = () => onChairClick(idx);
+                    col.innerHTML = `
+                        <div class="${cls}" style="height:${h * 18}px;">${h}</div>
+                        <div class="chair-lbl">i=${idx}</div>
+                    `;
+                    stage.appendChild(col);
+                });
+                document.getElementById('check-status').innerHTML = `Избрахте стол <strong>i = ${selL}</strong> (височина ${curArr[selL - 1]} м). Сега кликнете върху друг стол, за да проверите дали образуват валидна двойка!`;
+                return;
+            }
+
+            const res = checkVisibility(curArr, selL, selR);
+            document.getElementById('pair-badge').innerText = `Двойка: (${selL}, ${selR})`;
+
+            curArr.forEach((h, i) => {
+                const idx = i + 1;
+                let cls = 'chair-bar';
+                if (idx === selL || idx === selR) {
+                    cls += ' selected-endpoint';
+                } else if (idx > selL && idx < selR) {
+                    cls += res.blockers.includes(idx) ? ' blocker' : ' between-ok';
+                } else {
+                    cls += ' dimmed';
+                }
+
+                const col = document.createElement('div');
+                col.className = 'chair-col';
+                col.onclick = () => onChairClick(idx);
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${h * 18}px;">${h}</div>
+                    <div class="chair-lbl">i=${idx}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            const hL = curArr[selL - 1];
+            const hR = curArr[selR - 1];
+            const status = document.getElementById('check-status');
+
+            if (selR === selL + 1) {
+                status.innerHTML = `✅ <strong>Двойката (${selL}, ${selR}) е ВАЛИДНА!</strong> Съседните столове (височини ${hL} м и ${hR} м) винаги се виждат, защото между тях няма нито един друг стол.`;
+            } else if (res.valid) {
+                status.innerHTML = `✅ <strong>Двойката (${selL}, ${selR}) е ВАЛИДНА!</strong> Височините в краищата са <strong>a[${selL}] = ${hL}</strong> и <strong>a[${selR}] = ${hR}</strong>, а най-високият стол между тях е <strong>${res.maxBetween} м &le; min(${hL}, ${hR})</strong>.`;
+            } else {
+                const bList = res.blockers.map(k => `i=${k} (вис. ${curArr[k - 1]} м)`).join(', ');
+                status.innerHTML = `❌ <strong>Двойката (${selL}, ${selR}) е НЕВАЛИДНА!</strong> Между <strong>a[${selL}] = ${hL}</strong> и <strong>a[${selR}] = ${hR}</strong> има строго по-висок стол: <span style="color:var(--danger); font-weight:700;">${bList}</span>, който закрива видимостта!`;
+            }
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: ВСИЧКИ ВАЛИДНИ ДВОЙКИ
+        // ==========================================
+        function buildValidPairsList() {
+            const validPairs = [];
+            for (let l = 1; l <= curArr.length; l++) {
+                for (let r = l + 1; r <= curArr.length; r++) {
+                    if (checkVisibility(curArr, l, r).valid) {
+                        validPairs.push([l, r]);
+                    }
+                }
+            }
+
+            document.getElementById('total-pairs-badge').innerText = `Общо: ${validPairs.length} двойки`;
+            const grid = document.getElementById('valid-pairs-grid');
+            grid.innerHTML = '';
+
+            validPairs.forEach(([l, r], idx) => {
+                const chip = document.createElement('span');
+                chip.className = 'pair-chip' + (idx === 0 ? ' active-chip' : '');
+                chip.innerText = `(${l}, ${r})`;
+                chip.onclick = () => {
+                    document.querySelectorAll('.pair-chip').forEach(c => c.classList.remove('active-chip'));
+                    chip.classList.add('active-chip');
+                    renderAllStagePair(l, r);
+                };
+                grid.appendChild(chip);
+            });
+
+            if (validPairs.length > 0) {
+                renderAllStagePair(validPairs[0][0], validPairs[0][1]);
+            }
+        }
+
+        function renderAllStagePair(l, r) {
+            const stage = document.getElementById('all-stage');
+            stage.innerHTML = '';
+
+            curArr.forEach((h, i) => {
+                const idx = i + 1;
+                let cls = 'chair-bar';
+                if (idx === l || idx === r) cls += ' selected-endpoint';
+                else if (idx > l && idx < r) cls += ' between-ok';
+                else cls += ' dimmed';
+
+                const col = document.createElement('div');
+                col.className = 'chair-col';
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${h * 16}px;">${h}</div>
+                    <div class="chair-lbl">i=${idx}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            document.getElementById('all-status').innerHTML = `
+                Избрана валидна двойка: <strong>(${l}, ${r})</strong> с височини <strong>a[${l}] = ${curArr[l - 1]} м</strong> и <strong>a[${r}] = ${curArr[r - 1]} м</strong>. Никой междинен стол не надвишава <strong>${Math.min(curArr[l - 1], curArr[r - 1])} м</strong>!
+            `;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample(1);
+        });
+    </script>
+</body>
+
+</html>
