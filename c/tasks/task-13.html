@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C12: Погледни нагоре (USACO 2009) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 { 
+            font-size: 1.25rem; 
+            color: var(--text-main); 
+            margin: 2rem 0 1rem 0; 
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.04rem; }
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        .io-container {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .io-box {
+            flex: 1;
+        }
+
+        .io-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0.75rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        .explanation {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация с табове) */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.9rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input[type="text"] {
+            padding: 0.45rem 0.65rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            width: 175px;
+        }
+
+        button {
+            padding: 0.5rem 0.95rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.86rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЦЕНА С КРАВИТЕ */
+        .cows-stage {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.8rem 1rem 0.9rem 1rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 0.85rem;
+            min-height: 245px;
+            position: relative;
+        }
+
+        .cow-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .cow-col:hover {
+            transform: translateY(-4px);
+        }
+
+        .cow-bar {
+            width: 50px;
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            border: 2px solid #60a5fa;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 6px;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #fff;
+            transition: all 0.25s;
+            position: relative;
+        }
+
+        .cow-bar.observer {
+            background: linear-gradient(180deg, #f59e0b, #b45309);
+            border-color: #fcd34d;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.55);
+        }
+
+        .cow-bar.target-cow {
+            background: linear-gradient(180deg, #10b981, #047857);
+            border-color: #34d399;
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+        }
+
+        .cow-bar.dimmed {
+            opacity: 0.35;
+        }
+
+        .cow-lbl {
+            font-family: 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* ТАБ 2: СТЕК И ПРОМЕНЛИВИ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.6rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        .stack-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            min-height: 50px;
+        }
+
+        .st-pill {
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid var(--accent);
+            color: #6ee7b7;
+            padding: 0.28rem 0.65rem;
+            border-radius: 0.35rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            text-align: center;
+            font-size: 0.96rem;
+            line-height: 1.55;
+            margin-top: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+        
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Структури от данни</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: УСЛОВИЕ НА ЗАДАЧАТА (USACO 2009 LOOK UP)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА 12: USACO 2009. Погледни нагоре <br><span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">(Look Up)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 1 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>📄 <strong>Програма:</strong> lookup</div>
+                </div>
+            </div>
+
+            <p>Кравата Джоунс е поставена под строг надзор от фермера Джон и е принудена да прекарва часове в затворено помещение, гледайки стената. В стаята има <code>N</code> крави, подредени в редица отляво надясно, като всяка крава гледа право пред себе си (към стената). За всяка крава знаем нейната височина <code>h<sub>i</sub></code>.</p>
+            
+            <p>Всяка крава иска да знае коя е първата крава надясно от нея, която е строго по-висока от нея и към която тя може да се обърне, за да „погледне нагоре“. Ако няма такава крава надясно (тоест тя е най-високата или се намира в самия край на редицата), отговорът за нея е 0.</p>
+
+            <p>Да се напише програма <code>lookup</code>, която за всяка от <code>N</code>-те крави намира индекса на първата строго по-висока крава вдясно от нея.</p>
+
+            <h2>Вход</h2>
+            <p>Първият ред на входа въвежда едно цяло число <code>N</code> — броят на кравите. Следват <code>N</code> цели положителни числа, разделени с интервал. Всяко число <code>h<sub>i</sub></code> представлява височината на поредната крава в редицата (отляво надясно).</p>
+
+            <h2>Изход</h2>
+            <p>Програмата трябва да изведе на стандартния изход <code>N</code> реда, като на <code>i</code>-тия ред отпечатва индекса (от 1 до <code>N</code>) на първата крава вдясно от <code>i</code>-тата крава, която е строго по-висока от нея. Ако такава крава няма, на съответния ред се извежда 0.</p>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>1 &le; <code>N</code> &le; 100 000</li>
+                <li>1 &le; <code>h<sub>i</sub></code> &le; 1 000 000 000</li>
+            </ul>
+
+            <h2>Пример</h2>
+            <div class="io-container">
+                <div class="io-box">
+                    <div class="io-title">Примерен вход</div>
+                    <pre>6
+3 2 6 1 1 2</pre>
+                </div>
+                <div class="io-box">
+                    <div class="io-title">Изход за примера</div>
+                    <pre>3
+3
+0
+6
+6
+0</pre>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Обяснение на примера:</strong>
+                <ul style="margin-top:0.5rem; margin-bottom:0.5rem;">
+                    <li>Крава 1 (височина 3) вижда първата по-висока вдясно — Крава 3 (височина 6). Отговор: 3.</li>
+                    <li>Крава 2 (височина 2) също вижда първата по-висока вдясно — Крава 3 (височина 6). Отговор: 3.</li>
+                    <li>Крава 3 (височина 6) е най-високата наоколо и няма по-висока вдясно. Отговор: 0.</li>
+                    <li>Крава 4 (височина 1) вижда Крава 6 (височина 2), тъй като Крава 5 е със същата височина (1). Отговор: 6.</li>
+                    <li>Крава 5 (височина 1) също вижда Крава 6 (височина 2). Отговор: 6.</li>
+                    <li>Крава 6 (височина 2) е последна в редицата. Отговор: 0.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВНА ВИЗУАЛИЗАЦИЯ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-view')" id="btn-tab-view">1. Провери на коя крава гледа всяка крава</button>
+                <button class="tab-btn" onclick="switchTab('tab-stack')" id="btn-tab-stack">2. Симулатор с Монотонен стек отдясно наляво</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ИЗБЕРИ КРАВА И ВИЖ КОЯ Я ВИЖДА -->
+                <div class="tab-pane active" id="tab-view">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>👀 Кликнете на крава, за да намерите първата по-висока вдясно</span>
+                            <span id="cow-badge" style="font-size:0.88rem; color:var(--accent); font-family:monospace;">Избрана: Крава 1 (h = 3)</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            Всяка крава търси първата строго по-висока крава вдясно от нея. Кликнете на някоя от кравите по-долу, за да видите към коя се обръща!
+                        </p>
+
+                        <div class="controls">
+                            <button onclick="selectCow(1)">Крава 1 (3)</button>
+                            <button class="btn-slate" onclick="selectCow(2)">Крава 2 (2)</button>
+                            <button class="btn-slate" onclick="selectCow(3)">Крава 3 (6)</button>
+                            <button class="btn-slate" onclick="selectCow(4)">Крава 4 (1)</button>
+                            <button class="btn-slate" onclick="selectCow(5)">Крава 5 (1)</button>
+                            <button class="btn-slate" onclick="selectCow(6)">Крава 6 (2)</button>
+                        </div>
+
+                        <div class="cows-stage" id="view-stage"></div>
+
+                        <div class="calc-box" id="view-status"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: СИМУЛАТОР С МОНОТОНЕН СТЕК ОТДЯСНО НАЛЯВО -->
+                <div class="tab-pane" id="tab-stack">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Огледален монотонен стек (Next Greater Element)</span>
+                            <span id="st-step-badge" style="font-size:0.88rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                            За да намерим първата строго по-висока крава вдясно за <code>O(N)</code> време, обхождаме масива <strong>отдясно наляво</strong> (от <code>N</code> към <code>1</code>). Поддържаме монотонно намаляващ стек от индекси. Преди да добавим <code>i</code>, чистим от стека всички крави с височина <code>&le; h[i]</code> (те са твърде ниски и стават безполезни). Връх на стека е търсеният отговор за <code>i</code>!
+                        </p>
+
+                        <div class="controls">
+                            <div class="input-group">Редица h[1..N]: <input type="text" id="st-input" value="3 2 6 1 1 2"></div>
+                            <button onclick="buildStackSim()">Зареди</button>
+                            <button class="btn-slate" id="btn-st-prev" onclick="moveStStep(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="btn-st-next" onclick="moveStStep(1)">Стъпка наляво &rarr;</button>
+                            <button class="btn-slate" onclick="resetStSim()">Отначало</button>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Текуща крава i</div>
+                                <div class="state-val" id="sim-i">6 (h=2)</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Извадени (pop)</div>
+                                <div class="state-val" id="sim-pop" style="color:var(--danger); font-size:0.92rem;">няма</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Отговор ans[i]</div>
+                                <div class="state-val" id="sim-ans">0</div>
+                            </div>
+                        </div>
+
+                        <div class="cows-stage" id="stack-stage" style="min-height:205px;"></div>
+
+                        <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; margin-bottom:0.3rem;">Стек от индекси (от дъното към върха)</div>
+                        <div class="stack-bar" id="stack-pills"></div>
+
+                        <div class="calc-box" id="stack-exp"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПЛАВЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ТАБ 1: ИЗБЕРИ КРАВА И ВИЖ КОЯ Я ВИЖДА
+        // ==========================================
+        const sampleCows = [3, 2, 6, 1, 1, 2];
+        let activeCowIdx = 1;
+
+        function selectCow(idx1Based) {
+            activeCowIdx = idx1Based;
+            const stage = document.getElementById('view-stage');
+            stage.innerHTML = '';
+
+            const hObs = sampleCows[idx1Based - 1];
+            document.getElementById('cow-badge').innerText = `Избрана: Крава ${idx1Based} (h = ${hObs})`;
+
+            let targetIdx = 0;
+            for (let j = idx1Based + 1; j <= sampleCows.length; j++) {
+                if (sampleCows[j - 1] > hObs) {
+                    targetIdx = j;
+                    break;
+                }
+            }
+
+            sampleCows.forEach((h, i) => {
+                const cIdx = i + 1;
+                let cls = 'cow-bar';
+                if (cIdx === idx1Based) cls += ' observer';
+                else if (cIdx === targetIdx) cls += ' target-cow';
+                else cls += ' dimmed';
+
+                const col = document.createElement('div');
+                col.className = 'cow-col';
+                col.onclick = () => selectCow(cIdx);
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${h * 22}px;">
+                        <span>${h}</span>
+                    </div>
+                    <div class="cow-lbl">Крава ${cIdx}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            const status = document.getElementById('view-status');
+            if (targetIdx === 0) {
+                status.innerHTML = `<strong>Крава ${idx1Based} (височина ${hObs})</strong> няма по-висока крава надясно (тя е най-високата или е в края на редицата). Отговор: <strong>0</strong>.`;
+            } else {
+                status.innerHTML = `✅ <strong>Крава ${idx1Based} (височина ${hObs})</strong> намира първата строго по-висока крава вдясно: <strong>Крава ${targetIdx} (височина ${sampleCows[targetIdx - 1]})</strong>. Отговор: <strong>${targetIdx}</strong>.`;
+            }
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: СИМУЛАТОР С МОНОТОНЕН СТЕК ОТДЯСНО НАЛЯВО
+        // ==========================================
+        let simArr = [3, 2, 6, 1, 1, 2];
+        let simSteps = [];
+        let simIdx = 0;
+
+        function buildStackSim() {
+            const raw = document.getElementById('st-input').value.trim();
+            let parsed = raw.split(/\s+/).map(Number).filter(x => !isNaN(x));
+            if (parsed.length < 2) parsed = [3, 2, 6, 1, 1, 2];
+            simArr = parsed.slice(0, 10);
+
+            simSteps = [];
+            let st = [];
+            let ansArr = new Array(simArr.length).fill(0);
+
+            for (let i = simArr.length; i >= 1; i--) {
+                const h = simArr[i - 1];
+                const popped = [];
+
+                while (st.length > 0 && simArr[st[st.length - 1] - 1] <= h) {
+                    const p = st.pop();
+                    popped.push(`#${p}(${simArr[p - 1]})`);
+                }
+
+                const ans = st.length === 0 ? 0 : st[st.length - 1];
+                ansArr[i - 1] = ans;
+                st.push(i);
+
+                simSteps.push({
+                    curI: i,
+                    h: h,
+                    popped: popped.length > 0 ? popped.join(', ') : 'няма',
+                    ans: ans,
+                    stackAfter: [...st],
+                    exp: `Крава <strong>#${i} (h = ${h})</strong>: Изискваме крави с височина &le; ${h} да напуснат стека (извадени: <strong>${popped.length > 0 ? popped.join(', ') : 'няма'}</strong>). ` +
+                        (ans === 0
+                            ? `Стекът е празен &rarr; няма по-висока крава вдясно (<strong>ans[${i}] = 0</strong>).`
+                            : `Върхът на стека е Крава <strong>#${ans} (h = ${simArr[ans - 1]})</strong> &rarr; това е първата по-висока крава вдясно (<strong>ans[${i}] = ${ans}</strong>).`) +
+                        ` Добавяме крава #${i} в стека.`
+                });
+            }
+
+            // Тъй като обхождаме от n към 1, обръщаме стъпките за удобство на потребителя (от 1 до n)
+            simSteps.reverse();
+            simIdx = 0;
+            renderStackSim();
+        }
+
+        function renderStackSim() {
+            const s = simSteps[simIdx];
+            document.getElementById('st-step-badge').innerText = `Крава ${s.curI} от ${simArr.length} (обхождане назад)`;
+            document.getElementById('sim-i').innerText = `${s.curI} (h=${s.h})`;
+            document.getElementById('sim-pop').innerText = s.popped;
+            document.getElementById('sim-ans').innerText = s.ans;
+
+            const stage = document.getElementById('stack-stage');
+            stage.innerHTML = '';
+            const maxH = Math.max(...simArr, 1);
+
+            simArr.forEach((h, idx0) => {
+                const idx = idx0 + 1;
+                let cls = 'cow-bar';
+                if (idx === s.curI) cls += ' observer';
+                else if (s.stackAfter.includes(idx)) cls += ' target-cow';
+                else cls += ' dimmed';
+
+                const barH = Math.max(38, Math.round((h / maxH) * 145));
+                const col = document.createElement('div');
+                col.className = 'cow-col';
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${barH}px;"><span>${h}</span></div>
+                    <div class="cow-lbl">#${idx}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            document.getElementById('stack-pills').innerHTML = s.stackAfter.map(idx =>
+                `<span class="st-pill">Крава #${idx} (h = ${simArr[idx - 1]})</span>`
+            ).join(' &rarr; ');
+
+            document.getElementById('stack-exp').innerHTML = s.exp;
+
+            document.getElementById('btn-st-prev').disabled = (simIdx === 0);
+            document.getElementById('btn-st-next').disabled = (simIdx === simSteps.length - 1);
+        }
+
+        function moveStStep(dir) {
+            simIdx = Math.max(0, Math.min(simSteps.length - 1, simIdx + dir));
+            renderStackSim();
+        }
+
+        function resetStSim() {
+            simIdx = 0;
+            renderStackSim();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            selectCow(1);
+            buildStackSim();
+        });
+    </script>
+</body>
+
+</html>
