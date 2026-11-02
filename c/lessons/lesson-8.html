@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 5: Монотонен стек - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --group-c: #10b981;
+            --group-c-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--group-c);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--group-c);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ЛЯВ ПАНЕЛ (Точно 50% минус половината от разделителя) */
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem 3rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        /* РАЗДЕЛИТЕЛНА ЛИНИЯ ТОЧНО ПО СРЕДАТА */
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--group-c);
+            border-color: var(--group-c);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--group-c);
+        }
+
+        /* ДЕСЕН ПАНЕЛ (Точно 50% минус половината от разделителя) */
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .lesson-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.35);
+            padding-bottom: 1.25rem;
+        }
+        
+        .lesson-header h1 {
+            font-size: 2.35rem;
+            color: var(--group-c);
+            margin-bottom: 0.35rem;
+            line-height: 1.2;
+        }
+
+        h2 { 
+            font-size: 1.45rem; 
+            color: var(--text-main); 
+            margin: 2.25rem 0 1rem 0; 
+            border-left: 4px solid var(--group-c);
+            padding-left: 0.75rem;
+        }
+        
+        h3 {
+            font-size: 1.15rem;
+            color: #34d399;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        p { margin-bottom: 0.9rem; color: var(--text-muted); font-size: 1.03rem; }
+        ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+            font-size: 0.95em;
+        }
+
+        .formula-box {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-left: 4px solid var(--group-c);
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.25rem;
+            font-family: 'Consolas', monospace;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        .info-box {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.35rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .warn-box {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 1.15rem 1.35rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .lesson-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            font-size: 0.92rem;
+        }
+
+        .lesson-table th, .lesson-table td {
+            padding: 0.75rem 0.9rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-family: 'Consolas', monospace;
+        }
+
+        .lesson-table th {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--group-c);
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 700;
+        }
+
+        .lesson-table tr:last-child td { border-bottom: none; }
+
+        .btn-jump {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--group-c);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.45rem 0.9rem;
+            border-radius: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-right: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-jump:hover {
+            background: var(--group-c);
+            color: #000;
+        }
+
+        /* ТАБОВЕ В ДЕСНИЯ ПАНЕЛ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.85rem 1.25rem;
+            background-color: rgba(11, 17, 32, 0.9);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.75rem;
+            border-radius: 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--group-c);
+        }
+
+        .tab-btn.active {
+            background-color: var(--group-c);
+            color: #000;
+            border-color: var(--group-c);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ВИЗУАЛИЗАЦИОННИ КАРТИ И КОНТРОЛИ */
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.4rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.8rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.45rem 0.9rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            background: var(--group-c);
+            color: #000;
+        }
+
+        button:hover { background: var(--group-c-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background: var(--accent); color: #fff; }
+        .btn-blue:hover { background: var(--accent-hover); }
+        .btn-slate { background: #475569; color: #fff; }
+        .btn-slate:hover { background: #334155; }
+
+        /* СГРАДИ И КУЛИ - СЦЕНА */
+        .stage-canvas {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem 1rem 0.75rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 1.25rem;
+            min-height: 220px;
+            position: relative;
+        }
+
+        .bldg-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            position: relative;
+        }
+
+        .bldg-bar {
+            width: 48px;
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            border: 2px solid #60a5fa;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 6px;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #fff;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .bldg-bar.in-stack {
+            background: linear-gradient(180deg, #10b981, #047857);
+            border-color: #34d399;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .bldg-bar.current-bar {
+            background: linear-gradient(180deg, #f59e0b, #b45309);
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.45);
+        }
+
+        .bldg-bar.shadowed {
+            background: #1e293b;
+            border-color: #475569;
+            opacity: 0.4;
+            color: #94a3b8;
+        }
+
+        .bldg-bar.rect-cover {
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.85));
+            border-color: #6ee7b7;
+        }
+
+        .bldg-lbl {
+            font-family: 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* ВИЗУАЛЕН СТЕК И ПРОМЕНЛИВИ */
+        .var-tracker {
+            display: flex;
+            gap: 0.65rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .var-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.85rem;
+            border-radius: 0.45rem;
+            text-align: center;
+            min-width: 85px;
+        }
+
+        .var-name { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
+        .var-val { font-size: 1.05rem; font-weight: bold; color: var(--group-c); font-family: 'Consolas', monospace; }
+
+        .stack-visual {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            min-height: 52px;
+        }
+
+        .stack-pill {
+            background: rgba(16, 185, 129, 0.18);
+            border: 1px solid var(--group-c);
+            color: #6ee7b7;
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.4rem;
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* ДЕБЪГЕРИ И КОД */
+        .io-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .io-mini {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.45rem;
+            padding: 0.6rem 0.85rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+        }
+
+        .io-mini-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-family: system-ui, sans-serif;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.65rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.84rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.16rem 0.9rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.22);
+            border-left-color: var(--group-c);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .line-num { width: 30px; color: #64748b; user-select: none; flex-shrink: 0; }
+        .line-text { white-space: pre; color: #e2e8f0; }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.95rem 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--group-c);
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.55;
+            color: var(--text-main);
+        }
+
+        .calc-box strong { color: var(--group-c); font-family: 'Consolas', monospace; }
+
+        /* ТАБ 6: ЦВЕТНИ ТОПЧЕТА / ZUMA */
+        .ball-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-weight: 800;
+            font-family: 'Consolas', monospace;
+            color: #fff;
+            margin: 0 3px;
+            box-shadow: inset -2px -2px 6px rgba(0,0,0,0.4);
+        }
+
+        .col-1 { background: #ef4444; border: 2px solid #fca5a5; }
+        .col-2 { background: #3b82f6; border: 2px solid #93c5fd; }
+        .col-3 { background: #f59e0b; border: 2px solid #fcd34d; }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            background-color: var(--bg-primary);
+            flex-shrink: 0;
+        }
+        
+        footer p { font-size: 0.65rem; margin: 0; opacity: 0.6; }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Структури от данни</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ПЪЛЕН ТЕКСТ И КОД ОТ ПРЕЗЕНТАЦИЯТА
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-header">
+                <h1>Монотонен стек</h1>
+                <p style="margin-bottom:0;">Принцип на работа, линейна сложност и класически състезателни приложения</p>
+            </div>
+
+            <!-- Секция 1: Принцип на работа -->
+            <h2>Принцип на работа</h2>
+            <h3>Обикновен стек срещу Монотонен стек</h3>
+            <ul>
+                <li><strong>Обикновен стек (<code>std::stack</code>):</strong> принцип LIFO (Last In, First Out – последен влязъл, първи излязъл).</li>
+                <li><strong>Монотонен стек:</strong> обикновен стек, към който добавяме едно единствено правило: елементите в него (от дъното към върха) трябва винаги да бъдат подредени в строго растящ или строго намаляващ ред.</li>
+            </ul>
+
+            <h3>Аналогия: Редица от сгради</h3>
+            <ul>
+                <li>Представете си редица от сгради с различна височина, подредени от ляво надясно.</li>
+                <li>Заставате на покрива на всяка сграда и гледате наляво, за да видите коя е първата по-висока сграда, която ви закрива хоризонта.</li>
+                <li>Ако текущата сграда е с височина 10 метра, а пред нея има сгради с височини 4 м и 6 м, те се оказват напълно скрити зад новата 10-метрова сграда.</li>
+                <li>За всяка следваща сграда по-нататък вдясно тези ниски сгради (4 м и 6 м) са абсолютно безполезни — те никога няма да бъдат видими, защото 10-метровата сграда пред тях ги засенчва.</li>
+                <li>Затова можем завинаги да ги изхвърлим от паметта (да направим <code>pop</code> от стека), преди да добавим новата сграда.</li>
+            </ul>
+            <button class="btn-jump" onclick="switchTab('tab-bldg')">Виж интерактивната аналогия със сградите &rarr;</button>
+
+            <h3>Монотонно намаляващ стек</h3>
+            <ul>
+                <li>От дъното към върха стойностите намаляват.</li>
+                <li>Преди да добавим елемент <code>X</code>, изваждаме всички елементи от върха, които са по-малки или равни на <code>X</code>.</li>
+                <li>Използва се за намиране на най-близък по-голям елемент.</li>
+            </ul>
+
+            <h3>Монотонно растящ стек</h3>
+            <ul>
+                <li>От дъното към върха стойностите растат.</li>
+                <li>Преди да добавим елемент <code>X</code>, изваждаме всички елементи от върха, които са по-големи или равни на <code>X</code>.</li>
+                <li>Използва се за намиране на най-близък по-малък елемент.</li>
+            </ul>
+
+            <h3>Защо сложността по време е O(N), а не O(N<sup>2</sup>)?</h3>
+            <p>В кода на монотонния стек винаги имаме вложен цикъл <code>while</code> вътре в основния цикъл <code>for</code>. На пръв поглед това изглежда квадратично, но реалната сложност е линейна — <code>O(N)</code>.</p>
+            <div class="info-box">
+                <strong>Анализ:</strong>
+                <ul style="margin-top:0.5rem; margin-bottom:0;">
+                    <li>Всеки от <code>N</code>-те елемента влиза в стека (<code>push</code>) точно веднъж.</li>
+                    <li>Всеки елемент може да бъде изваден от стека (<code>pop</code>) най-много веднъж през цялото изпълнение на програмата (след като излезе, той никога не се връща обратно).</li>
+                    <li>Следователно общият брой операции за целия масив е най-много <code>2N</code>, което дава времева сложност <code>O(N)</code> и памет <code>O(N)</code>.</li>
+                </ul>
+            </div>
+
+            <!-- Секция 2: Пример 1 -->
+            <h2>Пример 1: Най-близък по-голям елемент вляво (Задача „Кули“)</h2>
+            <h3>Условие</h3>
+            <ul>
+                <li>Дадени са <code>N</code> кули в редица с височини <code>a<sub>1</sub>, a<sub>2</sub>, &hellip;, a<sub>N</sub></code>.</li>
+                <li>Всяка кула излъчва лазерен лъч хоризонтално наляво.</li>
+                <li>Лъчът се спира от първата кула вляво, която е строго по-висока от излъчващата.</li>
+                <li>За всяка кула намерете индекса на кулата, която приема нейния сигнал (или 0, ако лъчът излиза извън редицата).</li>
+            </ul>
+
+            <h3>Правило</h3>
+            <ul>
+                <li>В стека почти винаги пазим индексите на елементите (<code>1, 2, ..., N</code>), а не самите им височини.</li>
+                <li>Чрез индекса <code>idx</code> винаги знаем както позицията му, така и височината му <code>a[idx]</code>.</li>
+            </ul>
+
+            <h3>Трасировка: 5 кули (1-базирана индексация): a = [4, 2, 5, 1, 3]</h3>
+            <table class="lesson-table">
+                <tr>
+                    <th>Стъпка (i)</th>
+                    <th>Височина a[i]</th>
+                    <th>Извадени индекси</th>
+                    <th>Връх на стека (Отговор)</th>
+                    <th>Стек след стъпката</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>4</td>
+                    <td>няма</td>
+                    <td>0 (празен)</td>
+                    <td>[ 1(4) ]</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>2</td>
+                    <td>няма</td>
+                    <td>1 (вис. 4)</td>
+                    <td>[ 1(4), 2(2) ]</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>5</td>
+                    <td>2 (вис. 2), 1 (вис. 4)</td>
+                    <td>0 (празен)</td>
+                    <td>[ 3(5) ]</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>1</td>
+                    <td>няма</td>
+                    <td>3 (вис. 5)</td>
+                    <td>[ 3(5), 4(1) ]</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>3</td>
+                    <td>4 (вис. 1)</td>
+                    <td>3 (вис. 5)</td>
+                    <td>[ 3(5), 5(3) ]</td>
+                </tr>
+            </table>
+
+            <div class="warn-box">
+                <strong>Наблюдение:</strong><br>
+                На стъпка 3 пристига кула с височина 5. Тя е по-висока от кула 2 (вис. 2) и кула 1 (вис. 4), затова ги изваждаме от стека — те никога повече няма да спрат лъч на кула вдясно от 3-тата.
+            </div>
+
+            <h3>Имплементация на C++: mstack1.cpp</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 1000005;
+int n;
+int a[MAXN];
+int ans[MAXN];
+
+int main()
+{
+    cin &gt;&gt; n;
+    for(int i = 1; i &lt;= n; i++) cin &gt;&gt; a[i];
+    stack&lt;int&gt; st;
+
+    for(int i = 1; i &lt;= n; i++)
+    {
+        while(!st.empty() &amp;&amp; a[st.top()] &lt;= a[i])
+        {
+            st.pop();
+        }
+
+        if(st.empty()) ans[i] = 0;
+        else ans[i] = st.top();
+
+        st.push(i);
+    }
+    for(int i = 1; i &lt;= n; i++)
+    {
+        cout &lt;&lt; ans[i] &lt;&lt; " ";
+    }
+    cout &lt;&lt; "\n";
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-towers')">Симулация: Задача „Кули“ &rarr;</button>
+            <button class="btn-jump" onclick="switchTab('tab-deb1')">Отвори дебъгера за mstack1.cpp &rarr;</button>
+
+            <!-- Секция 3: Пример 2 -->
+            <h2>Пример 2: Най-голям правоъгълник в хистограма</h2>
+            <h3>Условие</h3>
+            <ul>
+                <li>Дадена е хистограма от <code>N</code> долепени вертикални стълба, всеки с ширина 1 и височина <code>h<sub>i</sub></code>.</li>
+                <li>Намерете лицето на най-големия правоъгълник, който може да се впише изцяло вътре в хистограмата.</li>
+            </ul>
+
+            <h3>Идея</h3>
+            <ul>
+                <li>Най-големият правоъгълник задължително има височина, равна на височината на поне един от стълбовете, които покрива.</li>
+                <li>Ако фиксираме, че стълб <code>i</code> е най-ниският стълб в нашия правоъгълник (значи височината на правоъгълника е <code>h<sub>i</sub></code>), колко най-много можем да го разширим наляво и надясно?</li>
+            </ul>
+
+            <h3>Анализ</h3>
+            <ul>
+                <li>Можем да го разширяваме наляво, докато не срещнем първия стълб с височина строго по-малка от <code>h<sub>i</sub></code>: Нека неговият индекс е <code>L<sub>i</sub></code> (ако няма такъв, <code>L<sub>i</sub> = 0</code>).</li>
+                <li>Можем да го разширяваме надясно, докато не срещнем първия стълб с височина строго по-малка от <code>h<sub>i</sub></code>: Нека неговият индекс е <code>R<sub>i</sub></code> (ако няма такъв, <code>R<sub>i</sub> = N + 1</code>).</li>
+                <li>Тогава правоъгълникът обхваща всички стълбове от <code>L<sub>i</sub> + 1</code> до <code>R<sub>i</sub> &minus; 1</code> включително.</li>
+                <li>Неговата ширина е <code>R<sub>i</sub> &minus; L<sub>i</sub> &minus; 1</code>, а лицето му е:</li>
+            </ul>
+            <div class="formula-box">Area<sub>i</sub> = h<sub>i</sub> &middot; (R<sub>i</sub> &minus; L<sub>i</sub> &minus; 1)</div>
+
+            <div class="info-box">
+                <strong>Наблюдение:</strong><br>
+                С два монотонно растящи стека (един от ляво надясно за масива <code>L[]</code> и един от дясно наляво за масива <code>R[]</code>) намираме границите за всеки стълб за <code>O(N)</code> време.
+            </div>
+
+            <h3>Числов пример: За хистограма h = [ 2, 1, 5, 6, 2, 3 ]</h3>
+            <table class="lesson-table">
+                <tr>
+                    <th>Стъпка (i)</th>
+                    <th>Височина a[i]</th>
+                    <th>Пръв по-малък вляво L[i]</th>
+                    <th>Пръв по-малък вдясно R[i]</th>
+                    <th>Широчина (R &minus; L &minus; 1)</th>
+                    <th>Лице</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>0</td>
+                    <td>2</td>
+                    <td>1</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>1</td>
+                    <td>0</td>
+                    <td>7</td>
+                    <td>6</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>5</td>
+                    <td>2</td>
+                    <td>5</td>
+                    <td>2</td>
+                    <td><strong>10</strong></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>6</td>
+                    <td>3</td>
+                    <td>5</td>
+                    <td>1</td>
+                    <td>6</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>2</td>
+                    <td>2</td>
+                    <td>7</td>
+                    <td>4</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>3</td>
+                    <td>5</td>
+                    <td>7</td>
+                    <td>1</td>
+                    <td>3</td>
+                </tr>
+            </table>
+
+            <div class="warn-box">
+                <strong>Извод:</strong><br>
+                За стълб <code>i = 3</code> (височина 5) първият по-нисък вляво е на индекс 2 (височина 1), а първият по-нисък вдясно е на индекс 5 (височина 2). Той се разширява върху индекси 3 и 4, давайки ширина <code>5 &minus; 2 &minus; 1 = 2</code> и максимално лице <code>5 &middot; 2 = 10</code>.
+            </div>
+
+            <h3>Имплементация на C++: mstack2.cpp</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 1000005;
+int n;
+long long h[MAXN];
+int L[MAXN], R[MAXN];
+
+int main()
+{
+    cin &gt;&gt; n;
+    for(int i = 1; i &lt;= n; i++) cin &gt;&gt; h[i];
+    stack&lt;int&gt; st;
+
+    for(int i = 1; i &lt;= n; i++)
+    {
+        while(!st.empty() &amp;&amp; h[st.top()] &gt;= h[i])
+        {
+            st.pop();
+        }
+        L[i] = st.empty() ? 0 : st.top();
+        st.push(i);
+    }
+    while(!st.empty()) st.pop();
+
+    for(int i = n; i &gt;= 1; i--)
+    {
+        while(!st.empty() &amp;&amp; h[st.top()] &gt;= h[i])
+        {
+            st.pop();
+        }
+        R[i] = st.empty() ? n + 1 : st.top();
+        st.push(i);
+    }
+    long long max_area = 0;
+    for(int i = 1; i &lt;= n; i++)
+    {
+        long long width = R[i] - L[i] - 1;
+        long long current_area = h[i] * width;
+        max_area = max(max_area, current_area);
+    }
+    cout &lt;&lt; max_area &lt;&lt; "\n";
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-hist')">Симулация: Хистограма &rarr;</button>
+            <button class="btn-jump" onclick="switchTab('tab-deb2')">Отвори дебъгера за mstack2.cpp &rarr;</button>
+
+            <!-- Секция 4: Пример 3 -->
+            <h2>Пример 3: Стек от монохромни блокове (Задача „Цветни топчета / Zuma“)</h2>
+            <h3>Условие</h3>
+            <ul>
+                <li>В улей падат едно след друго <code>N</code> цветни топчета, всяко зададено със своя цвят <code>c<sub>i</sub></code>.</li>
+                <li>Ако в даден момент се съберат <code>K</code> на брой последователни топчета от един и същи цвят, те веднага експлодират и изчезват, при което топчетата от двете им страни се долепят (което може да предизвика верижна реакция).</li>
+                <li>Колко топчета ще останат в улея след края на процеса?</li>
+            </ul>
+
+            <h3>Идея</h3>
+            <ul>
+                <li>Ако пазим всяко топче като отделен елемент в стека, при голямо <code>K</code> ще правим твърде много проверки назад.</li>
+                <li>Вместо това в стека пазим монохромни блокове като двойки <code>(цвят, брой)</code> &rarr;</li>
+                <li>Когато пристигне ново топче с цвят <code>col</code>, проверяваме върха на стека:
+                    <ul>
+                        <li>Ако върхът е със същия цвят <code>col</code>, просто увеличаваме брояча му с 1.</li>
+                        <li>Ако върхът е с различен цвят (или стекът е празен), добавяме нов монохромен блок <code>(col, 1)</code>.</li>
+                        <li>Веднага след това проверяваме дали броят на топчетата на върха е станал равен на <code>K</code>.</li>
+                        <li>Ако да — премахваме целия блок от върха (<code>pop</code>) за <code>O(1)</code> време!</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Числов пример</h3>
+            <p>Нека <code>K = 3</code> и падат топчета с цветове: <code>1, 2, 2, 1, 2, 1, 1, 3</code>.</p>
+            <ul>
+                <li>Пада 1 &rarr; Стек: <code>[ (1, 1) ]</code></li>
+                <li>Пада 2 &rarr; Стек: <code>[ (1, 1), (2, 1) ]</code></li>
+                <li>Пада 2 &rarr; Слива се с върха: <code>[ (1, 1), (2, 2) ]</code></li>
+                <li>Пада 1 &rarr; Стек: <code>[ (1, 1), (2, 2), (1, 1) ]</code></li>
+                <li>Пада 2 &rarr; Стек: <code>[ (1, 1), (2, 2), (1, 1), (2, 1) ]</code></li>
+                <li>Пада 1 &rarr; А ако вместо горните имахме <code>1, 2, 2, 2, 1, 1</code>:</li>
+            </ul>
+
+            <div class="warn-box">
+                <strong>Извод:</strong><br>
+                При третата двойка блокът <code>(2, 3)</code> експлодира и остава <code>[ (1, 1) ]</code>. Следващите две единици се залепят директно към старата единица на върха, образуват <code>(1, 3)</code> и също експлодират (верижна реакция!).
+            </div>
+
+            <h3>Имплементация на C++: mstack3.cpp</h3>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 1000005;
+
+struct Block
+{
+    int color;
+    int cnt;
+};
+int n, k;
+Block st[MAXN];
+int top_idx = 0;
+
+int main()
+{
+    cin &gt;&gt; n &gt;&gt; k;
+
+    for(int i = 1; i &lt;= n; i++)
+    {
+        int col;
+        cin &gt;&gt; col;
+
+        if(top_idx &gt; 0 &amp;&amp; st[top_idx].color == col)
+        {
+            st[top_idx].cnt++;
+        }
+        else
+        {
+            top_idx++;
+            st[top_idx] = { col, 1 };
+        }
+        if(st[top_idx].cnt == k) top_idx--;
+    }
+
+    int rem = 0;
+    for(int i = 1; i &lt;= top_idx; i++)
+    {
+        rem += st[i].cnt;
+    }
+    cout &lt;&lt; rem &lt;&lt; "\n";
+}</code></pre>
+            <button class="btn-jump" onclick="switchTab('tab-zuma')">Виж симулацията на монохромни блокове &rarr;</button>
+
+            <!-- Секция 5: Тънкости и чести грешки -->
+            <h2>Тънкости и чести грешки</h2>
+            <h3>Строго срещу нестрого неравенство при дубликати</h3>
+            <ul>
+                <li>Когато търсите строго по-голям елемент, условие за изваждане от стека е <code>a[st.top()] &lt;= a[i]</code> (изхвърляме и равните, защото те не ни вършат работа).</li>
+                <li>Когато обаче броите сума на минимумите на всички подмасиви, за да не преброите един и същ подмасив два пъти при равни елементи, от едната страна (напр. вляво) използвайте строго неравенство, а от другата (вдясно) — нестрого.</li>
+            </ul>
+
+            <h3>Масив срещу Стек</h3>
+            <ul>
+                <li>Симулирането на стек със статичен масив <code>int st[MAXN]; int top_idx = 0;</code> не само е по-бързо от <code>std::stack</code>, но ви позволява при нужда да надникнете във втория елемент под върха (<code>st[top_idx - 1]</code>) за <code>O(1)</code> време без да правите <code>pop</code> и <code>push</code>.</li>
+            </ul>
+            <button class="btn-jump" onclick="switchTab('tab-tips')">Отвори интерактивния панел за тънкости &rarr;</button>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: 7 ИНТЕРАКТИВНИ ПАНЕЛА
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-bldg')" id="btn-tab-bldg">1. Аналогия: Сгради</button>
+                <button class="tab-btn" onclick="switchTab('tab-towers')" id="btn-tab-towers">2. Пример 1: Кули</button>
+                <button class="tab-btn" onclick="switchTab('tab-deb1')" id="btn-tab-deb1">3. Дебъгер mstack1</button>
+                <button class="tab-btn" onclick="switchTab('tab-hist')" id="btn-tab-hist">4. Пример 2: Хистограма</button>
+                <button class="tab-btn" onclick="switchTab('tab-deb2')" id="btn-tab-deb2">5. Дебъгер mstack2</button>
+                <button class="tab-btn" onclick="switchTab('tab-zuma')" id="btn-tab-zuma">6. Пример 3: Блокове</button>
+                <button class="tab-btn" onclick="switchTab('tab-tips')" id="btn-tab-tips">7. Тънкости</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ПАНЕЛ 1: АНАЛОГИЯ (РЕДИЦА ОТ СГРАДИ) -->
+                <div class="tab-pane active" id="tab-bldg">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🏙️ 1. Принцип на работа: Аналогия (Редица от сгради)</span>
+                            <span id="bldg-step-lbl" style="font-size:0.85rem; color:var(--group-c); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.9rem; margin-bottom:1rem;">
+                            Разглеждаме редица от сгради с височини <code>[12, 4, 6, 10, 8]</code> м. Наблюдавайте как когато се издигне <strong>10-метровата сграда</strong>, по-ниските сгради вляво от нея (<strong>4 м</strong> и <strong>6 м</strong>) остават завинаги скрити и се изхвърлят от стека!
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="bldg-prev" onclick="moveBldg(-1)">&larr; Предишна сграда</button>
+                            <button class="btn-blue" id="bldg-next" onclick="moveBldg(1)">Следваща сграда &rarr;</button>
+                            <button onclick="resetBldg()">Отначало</button>
+                        </div>
+
+                        <div class="stage-canvas" id="bldg-stage"></div>
+
+                        <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:0.3rem;">Видими сгради в монотонния стек (от дъното към върха)</div>
+                        <div class="stack-visual" id="bldg-stack"></div>
+
+                        <div class="calc-box" id="bldg-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ПАНЕЛ 2: ПРИМЕР 1: ЗАДАЧА "КУЛИ" -->
+                <div class="tab-pane" id="tab-towers">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📡 2. Пример 1: Най-близък по-голям елемент вляво („Кули“)</span>
+                            <span id="tw-step-lbl" style="font-size:0.85rem; color:var(--group-c); font-family:monospace;">Стъпка 1 от 5</span>
+                        </div>
+                        <p style="font-size:0.9rem; margin-bottom:1rem;">
+                            Трасировка върху 5-те кули от презентацията: <code>a = [4, 2, 5, 1, 3]</code>. Всяка кула изстрелва лазерен лъч наляво към първата строго по-висока кула.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="tw-prev" onclick="moveTowers(-1)">&larr; Предишна стъпка</button>
+                            <button class="btn-blue" id="tw-next" onclick="moveTowers(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetTowers()">Отначало</button>
+                        </div>
+
+                        <div class="var-tracker">
+                            <div class="var-box"><div class="var-name">Стъпка (i)</div><div class="var-val" id="tw-i">1</div></div>
+                            <div class="var-box"><div class="var-name">Височина a[i]</div><div class="var-val" id="tw-ai">4</div></div>
+                            <div class="var-box"><div class="var-name">Извадени</div><div class="var-val" id="tw-pop" style="color:var(--danger);">няма</div></div>
+                            <div class="var-box"><div class="var-name">Отговор ans[i]</div><div class="var-val" id="tw-ans">0</div></div>
+                        </div>
+
+                        <div class="stage-canvas" id="tw-stage"></div>
+
+                        <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:0.3rem;">Съдържание на стека след стъпката: индекси (височина)</div>
+                        <div class="stack-visual" id="tw-stack"></div>
+
+                        <div class="calc-box" id="tw-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ПАНЕЛ 3: ИНТЕРАКТИВЕН ДЕБЪГЕР ЗА mstack1.cpp -->
+                <div class="tab-pane" id="tab-deb1"></div>
+
+                <!-- ПАНЕЛ 4: ПРИМЕР 2: НАЙ-ГОЛЯМ ПРАВОЪГЪЛНИК В ХИСТОГРАМА -->
+                <div class="tab-pane" id="tab-hist">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📊 4. Пример 2: Най-голям правоъгълник в хистограма</span>
+                            <span id="hist-badge" style="font-size:0.85rem; color:var(--group-c); font-family:monospace;">Стълб i = 3</span>
+                        </div>
+                        <p style="font-size:0.9rem; margin-bottom:1rem;">
+                            Изберете стълб <code>i</code> от хистограмата <code>h = [2, 1, 5, 6, 2, 3]</code>, за да видите неговите граници <code>L[i]</code> и <code>R[i]</code> (първия по-малък елемент вляво и вдясно) и максималния правоъгълник с височина <code>h[i]</code>!
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" onclick="selectHistBar(1)">i=1 (h=2)</button>
+                            <button class="btn-slate" onclick="selectHistBar(2)">i=2 (h=1)</button>
+                            <button onclick="selectHistBar(3)">i=3 (h=5) ★</button>
+                            <button class="btn-slate" onclick="selectHistBar(4)">i=4 (h=6)</button>
+                            <button class="btn-slate" onclick="selectHistBar(5)">i=5 (h=2)</button>
+                            <button class="btn-slate" onclick="selectHistBar(6)">i=6 (h=3)</button>
+                        </div>
+
+                        <div class="var-tracker">
+                            <div class="var-box"><div class="var-name">Височина h[i]</div><div class="var-val" id="hi-h">5</div></div>
+                            <div class="var-box"><div class="var-name">Лява гр. L[i]</div><div class="var-val" id="hi-l">2</div></div>
+                            <div class="var-box"><div class="var-name">Дясна гр. R[i]</div><div class="var-val" id="hi-r">5</div></div>
+                            <div class="var-box"><div class="var-name">Ширина (R-L-1)</div><div class="var-val" id="hi-w">2</div></div>
+                            <div class="var-box"><div class="var-name">Лице Area</div><div class="var-val" id="hi-area">10</div></div>
+                        </div>
+
+                        <div class="stage-canvas" id="hist-stage"></div>
+
+                        <div class="calc-box" id="hist-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ПАНЕЛ 5: ИНТЕРАКТИВЕН ДЕБЪГЕР ЗА mstack2.cpp -->
+                <div class="tab-pane" id="tab-deb2"></div>
+
+                <!-- ПАНЕЛ 6: ПРИМЕР 3: СТЕК ОТ МОНОХРОМНИ БЛОКОВЕ -->
+                <div class="tab-pane" id="tab-zuma">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🔮 6. Пример 3: Стек от монохромни блокове (Zuma, K = 3)</span>
+                            <span id="zm-step-lbl" style="font-size:0.85rem; color:var(--group-c); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.9rem; margin-bottom:1rem;">
+                            Превключете между двата числови примера от урока и проследете как топчетата се сливат в монохромни блокове <code>(цвят, брой)</code> и експлодират при <code>cnt == 3</code>!
+                        </p>
+
+                        <div class="controls">
+                            <button onclick="loadZumaMode(1)">Пример А: 1, 2, 2, 1, 2, 1, 1, 3</button>
+                            <button class="btn-blue" onclick="loadZumaMode(2)">Пример Б (Верижна експлозия): 1, 2, 2, 2, 1, 1</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="zm-prev" onclick="moveZuma(-1)">&larr; Предишно топче</button>
+                            <button class="btn-blue" id="zm-next" onclick="moveZuma(1)">Пусни следващо топче &rarr;</button>
+                            <button onclick="resetZuma()">Отначало</button>
+                        </div>
+
+                        <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">Последователност от падащи топчета</div>
+                        <div class="stack-visual" id="zm-stream"></div>
+
+                        <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:0.35rem;">Стек от монохромни блокове st[1..top_idx] &rarr; (цвят, брой)</div>
+                        <div class="stack-visual" id="zm-stack" style="min-height:68px;"></div>
+
+                        <div class="calc-box" id="zm-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ПАНЕЛ 7: ТЪНКОСТИ И ЧЕСТИ ГРЕШКИ -->
+                <div class="tab-pane" id="tab-tips">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚠️ 7. Тънкости и чести грешки при Монотонен стек</span>
+                        </div>
+
+                        <div class="controls">
+                            <button onclick="showTipCase(1)">1. Дубликати при Строго По-голям (&lt;= срещу &lt;)</button>
+                            <button class="btn-blue" onclick="showTipCase(2)">2. Сума на минимуми на подмасиви (&lt; и &lt;=)</button>
+                            <button class="btn-slate" onclick="showTipCase(3)">3. Статичен масив st[MAXN] срещу std::stack</button>
+                        </div>
+
+                        <div class="stack-visual" id="tip-visual" style="min-height:110px; flex-direction:column; gap:0.65rem;"></div>
+
+                        <div class="calc-box" id="tip-exp"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПЛАВЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ПАНЕЛ 1: АНАЛОГИЯ СЪС СГРАДИТЕ
+        // ==========================================
+        const bldgHeights = [12, 4, 6, 10, 8];
+        const bldgStates = [
+            {
+                cur: 0, stack: [0], shadowed: [],
+                exp: 'Сграда 1 (<strong>12 м</strong>): Първа сграда в редицата. Няма нищо вляво от нея, влиза в стека: <strong>[ 12м ]</strong>.'
+            },
+            {
+                cur: 1, stack: [0, 1], shadowed: [],
+                exp: 'Сграда 2 (<strong>4 м</strong>): Поглежда наляво и вижда <strong>12 м</strong>. Тъй като 4 &lt; 12, тя не закрива първата сграда и се добавя в стека: <strong>[ 12м, 4м ]</strong>.'
+            },
+            {
+                cur: 2, stack: [0, 2], shadowed: [1],
+                exp: 'Сграда 3 (<strong>6 м</strong>): Тя е по-висока от предходната сграда (<strong>4 м</strong>) и я закрива напълно! Изваждаме 4 м от стека (<code>pop</code>) и виждаме <strong>12 м</strong>. Стек: <strong>[ 12м, 6м ]</strong>.'
+            },
+            {
+                cur: 3, stack: [0, 3], shadowed: [1, 2],
+                exp: 'Сграда 4 (<strong>10 м</strong>): Точно както в аналогията от урока, новата <strong>10-метрова сграда</strong> напълно засенчва по-ниските сгради с височини <strong>4 м</strong> и <strong>6 м</strong>! Те са безполезни за всички следващи сгради вдясно и са изхвърлени завинаги. Стек: <strong>[ 12м, 10м ]</strong>.'
+            },
+            {
+                cur: 4, stack: [0, 3, 4], shadowed: [1, 2],
+                exp: 'Сграда 5 (<strong>8 м</strong>): Поглежда наляво и веднага вижда <strong>10-метровата сграда</strong> на върха на стека (без изобщо да проверява скритите 4 м и 6 м!). Стек: <strong>[ 12м, 10м, 8м ]</strong>.'
+            }
+        ];
+        let bldgIdx = 3;
+
+        function renderBldg() {
+            const st = bldgStates[bldgIdx];
+            const stage = document.getElementById('bldg-stage');
+            stage.innerHTML = '';
+
+            bldgHeights.forEach((h, idx) => {
+                let cls = 'bldg-bar';
+                if (idx === st.cur) cls += ' current-bar';
+                else if (st.stack.includes(idx)) cls += ' in-stack';
+                else if (st.shadowed.includes(idx)) cls += ' shadowed';
+
+                const col = document.createElement('div');
+                col.className = 'bldg-col';
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${h * 13}px;">${h}м</div>
+                    <div class="bldg-lbl">Сграда ${idx + 1}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            document.getElementById('bldg-stack').innerHTML = st.stack.map(i =>
+                `<span class="stack-pill">Сграда ${i + 1} (${bldgHeights[i]} м)</span>`
+            ).join(' &rarr; ');
+
+            document.getElementById('bldg-step-lbl').innerText = `Стъпка ${bldgIdx + 1} от ${bldgStates.length}`;
+            document.getElementById('bldg-exp').innerHTML = st.exp;
+            document.getElementById('bldg-prev').disabled = (bldgIdx === 0);
+            document.getElementById('bldg-next').disabled = (bldgIdx === bldgStates.length - 1);
+        }
+
+        function moveBldg(dir) {
+            bldgIdx = Math.max(0, Math.min(bldgStates.length - 1, bldgIdx + dir));
+            renderBldg();
+        }
+        function resetBldg() { bldgIdx = 0; renderBldg(); }
+
+        // ==========================================
+        // 2. ПАНЕЛ 2: ПРИМЕР 1 (КУЛИ)
+        // ==========================================
+        const twHeights = [4, 2, 5, 1, 3];
+        const twSteps = [
+            { i: 1, ai: 4, popped: 'няма', ans: '0 (празен)', stack: [1], exp: 'Стъпка 1: Кула 1 (вис. 4). Стекът е празен &rarr; лъчът излиза извън редицата (<strong>ans[1] = 0</strong>). Добавяме индекс 1 в стека.' },
+            { i: 2, ai: 2, popped: 'няма', ans: '1 (вис. 4)', stack: [1, 2], exp: 'Стъпка 2: Кула 2 (вис. 2). На върха е кула 1 (вис. 4 &gt; 2) &rarr; тя спира лъча (<strong>ans[2] = 1</strong>). Добавяме индекс 2 в стека.' },
+            { i: 3, ai: 5, popped: '2 (вис. 2), 1 (вис. 4)', ans: '0 (празен)', stack: [3], exp: 'Стъпка 3: Кула 3 (вис. 5). Тя е по-висока от кула 2 (вис. 2) и кула 1 (вис. 4) &rarr; изваждаме ги от стека! Стекът остава празен (<strong>ans[3] = 0</strong>). Добавяме индекс 3.' },
+            { i: 4, ai: 1, popped: 'няма', ans: '3 (вис. 5)', stack: [3, 4], exp: 'Стъпка 4: Кула 4 (вис. 1). На върха е кула 3 (вис. 5 &gt; 1) &rarr; спира лъча (<strong>ans[4] = 3</strong>). Добавяме индекс 4.' },
+            { i: 5, ai: 3, popped: '4 (вис. 1)', ans: '3 (вис. 5)', stack: [3, 5], exp: 'Стъпка 5: Кула 5 (вис. 3). Изваждаме кула 4 (вис. 1 &le; 3). Новият връх е кула 3 (вис. 5 &gt; 3) &rarr; спира лъча (<strong>ans[5] = 3</strong>). Добавяме индекс 5.' }
+        ];
+        let twIdx = 0;
+
+        function renderTowers() {
+            const st = twSteps[twIdx];
+            document.getElementById('tw-i').innerText = st.i;
+            document.getElementById('tw-ai').innerText = st.ai;
+            document.getElementById('tw-pop').innerText = st.popped;
+            document.getElementById('tw-ans').innerText = st.ans;
+            document.getElementById('tw-step-lbl').innerText = `Стъпка ${twIdx + 1} от ${twSteps.length}`;
+
+            const stage = document.getElementById('tw-stage');
+            stage.innerHTML = '';
+            twHeights.forEach((h, idx) => {
+                const oneIdx = idx + 1;
+                let cls = 'bldg-bar';
+                if (oneIdx === st.i) cls += ' current-bar';
+                else if (st.stack.includes(oneIdx)) cls += ' in-stack';
+                else if (oneIdx < st.i) cls += ' shadowed';
+
+                const col = document.createElement('div');
+                col.className = 'bldg-col';
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${h * 28}px;">${h}</div>
+                    <div class="bldg-lbl">i=${oneIdx}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            document.getElementById('tw-stack').innerHTML = st.stack.map(idx =>
+                `<span class="stack-pill">${idx} (вис. ${twHeights[idx - 1]})</span>`
+            ).join(' &rarr; ');
+
+            document.getElementById('tw-exp').innerHTML = st.exp;
+            document.getElementById('tw-prev').disabled = (twIdx === 0);
+            document.getElementById('tw-next').disabled = (twIdx === twSteps.length - 1);
+        }
+
+        function moveTowers(dir) {
+            twIdx = Math.max(0, Math.min(twSteps.length - 1, twIdx + dir));
+            renderTowers();
+        }
+        function resetTowers() { twIdx = 0; renderTowers(); }
+
+        // ==========================================
+        // 3. ПАНЕЛ 4: ПРИМЕР 2 (ХИСТОГРАМА)
+        // ==========================================
+        const histData = [
+            { i: 1, h: 2, L: 0, R: 2, w: 1, area: 2, desc: 'Стълб 1 (h=2): Вляво няма по-малък (L[1]=0), вдясно първият по-малък е на индекс 2 (h=1, R[1]=2). Ширина: 2 - 0 - 1 = 1, Лице: 2 * 1 = 2.' },
+            { i: 2, h: 1, L: 0, R: 7, w: 6, area: 6, desc: 'Стълб 2 (h=1): Най-ниският в цялата хистограма! Разширява се от край до край (L[2]=0, R[2]=7). Ширина: 7 - 0 - 1 = 6, Лице: 1 * 6 = 6.' },
+            { i: 3, h: 5, L: 2, R: 5, w: 2, area: 10, desc: '★ Стълб 3 (h=5): Първият по-малък вляво е на индекс L[3]=2 (h=1), а вдясно е на индекс R[3]=5 (h=2). Обхваща индекси 3 и 4 с ширина 5 - 2 - 1 = 2 и МАКСИМАЛНО ЛИЦЕ 5 * 2 = 10!' },
+            { i: 4, h: 6, L: 3, R: 5, w: 1, area: 6, desc: 'Стълб 4 (h=6): Ограничен веднага от индекс L[4]=3 (h=5) вляво и R[4]=5 (h=2) вдясно. Ширина: 5 - 3 - 1 = 1, Лице: 6 * 1 = 6.' },
+            { i: 5, h: 2, L: 2, R: 7, w: 4, area: 8, desc: 'Стълб 5 (h=2): Първият по-малък вляво е на L[5]=2 (h=1), а вдясно няма по-малък (R[5]=7). Покрива индекси 3, 4, 5, 6 с ширина 7 - 2 - 1 = 4 и лице 2 * 4 = 8.' },
+            { i: 6, h: 3, L: 5, R: 7, w: 1, area: 3, desc: 'Стълб 6 (h=3): Вляво първият по-малък е L[6]=5 (h=2), вдясно няма (R[6]=7). Ширина: 7 - 5 - 1 = 1, Лице: 3 * 1 = 3.' }
+        ];
+
+        function selectHistBar(iVal) {
+            const d = histData[iVal - 1];
+            document.getElementById('hist-badge').innerText = `Стълб i = ${d.i}`;
+            document.getElementById('hi-h').innerText = d.h;
+            document.getElementById('hi-l').innerText = d.L;
+            document.getElementById('hi-r').innerText = d.R;
+            document.getElementById('hi-w').innerText = d.w;
+            document.getElementById('hi-area').innerText = d.area;
+
+            const stage = document.getElementById('hist-stage');
+            stage.innerHTML = '';
+            histData.forEach(bar => {
+                const inRect = (bar.i >= d.L + 1 && bar.i <= d.R - 1);
+                let cls = 'bldg-bar';
+                if (bar.i === d.i) cls += ' current-bar';
+                else if (inRect) cls += ' rect-cover';
+
+                const col = document.createElement('div');
+                col.className = 'bldg-col';
+                col.style.margin = '0 -6px';
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${bar.h * 25}px; width:54px;">${bar.h}</div>
+                    <div class="bldg-lbl">i=${bar.i}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            document.getElementById('hist-exp').innerHTML = d.desc;
+        }
+
+        // ==========================================
+        // 4. ПАНЕЛ 3 И 5: ПЪЛНИ ДЕБЪГЕРИ ЗА mstack1.cpp И mstack2.cpp
+        // ==========================================
+        const debuggers = {
+            'tab-deb1': {
+                title: '⚡ 3. Пълен интерактивен дебъгер за mstack1.cpp',
+                inputVal: '5 | 4 2 5 1 3',
+                code: [
+                    '#include <bits/stdc++.h>',
+                    'using namespace std;',
+                    '',
+                    'const int MAXN = 1000005;',
+                    'int n;',
+                    'int a[MAXN];',
+                    'int ans[MAXN];',
+                    '',
+                    'int main()',
+                    '{',
+                    '    cin >> n;',
+                    '    for(int i = 1; i <= n; i++) cin >> a[i];',
+                    '    stack<int> st;',
+                    '',
+                    '    for(int i = 1; i <= n; i++)',
+                    '    {',
+                    '        while(!st.empty() && a[st.top()] <= a[i])',
+                    '        {',
+                    '            st.pop();',
+                    '        }',
+                    '',
+                    '        if(st.empty()) ans[i] = 0;',
+                    '        else ans[i] = st.top();',
+                    '',
+                    '        st.push(i);',
+                    '    }',
+                    '    for(int i = 1; i <= n; i++)',
+                    '    {',
+                    '        cout << ans[i] << " ";',
+                    '    }',
+                    '    cout << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 12, vars: { i: '-', 'a[i]': '-', st: '[ ]', ans: '[0,0,0,0,0]' }, out: 'изчакване...', msg: 'Прочитаме <strong>n = 5</strong> и масива от височини <strong>a = [4, 2, 5, 1, 3]</strong>.' },
+                    { line: 17, vars: { i: 1, 'a[1]': 4, st: '[ ]', ans: '[0,0,0,0,0]' }, out: 'изчакване...', msg: 'Итерация <strong>i = 1 (a[1] = 4)</strong>: стекът е празен, прескачаме цикъла while.' },
+                    { line: 22, vars: { i: 1, 'a[1]': 4, st: '[ ]', ans: '[0,0,0,0,0]' }, out: 'изчакване...', msg: 'Стекът е празен &rarr; записваме <strong>ans[1] = 0</strong>.' },
+                    { line: 25, vars: { i: 1, 'a[1]': 4, st: '[ 1(4) ]', ans: '[0,0,0,0,0]' }, out: 'изчакване...', msg: 'Добавяме индекс 1 в стека: <strong>st.push(1)</strong>.' },
+                    { line: 17, vars: { i: 2, 'a[2]': 2, st: '[ 1(4) ]', ans: '[0,0,0,0,0]' }, out: 'изчакване...', msg: 'Итерация <strong>i = 2 (a[2] = 2)</strong>: проверяваме върха <strong>a[1] = 4 &lt;= 2</strong> (лъжа, не вадим нищо).' },
+                    { line: 23, vars: { i: 2, 'a[2]': 2, st: '[ 1(4) ]', ans: '[0,1,0,0,0]' }, out: 'изчакване...', msg: 'Стекът не е празен &rarr; записваме <strong>ans[2] = st.top() = 1</strong>.' },
+                    { line: 25, vars: { i: 2, 'a[2]': 2, st: '[ 1(4), 2(2) ]', ans: '[0,1,0,0,0]' }, out: 'изчакване...', msg: 'Добавяме индекс 2 в стека: <strong>st.push(2)</strong>.' },
+                    { line: 19, vars: { i: 3, 'a[3]': 5, st: '[ 1(4) ]', ans: '[0,1,0,0,0]' }, out: 'изчакване...', msg: 'Итерация <strong>i = 3 (a[3] = 5)</strong>: <strong>a[2] = 2 &lt;= 5</strong> е вярно &rarr; изваждаме индекс 2 (<code>st.pop()</code>).' },
+                    { line: 19, vars: { i: 3, 'a[3]': 5, st: '[ ]', ans: '[0,1,0,0,0]' }, out: 'изчакване...', msg: 'Отново в while: <strong>a[1] = 4 &lt;= 5</strong> е вярно &rarr; изваждаме и индекс 1 (<code>st.pop()</code>).' },
+                    { line: 22, vars: { i: 3, 'a[3]': 5, st: '[ ]', ans: '[0,1,0,0,0]' }, out: 'изчакване...', msg: 'Стекът вече е празен &rarr; <strong>ans[3] = 0</strong>.' },
+                    { line: 25, vars: { i: 3, 'a[3]': 5, st: '[ 3(5) ]', ans: '[0,1,0,0,0]' }, out: 'изчакване...', msg: 'Добавяме индекс 3 в стека: <strong>st.push(3)</strong>.' },
+                    { line: 23, vars: { i: 4, 'a[4]': 1, st: '[ 3(5), 4(1) ]', ans: '[0,1,0,3,0]' }, out: 'изчакване...', msg: 'Итерация <strong>i = 4 (a[4] = 1)</strong>: <strong>a[3] = 5 &lt;= 1</strong> е лъжа. Записваме <strong>ans[4] = 3</strong> и правим <code>st.push(4)</code>.' },
+                    { line: 19, vars: { i: 5, 'a[5]': 3, st: '[ 3(5) ]', ans: '[0,1,0,3,0]' }, out: 'изчакване...', msg: 'Итерация <strong>i = 5 (a[5] = 3)</strong>: <strong>a[4] = 1 &lt;= 3</strong> е вярно &rarr; изваждаме индекс 4.' },
+                    { line: 23, vars: { i: 5, 'a[5]': 3, st: '[ 3(5), 5(3) ]', ans: '[0,1,0,3,3]' }, out: 'изчакване...', msg: 'Върхът е 3 (вис. 5 &gt; 3) &rarr; записваме <strong>ans[5] = 3</strong> и добавяме индекс 5 в стека.' },
+                    { line: 29, vars: { i: 'край', 'a[i]': '-', st: '[ 3(5), 5(3) ]', ans: '[0,1,0,3,3]' }, out: '0 1 0 3 3', msg: 'Извеждаме целия масив с отговори: <strong>0 1 0 3 3</strong>.' }
+                ]
+            },
+            'tab-deb2': {
+                title: '⚡ 5. Пълен интерактивен дебъгер за mstack2.cpp',
+                inputVal: '6 | 2 1 5 6 2 3',
+                code: [
+                    '#include <bits/stdc++.h>',
+                    'using namespace std;',
+                    '',
+                    'const int MAXN = 1000005;',
+                    'int n;',
+                    'long long h[MAXN];',
+                    'int L[MAXN], R[MAXN];',
+                    '',
+                    'int main()',
+                    '{',
+                    '    cin >> n;',
+                    '    for(int i = 1; i <= n; i++) cin >> h[i];',
+                    '    stack<int> st;',
+                    '',
+                    '    for(int i = 1; i <= n; i++)',
+                    '    {',
+                    '        while(!st.empty() && h[st.top()] >= h[i])',
+                    '        {',
+                    '            st.pop();',
+                    '        }',
+                    '        L[i] = st.empty() ? 0 : st.top();',
+                    '        st.push(i);',
+                    '    }',
+                    '    while(!st.empty()) st.pop();',
+                    '',
+                    '    for(int i = n; i >= 1; i--)',
+                    '    {',
+                    '        while(!st.empty() && h[st.top()] >= h[i])',
+                    '        {',
+                    '            st.pop();',
+                    '        }',
+                    '        R[i] = st.empty() ? n + 1 : st.top();',
+                    '        st.push(i);',
+                    '    }',
+                    '    long long max_area = 0;',
+                    '    for(int i = 1; i <= n; i++)',
+                    '    {',
+                    '        long long width = R[i] - L[i] - 1;',
+                    '        long long current_area = h[i] * width;',
+                    '        max_area = max(max_area, current_area);',
+                    '    }',
+                    '    cout << max_area << "\\n";',
+                    '}'
+                ],
+                steps: [
+                    { line: 12, vars: { фаза: 'Вход', st: '[ ]', 'L[]': '[-,-,-,-,-,-]', 'R[]': '[-,-,-,-,-,-]', max_area: 0 }, out: 'изчакване...', msg: 'Прочитаме <strong>n = 6</strong> и височините на стълбовете <strong>h = [2, 1, 5, 6, 2, 3]</strong>.' },
+                    { line: 21, vars: { фаза: 'L[1..2]', st: '[ 2(1) ]', 'L[]': '[0,0,-,-,-,-]', 'R[]': '[-,-,-,-,-,-]', max_area: 0 }, out: 'изчакване...', msg: 'За <strong>i = 1 (h=2)</strong> получаваме <strong>L[1]=0</strong>. За <strong>i = 2 (h=1)</strong> изваждаме 1 от стека и получаваме <strong>L[2]=0</strong>.' },
+                    { line: 21, vars: { фаза: 'L[3..4]', st: '[ 2(1), 3(5), 4(6) ]', 'L[]': '[0,0,2,3,-,-]', 'R[]': '[-,-,-,-,-,-]', max_area: 0 }, out: 'изчакване...', msg: 'За <strong>i = 3 (h=5)</strong> върхът е 2 &rarr; <strong>L[3]=2</strong>. За <strong>i = 4 (h=6)</strong> върхът е 3 &rarr; <strong>L[4]=3</strong>.' },
+                    { line: 21, vars: { фаза: 'L[5..6]', st: '[ 2(1), 5(2), 6(3) ]', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[-,-,-,-,-,-]', max_area: 0 }, out: 'изчакване...', msg: 'За <strong>i = 5 (h=2)</strong> изваждаме 4 и 3, остава връх 2 &rarr; <strong>L[5]=2</strong>. За <strong>i = 6 (h=3)</strong> &rarr; <strong>L[6]=5</strong>.' },
+                    { line: 24, vars: { фаза: 'Изчистване', st: '[ ]', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[-,-,-,-,-,-]', max_area: 0 }, out: 'изчакване...', msg: 'Изпразваме стека с <code>while(!st.empty()) st.pop();</code> преди обхождането от дясно наляво.' },
+                    { line: 32, vars: { фаза: 'R[6..4]', st: '[ 5(2), 4(6) ]', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[-,-,-,5,7,7]', max_area: 0 }, out: 'изчакване...', msg: 'Обхождаме от дясно наляво: намираме <strong>R[6]=7</strong>, <strong>R[5]=7</strong> и <strong>R[4]=5</strong>.' },
+                    { line: 32, vars: { фаза: 'R[3..1]', st: '[ 2(1) ]', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[2,7,5,5,7,7]', max_area: 0 }, out: 'изчакване...', msg: 'Довършваме масива R[]: <strong>R[3]=5</strong>, <strong>R[2]=7</strong> и <strong>R[1]=2</strong>.' },
+                    { line: 39, vars: { фаза: 'Лице i=1..2', st: '-', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[2,7,5,5,7,7]', max_area: 6 }, out: 'изчакване...', msg: 'Пресмятаме лицата: за i=1 имаме 2*(2-0-1)=2; за i=2 имаме 1*(7-0-1)=6 &rarr; <strong>max_area = 6</strong>.' },
+                    { line: 40, vars: { фаза: 'Лице i=3', st: '-', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[2,7,5,5,7,7]', max_area: 10 }, out: 'изчакване...', msg: 'За <strong>i = 3 (h=5)</strong>: ширина = R[3] - L[3] - 1 = 5 - 2 - 1 = 2; лице = 5 * 2 = 10 &rarr; <strong>max_area = 10</strong>!' },
+                    { line: 42, vars: { фаза: 'Край', st: '-', 'L[]': '[0,0,2,3,2,5]', 'R[]': '[2,7,5,5,7,7]', max_area: 10 }, out: '10', msg: 'След проверка на останалите стълбове (лица 6, 8, 3) отпечатваме максималното лице: <strong>10</strong>.' }
+                ]
+            }
+        };
+
+        const debState = {};
+
+        function buildDebuggers() {
+            Object.keys(debuggers).forEach(tabId => {
+                const cfg = debuggers[tabId];
+                debState[tabId] = 0;
+                const pane = document.getElementById(tabId);
+
+                pane.innerHTML = `
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>${cfg.title}</span>
+                            <span id="${tabId}-lbl" style="font-size:0.85rem; color:var(--group-c); font-family:monospace;"></span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="${tabId}-prev" onclick="stepDeb('${tabId}', -1)">&larr; Предишна стъпка</button>
+                            <button class="btn-blue" id="${tabId}-next" onclick="stepDeb('${tabId}', 1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetDeb('${tabId}')">Отначало</button>
+                        </div>
+
+                        <div class="io-bar">
+                            <div class="io-mini">
+                                <div class="io-mini-label">Примерен вход (stdin)</div>
+                                <div style="color:#38bdf8;">${cfg.inputVal}</div>
+                            </div>
+                            <div class="io-mini">
+                                <div class="io-mini-label">Изход на програмата (stdout)</div>
+                                <div id="${tabId}-out" style="color:var(--success); font-weight:bold;"></div>
+                            </div>
+                        </div>
+
+                        <div class="var-tracker" id="${tabId}-vars"></div>
+                        <div class="code-box" id="${tabId}-code"></div>
+                        <div class="calc-box" id="${tabId}-exp"></div>
+                    </div>
+                `;
+                renderDeb(tabId);
+            });
+        }
+
+        function renderDeb(tabId) {
+            const cfg = debuggers[tabId];
+            const idx = debState[tabId];
+            const step = cfg.steps[idx];
+
+            document.getElementById(`${tabId}-lbl`).innerText = `Стъпка ${idx + 1} от ${cfg.steps.length}`;
+            document.getElementById(`${tabId}-out`).innerText = step.out;
+            document.getElementById(`${tabId}-exp`).innerHTML = step.msg;
+
+            document.getElementById(`${tabId}-vars`).innerHTML = Object.entries(step.vars).map(([k, v]) => `
+                <div class="var-box">
+                    <div class="var-name">${k}</div>
+                    <div class="var-val">${v}</div>
+                </div>
+            `).join('');
+
+            document.getElementById(`${tabId}-code`).innerHTML = cfg.code.map((lineTxt, i) => {
+                const ln = i + 1;
+                const active = (ln === step.line) ? 'active-line' : '';
+                const safeTxt = lineTxt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                    <div class="code-line ${active}">
+                        <span class="line-num">${ln}</span>
+                        <span class="line-text">${safeTxt}</span>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById(`${tabId}-prev`).disabled = (idx === 0);
+            document.getElementById(`${tabId}-next`).disabled = (idx === cfg.steps.length - 1);
+        }
+
+        function stepDeb(tabId, dir) {
+            const max = debuggers[tabId].steps.length - 1;
+            debState[tabId] = Math.max(0, Math.min(max, debState[tabId] + dir));
+            renderDeb(tabId);
+        }
+        function resetDeb(tabId) { debState[tabId] = 0; renderDeb(tabId); }
+
+        // ==========================================
+        // 5. ПАНЕЛ 6: СТЕК ОТ МОНОХРОМНИ БЛОКОВЕ (ZUMA)
+        // ==========================================
+        const zumaModes = {
+            1: {
+                seq: [1, 2, 2, 1, 2, 1, 1, 3],
+                steps: [
+                    { idx: 0, st: [{c:1, k:1}], exp: 'Пада <strong>1</strong> &rarr; Стекът е празен, създаваме нов блок: <strong>[ (1, 1) ]</strong>.' },
+                    { idx: 1, st: [{c:1, k:1}, {c:2, k:1}], exp: 'Пада <strong>2</strong> &rarr; Различен цвят от върха, добавяме нов блок: <strong>[ (1, 1), (2, 1) ]</strong>.' },
+                    { idx: 2, st: [{c:1, k:1}, {c:2, k:2}], exp: 'Пада <strong>2</strong> &rarr; Слива се с върха на стека! Броячът става 2: <strong>[ (1, 1), (2, 2) ]</strong>.' },
+                    { idx: 3, st: [{c:1, k:1}, {c:2, k:2}, {c:1, k:1}], exp: 'Пада <strong>1</strong> &rarr; Различен цвят от върха (2), създаваме нов блок: <strong>[ (1, 1), (2, 2), (1, 1) ]</strong>.' },
+                    { idx: 4, st: [{c:1, k:1}, {c:2, k:2}, {c:1, k:1}, {c:2, k:1}], exp: 'Пада <strong>2</strong> &rarr; Различен цвят от върха (1), нов блок: <strong>[ (1, 1), (2, 2), (1, 1), (2, 1) ]</strong>.' },
+                    { idx: 5, st: [{c:1, k:1}, {c:2, k:2}, {c:1, k:1}, {c:2, k:1}, {c:1, k:1}], exp: 'Пада <strong>1</strong> &rarr; Създаваме нов блок: <strong>[ (1, 1), (2, 2), (1, 1), (2, 1), (1, 1) ]</strong>.' },
+                    { idx: 6, st: [{c:1, k:1}, {c:2, k:2}, {c:1, k:1}, {c:2, k:1}, {c:1, k:2}], exp: 'Пада <strong>1</strong> &rarr; Слива се с върха до <strong>(1, 2)</strong>.' },
+                    { idx: 7, st: [{c:1, k:1}, {c:2, k:2}, {c:1, k:1}, {c:2, k:1}, {c:1, k:2}, {c:3, k:1}], exp: 'Пада <strong>3</strong> &rarr; Нов блок <strong>(3, 1)</strong>. В улея остават общо <strong>8</strong> топчета.' }
+                ]
+            },
+            2: {
+                seq: [1, 2, 2, 2, 1, 1],
+                steps: [
+                    { idx: 0, st: [{c:1, k:1}], exp: 'Пада <strong>1</strong> &rarr; Стек: <strong>[ (1, 1) ]</strong>.' },
+                    { idx: 1, st: [{c:1, k:1}, {c:2, k:1}], exp: 'Пада <strong>2</strong> &rarr; Стек: <strong>[ (1, 1), (2, 1) ]</strong>.' },
+                    { idx: 2, st: [{c:1, k:1}, {c:2, k:2}], exp: 'Пада <strong>2</strong> &rarr; Слива се с върха: <strong>[ (1, 1), (2, 2) ]</strong>.' },
+                    { idx: 3, st: [{c:1, k:1}], exp: '💥 Пада трета <strong>2</strong> &rarr; Върхът става <strong>(2, 3)</strong> и веднага ЕКСПЛОДИРА (<code>top_idx--</code>)! В стека остава само <strong>[ (1, 1) ]</strong>.' },
+                    { idx: 4, st: [{c:1, k:2}], exp: 'Пада <strong>1</strong> &rarr; Залепя се директно към старата единица на върха! Стек: <strong>[ (1, 2) ]</strong>.' },
+                    { idx: 5, st: [], exp: '💥 ВЕРИЖНА РЕАКЦИЯ! Пада <strong>1</strong> &rarr; Блокът на върха става <strong>(1, 3)</strong> и също експлодира! Стекът остава напълно празен (<strong>0 останали топчета</strong>).' }
+                ]
+            }
+        };
+        let curZumaMode = 2;
+        let zumaStepIdx = 0;
+
+        function loadZumaMode(m) {
+            curZumaMode = m;
+            zumaStepIdx = 0;
+            renderZuma();
+        }
+
+        function renderZuma() {
+            const cfg = zumaModes[curZumaMode];
+            const st = cfg.steps[zumaStepIdx];
+
+            document.getElementById('zm-step-lbl').innerText = `Топче ${zumaStepIdx + 1} от ${cfg.steps.length}`;
+            document.getElementById('zm-stream').innerHTML = cfg.seq.map((c, idx) => {
+                const outline = (idx === st.idx) ? 'transform:scale(1.22); box-shadow: 0 0 12px #fff;' : (idx > st.idx ? 'opacity:0.35;' : '');
+                return `<span class="ball-circle col-${c}" style="${outline}">${c}</span>`;
+            }).join('');
+
+            const stackBox = document.getElementById('zm-stack');
+            if (st.st.length === 0) {
+                stackBox.innerHTML = `<span style="color:var(--success); font-weight:700; font-family:monospace;">[ Стекът е празен (top_idx = 0) ]</span>`;
+            } else {
+                stackBox.innerHTML = st.st.map(b => `
+                    <span class="stack-pill" style="display:inline-flex; align-items:center; gap:6px;">
+                        <span class="ball-circle col-${b.c}" style="width:24px; height:24px; font-size:0.8rem;">${b.c}</span>
+                        (цвят ${b.c}, брой ${b.k})
+                    </span>
+                `).join(' &rarr; ');
+            }
+
+            document.getElementById('zm-exp').innerHTML = st.exp;
+            document.getElementById('zm-prev').disabled = (zumaStepIdx === 0);
+            document.getElementById('zm-next').disabled = (zumaStepIdx === cfg.steps.length - 1);
+        }
+
+        function moveZuma(dir) {
+            const max = zumaModes[curZumaMode].steps.length - 1;
+            zumaStepIdx = Math.max(0, Math.min(max, zumaStepIdx + dir));
+            renderZuma();
+        }
+        function resetZuma() { zumaStepIdx = 0; renderZuma(); }
+
+        // ==========================================
+        // 6. ПАНЕЛ 7: ТЪНКОСТИ И ЧЕСТИ ГРЕШКИ
+        // ==========================================
+        function showTipCase(num) {
+            const vis = document.getElementById('tip-visual');
+            const exp = document.getElementById('tip-exp');
+
+            if (num === 1) {
+                vis.innerHTML = `
+                    <div style="font-family:Consolas, monospace; color:#f8fafc;">Масив с дубликати: a = [ 5, 3, 3, 4 ]</div>
+                    <div><span class="stack-pill">Вярно: while(a[st.top()] &lt;= a[i]) st.pop();</span></div>
+                    <div style="color:var(--text-muted); font-size:0.85rem;">При втората 3-ка старата 3-ка се изхвърля, защото не е строго по-голяма!</div>
+                `;
+                exp.innerHTML = `<strong>Строго по-голям елемент:</strong> Когато търсите строго по-голям елемент, условието във <code>while</code> задължително е <strong><code>a[st.top()] &lt;= a[i]</code></strong>. Ако сложите само <code>&lt;</code>, равният елемент ще остане на върха и ще бъде взет погрешно като по-голям.`;
+            } else if (num === 2) {
+                vis.innerHTML = `
+                    <div style="font-family:Consolas, monospace; color:#f8fafc;">При равни елементи [ ..., 2, ..., 2, ... ]:</div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+                        <span class="stack-pill">Вляво: строго по-малък (&lt;)</span>
+                        <span class="stack-pill" style="border-color:var(--accent); color:#93c5fd;">Вдясно: по-малък или равен (&lt;=)</span>
+                    </div>
+                `;
+                exp.innerHTML = `<strong>Сума на минимумите на всички подмасиви:</strong> За да не преброите един и същ подмасив с две еднакви минимални стойности два пъти, използвайте <strong>асиметрични неравенства</strong> — строго от едната страна и нестрого от другата!`;
+            } else {
+                vis.innerHTML = `
+                    <div style="font-family:Consolas, monospace; color:#f8fafc;">int st[MAXN], top_idx = 0;</div>
+                    <div style="display:flex; gap:0.65rem; flex-wrap:wrap; justify-content:center;">
+                        <span class="stack-pill">Връх: st[top_idx]</span>
+                        <span class="stack-pill" style="border-color:var(--warning); color:#fcd34d;">Втори под върха: st[top_idx - 1]</span>
+                    </div>
+                `;
+                exp.innerHTML = `<strong>Статичен масив срещу std::stack:</strong> Освен по-високата скорост, масивът <code>st[1..top_idx]</code> ви позволява директно за <strong>O(1)</strong> да достъпите елемента точно под върха чрез <strong><code>st[top_idx - 1]</code></strong> без излишни <code>pop()</code> и <code>push()</code> операции.`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderBldg();
+            renderTowers();
+            buildDebuggers();
+            selectHistBar(3);
+            renderZuma();
+            showTipCase(1);
+        });
+    </script>
+</body>
+
+</html>
