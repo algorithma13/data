@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение: Задача D13 (Cowntact Tracing) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #3b82f6; /* Син акцент за задачите от Група D */
+            --accent-hover: #2563eb;
+            --group-d: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--accent); }
+        .logo svg { width: 24px; height: 24px; color: var(--accent); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(59, 130, 246, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 1.25rem;
+        }
+
+        .task-header h1 {
+            font-size: 1.9rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            line-height: 1.25;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            margin: 1.75rem 0 0.85rem 0;
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.01rem; }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .step-card {
+            background-color: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 0.55rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .step-card:hover {
+            border-color: var(--group-d);
+            background-color: rgba(59, 130, 246, 0.08);
+        }
+
+        .step-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .step-card h4 span {
+            font-size: 0.75rem;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.15);
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.3rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ДЕСЕН ПАНЕЛ: ДЕБЪГЕР И ТАБОВЕ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.85rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: default;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.4rem 1.75rem;
+            overflow-y: auto;
+        }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-bottom: 0.9rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.45rem 0.85rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.83rem;
+            background: var(--accent);
+            color: #fff;
+        }
+
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+        .btn-orange { background-color: var(--group-d); color: #000; }
+        .btn-orange:hover { background-color: #d97706; color: #fff; }
+
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        /* ВИЗУАЛНА ЛЕНТА НА КРАВИТЕ */
+        .mini-cows {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.6rem;
+            padding: 0.65rem 1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .mini-cow {
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.4rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            background: var(--code-bg);
+        }
+
+        .mini-cow.sick {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .mini-cow.healthy {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.79rem;
+            overflow-x: auto;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.12rem 0.85rem;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: background-color 0.12s;
+        }
+
+        .code-line:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .code-line.active-line {
+            background-color: rgba(59, 130, 246, 0.25);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 30px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .calc-box {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 0.9rem 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            margin-top: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: #60a5fa;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Решение & Трасиране</span>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ОБЯСНЕНИЕ НА C++ РЕШЕНИЕТО (cowntact.cpp)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА D13: Решение на C++ <br><span style="font-size: 1.25rem; color: var(--text-muted); font-weight: normal;">(cowntact.cpp)</span></h1>
+                <div class="task-meta">
+                    <div>⚡ <strong>Алгоритъм:</strong> Сортиране + Тройна симулация</div>
+                    <div>📦 <strong>Памет:</strong> O(N + T)</div>
+                </div>
+            </div>
+
+            <p>Кликнете върху някоя от логическите секции по-долу или използвайте бутоните в десния панел, за да проследите изпълнението на програмата ред по ред върху примерния вход (<code>N = 4, T = 3, target = "1100"</code>).</p>
+
+            <h2>Основни етапи в кода</h2>
+
+            <div class="step-card" onclick="highlightLine(7)">
+                <h4>1. Структура Shake и функция за сортиране cmp <span>Редове 7 – 15</span></h4>
+                <p style="margin:0; font-size:0.94rem;">Дефинираме структура <code>Shake</code> с полета <code>t, x, y</code> за всяко взаимодействие и компаратор <code>cmp</code>, който подрежда контактите във възходящ ред по времето <code>t</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(21)">
+                <h4>2. Четене на входа и 0-базирано индексиране <span>Редове 21 – 32</span></h4>
+                <p style="margin:0; font-size:0.94rem;">Прочитаме целевия низ <code>target</code> и масива от контакти <code>shakes</code>. Изваждаме 1 от номерата на кравите (<code>shakes[i].x--</code> и <code>y--</code>), за да съответстват директно на индексите <code>0..n-1</code> в низа <code>target</code>. След това сортираме вектора по време.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(37)">
+                <h4>3. Външни цикли по нулев пациент p и лимит k <span>Редове 37 – 46</span></h4>
+                <p style="margin:0; font-size:0.94rem;">За всяка крава <code>p</code>, която е болна в края (<code>target[p] != '0'</code>), изпробваме всяка стойност на <code>k</code> от <code>0</code> до <code>t + 1</code>. Създаваме начален низ <code>current_state(n, '0')</code>, заразяваме <code>current_state[p] = '1'</code> и нулираме броячите <code>shakes_count</code>.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(47)">
+                <h4>4. Симулация на контактите <span>Редове 47 – 69</span></h4>
+                <p style="margin:0; font-size:0.94rem;">Важен детайл: първо запазваме булевите променливи <code>u_infected</code> и <code>v_infected</code> <strong>преди</strong> самото ръкостискане! Така току-що заразена крава няма веднага в същия момент да предаде заразата обратно.</p>
+            </div>
+
+            <div class="step-card" onclick="highlightLine(70)">
+                <h4>5. Проверка на хипотезата и отпечатване <span>Редове 70 – 81</span></h4>
+                <p style="margin:0; font-size:0.94rem;">Ако след всички контакти <code>current_state == target</code>, обновяваме <code>min_k</code> и <code>max_k</code>. Накрая, ако <code>max_k == t + 1</code>, извеждаме <code>Infinity</code>.</p>
+            </div>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: ИНТЕРАКТИВЕН ДЕБЪГЕР НА C++ КОДА
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+            <div class="tabs-header">
+                <button class="tab-btn">Интерактивно трасиране на cowntact.cpp</button>
+            </div>
+
+            <div class="tabs-content">
+                <div class="vis-card">
+                    <div class="vis-title">
+                        <span>⚡ Дебъгер ред по ред</span>
+                        <span id="step-indicator" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn-slate" id="btn-prev" onclick="moveStep(-1)">&larr; Назад</button>
+                        <button id="btn-next" onclick="moveStep(1)">Следваща стъпка &rarr;</button>
+                        <button class="btn-orange" onclick="resetTrace()">Отначало</button>
+                    </div>
+
+                    <div class="state-grid">
+                        <div class="state-box">
+                            <div class="state-label">Хипотеза (p, k)</div>
+                            <div class="state-val" id="st-pk">-</div>
+                        </div>
+                        <div class="state-box">
+                            <div class="state-label">current_state</div>
+                            <div class="state-val" id="st-cur">"0000"</div>
+                        </div>
+                        <div class="state-box">
+                            <div class="state-label">min_k / max_k</div>
+                            <div class="state-val" id="st-minmax">1000 / -1</div>
+                        </div>
+                        <div class="state-box">
+                            <div class="state-label">Пациенти</div>
+                            <div class="state-val" id="st-ans">0</div>
+                        </div>
+                    </div>
+
+                    <div class="mini-cows" id="mini-cows"></div>
+
+                    <div class="code-box" id="code-box"></div>
+
+                    <div class="calc-box" id="explanation-box"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПОДВИЖЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        // ==========================================
+        // C++ КОД И СТЪПКИ ЗА ТРАСИРАНЕ
+        // ==========================================
+        const codeLines = [
+            { num: 1, text: '#include <iostream>', exp: 'Стандартна библиотека за вход и изход.' },
+            { num: 2, text: '#include <string>', exp: 'Библиотека за работа с низове std::string.' },
+            { num: 3, text: '#include <vector>', exp: 'Библиотека за динамични масиви std::vector.' },
+            { num: 4, text: '#include <algorithm>', exp: 'Библиотека за sort, min и max.' },
+            { num: 5, text: 'using namespace std;', exp: 'Стандартно пространство от имена.' },
+            { num: 6, text: '', exp: '' },
+            { num: 7, text: 'struct Shake {', exp: 'Структура, описваща един контакт между две крави.' },
+            { num: 8, text: '    int t, x, y;', exp: 'Време t и индекси на двете крави x и y.' },
+            { num: 9, text: '};', exp: 'Край на структурата Shake.' },
+            { num: 10, text: '', exp: '' },
+            { num: 11, text: 'bool cmp(const Shake& a, const Shake& b) {', exp: 'Функция за сравнение на два контакта по време.' },
+            { num: 12, text: '    return a.t < b.t;', exp: 'Подрежда контактите хронологично във възходящ ред.' },
+            { num: 13, text: '}', exp: 'Край на cmp.' },
+            { num: 14, text: '', exp: '' },
+            { num: 15, text: 'int main() {', exp: 'Начало на главната функция main.' },
+            { num: 16, text: '    ios_base::sync_with_stdio(false); cin.tie(NULL);', exp: 'Ускоряване на стандартния вход и изход.' },
+            { num: 17, text: '    int n, t; cin >> n >> t;', exp: 'Прочитаме броя крави n = 4 и броя контакти t = 3.' },
+            { num: 18, text: '    string target; cin >> target;', exp: 'Прочитаме крайното състояние target = "1100".' },
+            { num: 19, text: '    vector<Shake> shakes(t);', exp: 'Създаваме вектор за трите контакта.' },
+            { num: 20, text: '    for(int i = 0; i < t; i++) {', exp: 'Цикъл за четене на контактите.' },
+            { num: 21, text: '        cin >> shakes[i].t >> shakes[i].x >> shakes[i].y;', exp: 'Четем времето и номерата на кравите.' },
+            { num: 22, text: '        shakes[i].x--; shakes[i].y--;', exp: 'Преобразуваме номерата на кравите от 1..N в индекси 0..N-1.' },
+            { num: 23, text: '    }', exp: 'Край на четенето.' },
+            { num: 24, text: '    sort(shakes.begin(), shakes.end(), cmp);', exp: 'Сортираме контактите по време: t=5 (1-2), t=6 (1-3), t=7 (0-1).' },
+            { num: 25, text: '    int possible_patients = 0, min_k = 1000, max_k = -1;', exp: 'Инициализираме търсените отговори.' },
+            { num: 26, text: '', exp: '' },
+            { num: 27, text: '    for(int p = 0; p < n; p++) {', exp: 'Външен цикъл: избираме хипотетичен нулев пациент p.' },
+            { num: 28, text: '        if(target[p] == \'0\') continue;', exp: 'Ако крава p е здрава в края, тя няма как да е нулев пациент.' },
+            { num: 29, text: '        bool valid_patient = false;', exp: 'Флаг дали за крава p сме намерили поне едно валидно k.' },
+            { num: 30, text: '        for(int k = 0; k <= t + 1; k++) {', exp: 'Вътрешен цикъл по лимита на заразяване k от 0 до t + 1.' },
+            { num: 31, text: '            string current_state(n, \'0\');', exp: 'В началото на симулацията всички крави са здрави ("0000").' },
+            { num: 32, text: '            vector<int> shakes_count(n, 0);', exp: 'Брояч на ръкостисканията за всяка заразена крава.' },
+            { num: 33, text: '            current_state[p] = \'1\';', exp: 'Заразяваме единствено нулевия пациент p.' },
+            { num: 34, text: '            for(int i = 0; i < t; i++) {', exp: 'Обхождаме контактите в хронологичен ред.' },
+            { num: 35, text: '                int u = shakes[i].x, v = shakes[i].y;', exp: 'Вземаме двете срещащи се крави u и v.' },
+            { num: 36, text: '                bool u_infected = (current_state[u] == \'1\');', exp: 'Проверяваме дали u е била болна ПРЕДИ контакта.' },
+            { num: 37, text: '                bool v_infected = (current_state[v] == \'1\');', exp: 'Проверяваме дали v е била болна ПРЕДИ контакта.' },
+            { num: 38, text: '                if(u_infected) {', exp: 'Ако u е болна:' },
+            { num: 39, text: '                    shakes_count[u]++;', exp: 'Увеличаваме броя на контактите на u след заразяване.' },
+            { num: 40, text: '                    if(shakes_count[u] <= k) current_state[v] = \'1\';', exp: 'Ако не е надхвърлила лимита k, заразява крава v!' },
+            { num: 41, text: '                }', exp: 'Край на проверката за u.' },
+            { num: 42, text: '                if(v_infected) {', exp: 'Ако v е болна:' },
+            { num: 43, text: '                    shakes_count[v]++;', exp: 'Увеличаваме броя на контактите на v след заразяване.' },
+            { num: 44, text: '                    if(shakes_count[v] <= k) current_state[u] = \'1\';', exp: 'Ако не е надхвърлила лимита k, заразява крава u!' },
+            { num: 45, text: '                }', exp: 'Край на проверката за v.' },
+            { num: 46, text: '            }', exp: 'Край на симулацията на контактите.' },
+            { num: 47, text: '            if(current_state == target) {', exp: 'Проверяваме дали резултатът съвпада с target ("1100").' },
+            { num: 48, text: '                valid_patient = true;', exp: 'Крава p е валиден кандидат за нулев пациент!' },
+            { num: 49, text: '                min_k = min(min_k, k); max_k = max(max_k, k);', exp: 'Актуализираме минималното и максималното валидно k.' },
+            { num: 50, text: '            }', exp: 'Край на проверката.' },
+            { num: 51, text: '        }', exp: 'Край на цикъла по k.' },
+            { num: 52, text: '        if(valid_patient) possible_patients++;', exp: 'Ако крава p е валидна поне за едно k, увеличаваме броя пациенти.' },
+            { num: 53, text: '    }', exp: 'Край на цикъла по p.' },
+            { num: 54, text: '    cout << possible_patients << " " << min_k << " ";', exp: 'Отпечатваме броя възможни нулеви пациенти и min_k.' },
+            { num: 55, text: '    if(max_k == t + 1) cout << "Infinity\\n";', exp: 'Ако max_k е достигнало t + 1, отпечатваме Infinity.' },
+            { num: 56, text: '    else cout << max_k << "\\n";', exp: 'Иначе отпечатваме конкретната стойност на max_k.' },
+            { num: 57, text: '}', exp: 'Край на програмата.' }
+        ];
+
+        const traceSteps = [
+            { line: 18, pk: '-', cur: '0000', shakes: [0,0,0,0], minmax: '1000 / -1', ans: 0, msg: 'Прочитаме входните данни: <strong>n = 4, t = 3</strong> и целевия низ <strong>target = "1100"</strong>.' },
+            { line: 24, pk: '-', cur: '0000', shakes: [0,0,0,0], minmax: '1000 / -1', ans: 0, msg: 'След намаляване на индексите с 1 и сортиране по време получаваме контактите: <strong>(t=5: 1&harr;2), (t=6: 1&harr;3), (t=7: 0&harr;1)</strong>.' },
+            { line: 33, pk: 'p=0, k=0', cur: '1000', shakes: [0,0,0,0], minmax: '1000 / -1', ans: 0, msg: 'Тестваме <strong>p = 0 (Крава 1), k = 0</strong>. Задаваме <code>current_state = "1000"</code>.' },
+            { line: 47, pk: 'p=0, k=0', cur: '1000', shakes: [1,0,0,0], minmax: '1000 / -1', ans: 0, msg: 'При <strong>k = 0</strong> крава 0 не може да зарази крава 1 в момент t=7. Финалното състояние <code>"1000" != "1100"</code> &rarr; невалидно.' },
+            { line: 33, pk: 'p=0, k=1', cur: '1000', shakes: [0,0,0,0], minmax: '1000 / -1', ans: 0, msg: 'Тестваме <strong>p = 0 (Крава 1), k = 1</strong>. В моменти t=5 и t=6 крави 1, 2 и 3 са още здрави.' },
+            { line: 40, pk: 'p=0, k=1', cur: '1100', shakes: [1,0,0,0], minmax: '1000 / -1', ans: 0, msg: 'В момент <strong>t = 7 (контакт 0&harr;1)</strong>: крава 0 е болна, увеличава <code>shakes_count[0] = 1 &le; k</code> и заразява крава 1! Състоянието става <strong>"1100"</strong>.' },
+            { line: 49, pk: 'p=0, k=1', cur: '1100', shakes: [1,0,0,0], minmax: '1 / 1', ans: 0, msg: 'Успех! <code>current_state == target ("1100")</code>! Отбелязваме <code>valid_patient = true</code>, <strong>min_k = 1, max_k = 1</strong>.' },
+            { line: 49, pk: 'p=0, k=4', cur: '1100', shakes: [1,0,0,0], minmax: '1 / 4', ans: 0, msg: 'За <strong>k = 2, 3 и 4 (t+1)</strong> симулацията протича идентично и отново дава <code>"1100"</code> &rarr; <strong>max_k става 4 (t + 1)</strong>.' },
+            { line: 52, pk: 'p=0 приключи', cur: '1100', shakes: [1,0,0,0], minmax: '1 / 4', ans: 1, msg: 'Приключихме с <strong>p = 0</strong>: понеже <code>valid_patient == true</code>, увеличаваме <strong>possible_patients = 1</strong>.' },
+            { line: 33, pk: 'p=1, k=1', cur: '0100', shakes: [0,0,0,0], minmax: '1 / 4', ans: 1, msg: 'Тестваме <strong>p = 1 (Крава 2)</strong>: при <code>k = 0</code> остава <code>"0100"</code>, а при <code>k &ge; 1</code> още в момент t=5 заразява крава 2 (Което в target е \'0\') &rarr; невалиден пациент!' },
+            { line: 28, pk: 'p=2, p=3', cur: '0000', shakes: [0,0,0,0], minmax: '1 / 4', ans: 1, msg: 'За <strong>p = 2</strong> и <strong>p = 3</strong> имаме <code>target[p] == \'0\'</code>, затова ги пропускаме веднага с <code>continue</code>.' },
+            { line: 55, pk: 'Финал', cur: '1100', shakes: [1,0,0,0], minmax: '1 / 4', ans: 1, msg: 'Тъй като <strong>max_k == t + 1 (4)</strong>, програмата отпечатва финалния отговор: <strong>1 1 Infinity</strong>.' }
+        ];
+
+        let curStep = 0;
+
+        function renderCodeBox(activeLine) {
+            const box = document.getElementById('code-box');
+            box.innerHTML = codeLines.map(item => `
+                <div class="code-line ${item.num === activeLine ? 'active-line' : ''}" id="cline-${item.num}" onclick="highlightLine(${item.num})">
+                    <span class="line-num">${item.text ? item.num : ''}</span>
+                    <span class="line-text">${item.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                </div>
+            `).join('');
+
+            const activeEl = document.getElementById(`cline-${activeLine}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+
+        function renderMiniCows(stateStr, shakesArr) {
+            const container = document.getElementById('mini-cows');
+            container.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const sick = stateStr[i] === '1';
+                container.innerHTML += `
+                    <div class="mini-cow ${sick ? 'sick' : 'healthy'}">
+                        Крава ${i + 1} [p=${i}]: ${sick ? 'Болна (1)' : 'Здрава (0)'} | контакти: ${shakesArr[i]}
+                    </div>
+                `;
+            }
+        }
+
+        function highlightLine(lineNum) {
+            renderCodeBox(lineNum);
+            const found = codeLines.find(x => x.num === lineNum);
+            if (found && found.exp) {
+                document.getElementById('explanation-box').innerHTML = `<strong>Ред ${lineNum}:</strong> ${found.exp}`;
+            }
+        }
+
+        function updateView() {
+            const s = traceSteps[curStep];
+            renderCodeBox(s.line);
+            renderMiniCows(s.cur, s.shakes);
+
+            document.getElementById('step-indicator').innerText = `Стъпка ${curStep + 1} от ${traceSteps.length}`;
+            document.getElementById('st-pk').innerText = s.pk;
+            document.getElementById('st-cur').innerText = `"${s.cur}"`;
+            document.getElementById('st-minmax').innerText = s.minmax;
+            document.getElementById('st-ans').innerText = s.ans;
+            document.getElementById('explanation-box').innerHTML = s.msg;
+
+            document.getElementById('btn-prev').disabled = (curStep === 0);
+            document.getElementById('btn-next').disabled = (curStep === traceSteps.length - 1);
+        }
+
+        function moveStep(dir) {
+            curStep = Math.max(0, Math.min(traceSteps.length - 1, curStep + dir));
+            updateView();
+        }
+
+        function resetTrace() {
+            curStep = 0;
+            updateView();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateView();
+        });
+    </script>
+</body>
+
+</html>
