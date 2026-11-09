@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 6 (С): Основи на интерактивните задачи - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .lesson-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .lesson-header h1 {
+            font-size: 2.1rem;
+            color: var(--accent);
+            margin-bottom: 0.85rem;
+            line-height: 1.25;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .section-block {
+            margin-bottom: 2.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1.5rem 0 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            font-size: 1.35rem;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 1.12rem;
+            color: #34d399;
+            margin: 1.25rem 0 0.5rem 0;
+        }
+
+        .btn-try-right {
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-try-right:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        p { margin-bottom: 0.95rem; color: var(--text-muted); font-size: 1.02rem; }
+        ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.45rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.95rem 1.1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.2rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+        }
+
+        .note-box.warn {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .note-box.danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .note-box h4 {
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+            font-size: 1rem;
+        }
+
+        .note-box.warn h4 { color: var(--warning); }
+        .note-box.danger h4 { color: var(--danger); }
+
+        table.func-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.25rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+
+        table.func-table th, table.func-table td {
+            padding: 0.65rem 0.85rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.func-table th {
+            background-color: rgba(15, 23, 42, 0.9);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        table.func-table td { color: #cbd5e1; }
+        table.func-table tr:last-child td { border-bottom: none; }
+
+        .app-task-card {
+            background-color: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 0.6rem;
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .app-task-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .app-task-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .app-task-card h4 span {
+            font-size: 0.75rem;
+            background: rgba(16, 185, 129, 0.18);
+            color: var(--accent);
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.3rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ДЕСЕН ПАНЕЛ: ТАБОВЕ И ВИЗУАЛИЗАЦИЯ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.85rem 1.25rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.78rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 1.75rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        input[type="number"], input[type="text"], select {
+            padding: 0.4rem 0.65rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        button {
+            padding: 0.45rem 0.85rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.83rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+        .btn-warn { background-color: var(--warning); color: #000; }
+
+        /* СЦЕНИ И ДИАГРАМИ В ДЕСНИЯ ПАНЕЛ */
+        .stage-box {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem 1rem;
+            margin-bottom: 0.95rem;
+            min-height: 115px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pipe-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 520px;
+            gap: 0.5rem;
+        }
+
+        .endpoint-box {
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.6rem;
+            padding: 0.7rem 0.9rem;
+            text-align: center;
+            min-width: 120px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.25s;
+        }
+
+        .endpoint-box.active-prog {
+            border-color: var(--accent);
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+        }
+
+        .endpoint-box.active-judge {
+            border-color: var(--warning);
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+            color: #fde68a;
+        }
+
+        .endpoint-box.deadlock {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.18);
+            color: #fca5a5;
+        }
+
+        .pipe-middle {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px dashed var(--border);
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.65rem;
+            text-align: center;
+            font-family: 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: #38bdf8;
+        }
+
+        /* ЧИСЛОВА ОС ЗА ДВОИЧНО ТЪРСЕНЕ */
+        .number-line {
+            width: 100%;
+            height: 36px;
+            background: var(--code-bg);
+            border-radius: 18px;
+            position: relative;
+            margin: 1.4rem 0 0.8rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .range-bar {
+            position: absolute;
+            height: 100%;
+            background: rgba(16, 185, 129, 0.28);
+            border-radius: 18px;
+            transition: all 0.4s ease;
+            border: 2px solid var(--accent);
+        }
+
+        .target-marker {
+            position: absolute;
+            top: -10px;
+            width: 3px;
+            height: 56px;
+            background-color: var(--highlight);
+            transition: all 0.4s;
+            z-index: 10;
+        }
+
+        .guess-marker {
+            position: absolute;
+            top: -4px;
+            width: 10px;
+            height: 44px;
+            background-color: var(--warning);
+            border-radius: 5px;
+            transform: translateX(-50%);
+            transition: all 0.4s;
+            z-index: 5;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .marker-label {
+            position: absolute;
+            top: -22px;
+            transform: translateX(-50%);
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            font-size: 0.78rem;
+            white-space: nowrap;
+        }
+
+        /* КЛЕТКИ ЗА МАСИВИ / МОНЕТИ */
+        .cells-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cell-item {
+            min-width: 44px;
+            height: 46px;
+            padding: 0 0.45rem;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.4rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.25s;
+        }
+
+        .cell-item span.sub {
+            font-size: 0.64rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .cell-item.active-cell {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.2);
+            color: #fde68a;
+            transform: translateY(-3px);
+        }
+
+        .cell-item.found-cell {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.24);
+            color: #6ee7b7;
+            transform: scale(1.06);
+        }
+
+        .cell-item.dim-cell {
+            opacity: 0.35;
+        }
+
+        /* ТАБЛО С ПРОМЕНЛИВИ И ТРАСИРАНЕ НА КОДА */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 0.96rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.81rem;
+            overflow-x: auto;
+            margin-bottom: 0.85rem;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.15rem 0.85rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 28px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #fff;
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.9rem 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: 1fr; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Раздел III: Интерактивни задачи</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ТЕОРИЯ И ПРИЛОЖНИ ЗАДАЧИ (ТОЧКИ 1 ДО 6)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-header">
+                <h1>Основи на интерактивните задачи</h1>
+                <div class="lesson-meta">
+                    <div>🎓 <strong>Група C:</strong> 7–8. клас</div>
+                    <div>⏱️ <strong>Време:</strong> 45 мин</div>
+                    <div>📦 <strong>Ключови понятия:</strong> endl / flush, Протокол ? и !, Grader, Двоично търсене</div>
+                </div>
+            </div>
+
+            <!-- ТОЧКА 1 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>1. Какво е интерактивна задача и протоколът „?“ / „!“</h2>
+                    <button class="btn-try-right" onclick="switchTab(1)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>В стандартните задачи програмата получава всички входни данни наведнъж и накрая отпечатва отговора. При <strong>интерактивните задачи</strong> входът е скрит! Вашата програма води диалог в реално време със специална програма на журито, наречена <strong>Interactor (Интерактор)</strong>.</p>
+                <p>В международните платформи (Codeforces, AtCoder, информатични турнири) най-често се използва стандартният протокол с два вида съобщения:</p>
+                <ul>
+                    <li><code>? параметри</code> — <strong>Заявка (Query):</strong> Питате журито за информация (напр. <code>? 5</code> пита каква е стойността на 5-ия елемент). След това задължително четете отговора с <code>cin &gt;&gt; resp;</code>.</li>
+                    <li><code>! отговор</code> — <strong>Финален отговор (Answer):</strong> Когато сте сигурни в решението, отпечатвате <code>! X</code> и <strong>веднага прекратявате програмата</strong> (<code>return 0;</code>). Финалният отговор обикновено не се брои към лимита на заявките!</li>
+                </ul>
+<pre><code>// Помощна функция за чист код при интерактивни заявки:
+int ask(int x) {
+    cout &lt;&lt; "? " &lt;&lt; x &lt;&lt; endl; // Изпращаме заявката веднага
+    int ans;
+    cin &gt;&gt; ans;                // Четем отговора от журито
+    return ans;
+}</code></pre>
+            </div>
+
+            <!-- ТОЧКА 2 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>2. Буфериране на потоци, Deadlock и ILE</h2>
+                    <button class="btn-try-right" onclick="switchTab(2)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Когато изпълните <code>cout &lt;&lt; "? 5\n";</code>, C++ <strong>не изпраща</strong> текста веднага към журито, а го съхранява във вътрешен буфер („пощенска кутия“), за да пести време. Ако веднага след това извикате <code>cin &gt;&gt; ans;</code>, вашата програма чака отговор от журито, а журито чака вашия въпрос, който още стои в буфера!</p>
+                <p>Получава се вечно изчакване (<strong>Deadlock</strong>), което води до специфичния вердикт <strong>Idleness Limit Exceeded (ILE)</strong> или <em>Time Limit Exceeded</em>.</p>
+
+                <div class="note-box danger">
+                    <h4>🚨 Как да избегнем Deadlock (ILE)?</h4>
+                    <p style="margin:0;">След всяко отпечатване използвайте <code>cout &lt;&lt; endl;</code> (което поставя нов ред И автоматично изпразва буфера чрез <code>flush</code>) или изрично <code>cout &lt;&lt; flush;</code>. При използване на <code>printf</code> извиквайте <code>fflush(stdout);</code>.</p>
+                </div>
+
+                <div class="note-box warn">
+                    <h4>⚠️ Внимание с бързия вход/изход: cin.tie(NULL)</h4>
+                    <p style="margin:0;">По подразбиране в C++ потоците <code>cin</code> и <code>cout</code> са свързани — преди всяко четене с <code>cin</code> буферът на <code>cout</code> се изпразва автоматично. Ако обаче напишете <code>cin.tie(NULL);</code> и използвате <code>'\n'</code> вместо <code>endl</code>, разкъсвате тази връзка и програмата ви гарантирано ще блокира!</p>
+                </div>
+            </div>
+
+            <!-- ТОЧКА 3 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>3. Класическа игра: „Познай числото“ с двоично търсене</h2>
+                    <button class="btn-try-right" onclick="switchTab(3)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Журито си е намислило тайно число <code>X</code> в интервала <code>[1, N]</code>, където <code>N = 100</code>, и ви дава право на най-много <strong>7 въпроса</strong>. На всеки въпрос <code>mid</code> журито отговаря с:</p>
+                <ul>
+                    <li><code>"&lt;"</code> — ако тайното число е строго по-малко от <code>mid</code> (търсим в <code>[L, mid - 1]</code>);</li>
+                    <li><code>"&gt;"</code> — ако тайното число е строго по-голямо от <code>mid</code> (търсим в <code>[mid + 1, R]</code>);</li>
+                    <li><code>"="</code> — ако сте познали числото!</li>
+                </ul>
+                <p>Достатъчни само <strong>30 въпроса</strong>!</p>
+            </div>
+
+            <!-- ТОЧКА 4 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>4. Задачи с Grader (Локална библиотека на НОИ / IATI)</h2>
+                    <button class="btn-try-right" onclick="switchTab(4)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>На българските олимпиади по информатика (НОИ, Есенен и Пролетен турнир) интерактивните задачи често <strong>НЕ използват</strong> <code>cin</code> и <code>cout</code>! Вместо това се компилират заедно със служебен файл на журито (<strong>Grader</strong>) чрез заглавен файл, напр. <code>#include "guess.h"</code>.</p>
+                <ul>
+                    <li><strong>НЕ пишете функция <code>int main()</code>!</strong> (Тя вече съществува в грейдъра на журито).</li>
+                    <li>Имплементирате само исканата от условието функция (напр. <code>int solve(int n)</code>) и вътре в нея извиквате готовите функции на журито (напр. <code>char res = query(mid);</code>).</li>
+                    <li>Предимство: Няма нужда от <code>endl</code> и <code>flush</code>, защото комуникацията става чрез директни извиквания на C++ функции!</li>
+                </ul>
+<pre><code>#include "guess.h" // Включваме библиотеката на журито (БЕЗ main функция!)
+
+int findNumber(int n) {
+    int L = 1, R = n;
+    while (L &lt;= R) {
+        int mid = L + (R - L) / 2;
+        int cmp = askJury(mid); // Функция, предоставена от журито
+        if (cmp == 0) return mid;
+        if (cmp &lt; 0) R = mid - 1;
+        else L = mid + 1;
+    }
+    return L;
+}</code></pre>
+            </div>
+
+            <!-- ТОЧКА 5 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>5. Адаптивно жури, Кеширане на заявки и код за грешка (-1)</h2>
+                    <button class="btn-try-right" onclick="switchTab(5)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Три професионални техники, които разделят 0 точки от 100 точки на състезание:</p>
+                <ol>
+                    <li><strong>Кеширане (Мемоизация) на заявки:</strong> Ако алгоритъмът ви случайно провери един и същ индекс два пъти, не хабете втора заявка! Пазете отговорите в масив <code>memo[x]</code>.</li>
+                    <li><strong>Проверка за невалидна заявка (<code>-1</code>):</strong> Когато надвишите лимита от въпроси, интеракторът обикновено връща <code>-1</code> и се затваря. Ако програмата ви не провери за <code>if (ans == -1) exit(0);</code>, тя ще продължи да чете от затворен поток и ще получи <em>Time Limit Exceeded</em> вместо коректния вердикт <em>Wrong Answer</em>!</li>
+                    <li><strong>Адаптивно жури (Adaptive Interactor):</strong> В някои задачи журито няма предварително фиксирано число, а поддържа множество от всички възможни кандидати, които не противоречат на досегашните му отговори, за да ви затрудни максимално!</li>
+                </ol>
+            </div>
+
+            <!-- ТОЧКА 6 -->
+            <div class="section-block" style="border-bottom:none;">
+                <div class="section-head">
+                    <h2>6. Приложни състезателни задачи</h2>
+                    <button class="btn-try-right" onclick="switchTab(6)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Изберете една от трите класически интерактивни задачи по-долу, за да я разгледате и трасирате стъпка по стъпка в десния панел:</p>
+
+                <div class="app-task-card" onclick="openAppSubTask('coin')" style="cursor:pointer;">
+                    <h4>Задача А: Откриване на по-тежка фалшива монета <span>O(log N) претегляния</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Сред <code>N</code> монети всички тежат по 10 г, а точно една е фалшива и тежи 11 г. Със заявки <code>? L mid</code> питаме за сумата в лявата половина <code>[L, mid]</code>. Ако сумата е по-голяма от <code>(mid - L + 1) * 10</code>, фалшивата монета е вляво!</p>
+                </div>
+
+                <div class="app-task-card" onclick="openAppSubTask('peak')" style="cursor:pointer;">
+                    <h4>Задача Б: Локален максимум (Връх в планински масив) <span>O(log N) заявки</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Масивът е скрит. В една стъпка питаме за два съседни елемента <code>? mid</code> и <code>? mid + 1</code>. Ако <code>a[mid] &lt; a[mid + 1]</code>, значи се изкачваме нагоре и върхът е вдясно (<code>L = mid + 1</code>), иначе е вляво (<code>R = mid</code>).</p>
+                </div>
+
+                <div class="app-task-card" onclick="openAppSubTask('perm')" style="cursor:pointer;">
+                    <h4>Задача В: Възстановяване на скрита пермутация със суми <span>N - 1 заявки</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Журито крие пермутация на числата от <code>1</code> до <code>N</code>. Питаме последователно за сумите <code>a[1] + a[2]</code>, <code>a[2] + a[3]</code> и т.н., а последния елемент намираме от общата сума N(N+1)/2, за да спестим решаващата последна заявка!</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: 6 ТАБА С КОНКРЕТНИ ПРИМЕРИ И ТРАСИРАНЕ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(1)" id="tab-btn-1">1. Протокол ? / !</button>
+                <button class="tab-btn" onclick="switchTab(2)" id="tab-btn-2">2. Буфер и Flush</button>
+                <button class="tab-btn" onclick="switchTab(3)" id="tab-btn-3">3. Познай числото</button>
+                <button class="tab-btn" onclick="switchTab(4)" id="tab-btn-4">4. Grader (НОИ)</button>
+                <button class="tab-btn" onclick="switchTab(5)" id="tab-btn-5">5. Кеш и Адаптивно</button>
+                <button class="tab-btn" onclick="switchTab(6)" id="tab-btn-6">6. Приложни задачи</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ПРОТОКОЛ ? И ! -->
+                <div class="tab-pane active" id="tab-1">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📡 Трасиране на Точка 1: Диалог по протокола „?“ и „!“</span>
+                            <span id="t1-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Журито крие масива <code>A = [14, 20, 35]</code>. Търсим на кой индекс (1..3) се намира числото <code>20</code>.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t1-prev" onclick="stepT1(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t1-next" onclick="stepT1(1)">Следващ ред &rarr;</button>
+                            <button onclick="resetT1()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="pipe-diagram">
+                                <div class="endpoint-box" id="t1-prog-box">💻 Вашата програма</div>
+                                <div class="pipe-middle" id="t1-pipe">Очаква команда...</div>
+                                <div class="endpoint-box" id="t1-judge-box">⚖️ Интерактор<br><span style="font-size:0.72rem; color:var(--text-muted);">Скрит: [14, 20, 35]</span></div>
+                            </div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Последен изход (cout)</div>
+                                <div class="state-val" id="t1-out">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Отговор (cin &gt;&gt; val)</div>
+                                <div class="state-val" id="t1-in">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Брой заявки</div>
+                                <div class="state-val" id="t1-qcnt">0 / 3</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t1-code"></div>
+                        <div class="calc-box" id="t1-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: БУФЕР, DEADLOCK (ILE) СРЕЩУ FLUSH -->
+                <div class="tab-pane" id="tab-2">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📬 Трасиране на Точка 2: Защо '\n' води до Deadlock, а endl работи?</span>
+                            <span id="t2-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button id="t2-mode-good" onclick="setT2Mode('good')">✅ С endl / flush (Работи)</button>
+                            <button class="btn-slate" id="t2-mode-bad" onclick="setT2Mode('bad')">❌ С '\n' без flush (Deadlock / ILE)</button>
+                            <button class="btn-slate" id="t2-prev" onclick="stepT2(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t2-next" onclick="stepT2(1)">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="pipe-diagram">
+                                <div class="endpoint-box" id="t2-prog">💻 Програма</div>
+                                <div class="pipe-middle" id="t2-buf">📦 Буфер на cout: празен</div>
+                                <div class="endpoint-box" id="t2-judge">⚖️ Жури</div>
+                            </div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Буфер на cout</div>
+                                <div class="state-val" id="t2-st-buf">празен</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Състояние на Журито</div>
+                                <div class="state-val" id="t2-st-j">Чака заявка</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Вердикт</div>
+                                <div class="state-val" id="t2-st-v">В процес...</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t2-code"></div>
+                        <div class="calc-box" id="t2-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: ИГРА ПОЗНАЙ ЧИСЛОТО (ДВОИЧНО ТЪРСЕНЕ) -->
+                <div class="tab-pane" id="tab-3">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🎯 Трасиране на Точка 3: Познай числото от 1 до 100</span>
+                            <span id="t3-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <span style="font-size:0.85rem; color:var(--text-muted);">Тайно число (1..100):</span>
+                            <input type="number" id="t3-target" value="73" min="1" max="100" style="width:80px;">
+                            <button onclick="buildT3()">Зареди число</button>
+                            <button class="btn-slate" id="t3-prev" onclick="stepT3(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t3-next" onclick="stepT3(1)">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="stage-box" style="padding:1.4rem 1.2rem;">
+                            <div style="font-size:0.82rem; color:var(--text-muted); font-family:monospace;">
+                                Текущ интервал [L, R]: <strong id="t3-range-lbl" style="color:var(--accent);">[1, 100]</strong>
+                            </div>
+                            <div class="number-line">
+                                <div class="range-bar" id="t3-bar" style="left:0%; width:100%;"></div>
+                                <div class="target-marker" id="t3-tmark" style="left:72.7%;"><div class="marker-label" style="color:#60a5fa;">Цел</div></div>
+                                <div class="guess-marker" id="t3-gmark" style="left:49.5%;"><div class="marker-label" style="color:#fbbf24; top:46px;" id="t3-glbl">50</div></div>
+                            </div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Интервал [L, R]</div>
+                                <div class="state-val" id="t3-lr">[1, 100]</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Въпрос mid</div>
+                                <div class="state-val" id="t3-mid">50</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Отговор ans (Брой пит.)</div>
+                                <div class="state-val" id="t3-ans">- (0)</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t3-code"></div>
+                        <div class="calc-box" id="t3-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 4: GRADER БИБЛИОТЕКА (НОИ / IATI) -->
+                <div class="tab-pane" id="tab-4">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🧩 Трасиране на Точка 4: Как работи Grader библиотеката (НОИ формат)</span>
+                            <span id="t4-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t4-prev" onclick="stepT4(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t4-next" onclick="stepT4(1)">Следващ ред &rarr;</button>
+                            <button onclick="resetT4()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="pipe-diagram">
+                                <div class="endpoint-box" id="t4-user">📄 solution.cpp<br><span style="font-size:0.72rem; color:var(--text-muted);">solve(n)</span></div>
+                                <div class="pipe-middle" id="t4-call">#include "game.h"</div>
+                                <div class="endpoint-box" id="t4-grader">⚙️ grader.cpp (Жури)<br><span style="font-size:0.72rem; color:var(--text-muted);">main() + askJury(x)</span></div>
+                            </div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Активен модул</div>
+                                <div class="state-val" id="t4-mod">grader.cpp</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Извикване</div>
+                                <div class="state-val" id="t4-fn">main()</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Върната стойност</div>
+                                <div class="state-val" id="t4-ret">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t4-code"></div>
+                        <div class="calc-box" id="t4-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 5: КЕШИРАНЕ НА ЗАЯВКИ И ЗАЩИТА ОТ -1 -->
+                <div class="tab-pane" id="tab-5">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🛡️ Трасиране на Точка 5: Кеширане (memo) и защита при отговор -1</span>
+                            <span id="t5-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t5-prev" onclick="stepT5(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t5-next" onclick="stepT5(1)">Следващ ред &rarr;</button>
+                            <button onclick="resetT5()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.2rem;">Кеш таблица memo[1..5] (-1 означава „още не е питано“):</div>
+                            <div class="cells-row" id="t5-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Извикване query(i)</div>
+                                <div class="state-val" id="t5-qi">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Реални заявки към журито</div>
+                                <div class="state-val" id="t5-real">0</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Спестени от кеша</div>
+                                <div class="state-val" id="t5-saved">0</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t5-code"></div>
+                        <div class="calc-box" id="t5-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 6: ПРИЛОЖНИ ЗАДАЧИ -->
+                <div class="tab-pane" id="tab-6">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🏆 Трасиране на Точка 6: Приложни интерактивни задачи</span>
+                            <span id="t6-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button id="sub-coin" onclick="openAppSubTask('coin')">Задача А: Фалшива монета</button>
+                            <button class="btn-slate" id="sub-peak" onclick="openAppSubTask('peak')">Задача Б: Локален максимум</button>
+                            <button class="btn-slate" id="sub-perm" onclick="openAppSubTask('perm')">Задача В: Скрита пермутация</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t6-prev" onclick="stepT6(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t6-next" onclick="stepT6(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="buildT6()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="cells-row" id="t6-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl1">Интервал [L, R]</div>
+                                <div class="state-val" id="t6-val1">[1, 8]</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl2">Заявка</div>
+                                <div class="state-val" id="t6-val2">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl3">Отговор от журито</div>
+                                <div class="state-val" id="t6-val3">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t6-code"></div>
+                        <div class="calc-box" id="t6-exp"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПОДВИЖЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + num).classList.add('active');
+            document.getElementById('tab-btn-' + num).classList.add('active');
+        }
+
+        function renderCodeLines(boxId, linesArr, activeLine) {
+            const box = document.getElementById(boxId);
+            box.innerHTML = linesArr.map((txt, idx) => {
+                const lnum = idx + 1;
+                const esc = txt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div class="code-line ${lnum === activeLine ? 'active-line' : ''}">
+                    <span class="line-num">${lnum}</span>
+                    <span class="line-text">${esc}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ==========================================
+        // ТАБ 1: ПРОТОКОЛ ? И !
+        // ==========================================
+        const t1Code = [
+            'for (int i = 1; i <= 3; i++) {',
+            '    cout << "? " << i << endl; // Задаваме въпрос за индекс i',
+            '    int val;',
+            '    cin >> val;                // Прочитаме отговора от журито',
+            '    if (val == 20) {',
+            '        cout << "! " << i << endl; // Обявяваме крайния отговор!',
+            '        return 0;                  // Задължително спираме програмата',
+            '    }',
+            '}'
+        ];
+        const t1Steps = [
+            { line: 1, who: 'prog', pipe: 'Начало на цикъла i = 1', out: '-', inp: '-', q: '0 / 3', msg: 'Започваме търсенето от индекс <strong>i = 1</strong>.' },
+            { line: 2, who: 'prog', pipe: 'cout: "? 1" ➔ към Журито', out: '"? 1"', inp: '-', q: '1 / 3', msg: 'Изпращаме заявка <code>? 1</code> с <code>endl</code>, за да попитаме каква е стойността на 1-вия елемент.' },
+            { line: 4, who: 'judge', pipe: 'Журито връща: 14', out: '"? 1"', inp: '14', q: '1 / 3', msg: 'Журито проверява скрития си масив <code>[14, 20, 35]</code> и ни отговаря с <strong>14</strong>.' },
+            { line: 2, who: 'prog', pipe: 'cout: "? 2" ➔ към Журито', out: '"? 2"', inp: '14', q: '2 / 3', msg: 'Тъй като 14 != 20, преминаваме към <strong>i = 2</strong> и питаме <code>? 2</code>.' },
+            { line: 4, who: 'judge', pipe: 'Журито връща: 20', out: '"? 2"', inp: '20', q: '2 / 3', msg: 'Журито отговаря с <strong>20</strong>! Открихме търсения елемент.' },
+            { line: 6, who: 'prog', pipe: 'cout: "! 2" ➔ Финален отговор!', out: '"! 2"', inp: '20', q: '2 / 3 (финал)', msg: 'Отпечатваме финалния отговор със знака <code>! 2</code> (индекс 2).' },
+            { line: 7, who: 'prog', pipe: 'Програмата приключи успешно (AC)', out: '"! 2"', inp: '20', q: '2 / 3', msg: 'Изпълняваме <code>return 0;</code> веднага след финалния отговор!' }
+        ];
+        let t1Idx = 0;
+
+        function renderT1() {
+            const s = t1Steps[t1Idx];
+            document.getElementById('t1-step-lbl').innerText = `Стъпка ${t1Idx + 1} от ${t1Steps.length}`;
+            renderCodeLines('t1-code', t1Code, s.line);
+            document.getElementById('t1-prog-box').className = 'endpoint-box ' + (s.who === 'prog' ? 'active-prog' : '');
+            document.getElementById('t1-judge-box').className = 'endpoint-box ' + (s.who === 'judge' ? 'active-judge' : '');
+            document.getElementById('t1-pipe').innerText = s.pipe;
+            document.getElementById('t1-out').innerText = s.out;
+            document.getElementById('t1-in').innerText = s.inp;
+            document.getElementById('t1-qcnt').innerText = s.q;
+            document.getElementById('t1-exp').innerHTML = s.msg;
+            document.getElementById('t1-prev').disabled = (t1Idx === 0);
+            document.getElementById('t1-next').disabled = (t1Idx === t1Steps.length - 1);
+        }
+        function stepT1(d) { t1Idx = Math.max(0, Math.min(t1Steps.length - 1, t1Idx + d)); renderT1(); }
+        function resetT1() { t1Idx = 0; renderT1(); }
+
+        // ==========================================
+        // ТАБ 2: БУФЕР СРЕЩУ DEADLOCK (ILE)
+        // ==========================================
+        let t2Mode = 'good';
+        let t2Idx = 0;
+        let t2Code = [];
+        let t2Steps = [];
+
+        function setT2Mode(m) {
+            t2Mode = m;
+            document.getElementById('t2-mode-good').className = (m === 'good') ? '' : 'btn-slate';
+            document.getElementById('t2-mode-bad').className = (m === 'bad') ? 'btn-warn' : 'btn-slate';
+
+            if (m === 'good') {
+                t2Code = [
+                    'int x = 50, resp;',
+                    'cout << "? " << x << endl; // endl = \'\\n\' + flush!',
+                    'cin >> resp;               // Четем веднага отговора',
+                    'cout << "! " << resp << endl;'
+                ];
+                t2Steps = [
+                    { line: 1, buf: 'празен', j: 'Чака въпрос', v: 'В процес', dead: false, msg: 'Подготвяме се да попитаме за числото <strong>x = 50</strong>.' },
+                    { line: 2, buf: 'Изпратен (Flushed!)', j: 'Получи "? 50"', v: 'В процес', dead: false, msg: '<code>endl</code> записва <code>"? 50\\n"</code> и <strong>мигновено изпразва буфера</strong> към журито!' },
+                    { line: 3, buf: 'празен', j: 'Връща отговор 1', v: 'OK (AC)', dead: false, msg: 'Журито е получило въпроса, изпраща отговора и <code>cin &gt;&gt; resp;</code> го прочита без забавяне!' }
+                ];
+            } else {
+                t2Code = [
+                    'ios::sync_with_stdio(false); cin.tie(NULL);',
+                    'int x = 50, resp;',
+                    'cout << "? " << x << \'\\n\'; // ГРЕШКА: само \'\\n\' без flush!',
+                    'cin >> resp;               // БЛОКИРА ЗАВИНАГИ (Deadlock)!'
+                ];
+                t2Steps = [
+                    { line: 1, buf: 'празен', j: 'Чака въпрос', v: 'В процес', dead: false, msg: '<code>cin.tie(NULL)</code> изключва автоматичния flush преди <code>cin</code>.' },
+                    { line: 3, buf: 'Задържа "? 50\\n"', j: 'Нищо не е получило!', v: 'Опасност', dead: false, msg: 'Текстът <code>"? 50\\n"</code> остава заключен във вътрешния буфер на Вашата програма!' },
+                    { line: 4, buf: 'Задържа "? 50\\n"', j: 'Още чака въпрос...', v: '❌ ILE / TLE', dead: true, msg: '<strong>DEADLOCK!</strong> Вашата програма чака на ред 4 <code>cin &gt;&gt; resp</code>, а журито чака вашия въпрос. Следва вердикт <strong>Idleness Limit Exceeded (ILE)</strong>!' }
+                ];
+            }
+            t2Idx = 0;
+            renderT2();
+        }
+
+        function renderT2() {
+            const s = t2Steps[t2Idx];
+            document.getElementById('t2-step-lbl').innerText = `Стъпка ${t2Idx + 1} от ${t2Steps.length}`;
+            renderCodeLines('t2-code', t2Code, s.line);
+            document.getElementById('t2-buf').innerText = `📦 Буфер: ${s.buf}`;
+            document.getElementById('t2-prog').className = 'endpoint-box ' + (s.dead ? 'deadlock' : 'active-prog');
+            document.getElementById('t2-judge').className = 'endpoint-box ' + (s.dead ? 'deadlock' : 'active-judge');
+            document.getElementById('t2-st-buf').innerText = s.buf;
+            document.getElementById('t2-st-j').innerText = s.j;
+            document.getElementById('t2-st-v').innerText = s.v;
+            document.getElementById('t2-exp').innerHTML = s.msg;
+            document.getElementById('t2-prev').disabled = (t2Idx === 0);
+            document.getElementById('t2-next').disabled = (t2Idx === t2Steps.length - 1);
+        }
+        function stepT2(d) { t2Idx = Math.max(0, Math.min(t2Steps.length - 1, t2Idx + d)); renderT2(); }
+
+        // ==========================================
+        // ТАБ 3: ПОЗНАЙ ЧИСЛОТО (ДВОИЧНО ТЪРСЕНЕ)
+        // ==========================================
+        const t3Code = [
+            'int L = 1, R = 100;',
+            'while (L <= R) {',
+            '    int mid = (L + R) / 2;',
+            '    cout << "? " << mid << endl;',
+            '    string ans; cin >> ans;',
+            '    if (ans == "=") { cout << "! " << mid << endl; break; }',
+            '    if (ans == "<") R = mid - 1;',
+            '    else L = mid + 1;',
+            '}'
+        ];
+        let t3Steps = [];
+        let t3Idx = 0;
+        let t3TargetVal = 73;
+
+        function buildT3() {
+            let t = parseInt(document.getElementById('t3-target').value);
+            if (isNaN(t) || t < 1 || t > 100) t = 73;
+            t3TargetVal = t;
+            t3Steps = [];
+
+            let L = 1, R = 100, qCount = 0;
+            t3Steps.push({
+                line: 1, L: 1, R: 100, mid: 50, ans: '-', q: 0,
+                msg: `Начален интервал <strong>[1, 100]</strong>. Тайното число на журито е <strong>${t}</strong>.`
+            });
+
+            while (L <= R) {
+                let mid = Math.floor((L + R) / 2);
+                qCount++;
+                t3Steps.push({
+                    line: 4, L: L, R: R, mid: mid, ans: '?', q: qCount,
+                    msg: `Заявка #${qCount}: Средата на <strong>[${L}, ${R}]</strong> е <strong>mid = ${mid}</strong>. Питаме <code>? ${mid}</code>.`
+                });
+
+                if (t === mid) {
+                    t3Steps.push({
+                        line: 6, L: L, R: R, mid: mid, ans: '"="', q: qCount,
+                        msg: `Журито отговаря с <strong>"="</strong>! Познахме числото <strong>${mid}</strong> само с <strong>${qCount}</strong> въпроса! Отпечатваме <code>! ${mid}</code>.`
+                    });
+                    break;
+                } else if (t < mid) {
+                    t3Steps.push({
+                        line: 7, L: L, R: mid - 1, mid: mid, ans: '"<"', q: qCount,
+                        msg: `Журито отговаря с <strong>"&lt;"</strong> (тайното число е по-малко от ${mid}). Свиваме дясната граница: <strong>R = ${mid - 1}</strong>.`
+                    });
+                    R = mid - 1;
+                } else {
+                    t3Steps.push({
+                        line: 8, L: mid + 1, R: R, mid: mid, ans: '">"', q: qCount,
+                        msg: `Журито отговаря с <strong>"&gt;"</strong> (тайното число е по-голямо от ${mid}). Свиваме лявата граница: <strong>L = ${mid + 1}</strong>.`
+                    });
+                    L = mid + 1;
+                }
+            }
+            t3Idx = 0;
+            renderT3();
+        }
+
+        function renderT3() {
+            const s = t3Steps[t3Idx];
+            document.getElementById('t3-step-lbl').innerText = `Стъпка ${t3Idx + 1} от ${t3Steps.length}`;
+            renderCodeLines('t3-code', t3Code, s.line);
+
+            document.getElementById('t3-range-lbl').innerText = `[${s.L}, ${s.R}]`;
+            document.getElementById('t3-lr').innerText = `[${s.L}, ${s.R}]`;
+            document.getElementById('t3-mid').innerText = s.mid;
+            document.getElementById('t3-ans').innerText = `${s.ans} (${s.q} запр.)`;
+
+            const leftPct = ((s.L - 1) / 99) * 100;
+            const rightPct = ((s.R - 1) / 99) * 100;
+            const bar = document.getElementById('t3-bar');
+            bar.style.left = `${leftPct}%`;
+            bar.style.width = `${Math.max(1, rightPct - leftPct)}%`;
+
+            document.getElementById('t3-tmark').style.left = `${((t3TargetVal - 1) / 99) * 100}%`;
+            const gm = document.getElementById('t3-gmark');
+            gm.style.left = `${((s.mid - 1) / 99) * 100}%`;
+            document.getElementById('t3-glbl').innerText = s.mid;
+
+            document.getElementById('t3-exp').innerHTML = s.msg;
+            document.getElementById('t3-prev').disabled = (t3Idx === 0);
+            document.getElementById('t3-next').disabled = (t3Idx === t3Steps.length - 1);
+        }
+        function stepT3(d) { t3Idx = Math.max(0, Math.min(t3Steps.length - 1, t3Idx + d)); renderT3(); }
+
+        // ==========================================
+        // ТАБ 4: GRADER (НОИ / IATI ФОРМАТ)
+        // ==========================================
+        const t4Code = [
+            '#include "guess.h" // Заглавен файл на журито',
+            '',
+            'int findNumber(int n) {            // Извиква се от grader.cpp',
+            '    int L = 1, R = n;',
+            '    while (L <= R) {',
+            '        int mid = (L + R) / 2;',
+            '        int cmp = askJury(mid);    // Викаме функцията на журито',
+            '        if (cmp == 0) return mid;  // Връщаме отговора чрез return',
+            '        if (cmp < 0) R = mid - 1;',
+            '        else L = mid + 1;',
+            '    }',
+            '    return L;',
+            '}'
+        ];
+        const t4Steps = [
+            { line: 3, mod: 'grader.cpp ➔ solution.cpp', fn: 'findNumber(10)', ret: '-', msg: 'Служебният <code>main()</code> в <strong>grader.cpp</strong> стартира и извиква вашата функция <code>findNumber(10)</code> (тайното число е 8).' },
+            { line: 6, mod: 'solution.cpp', fn: 'mid = 5', ret: '-', msg: 'Вашата функция изчислява <strong>mid = (1 + 10) / 2 = 5</strong>.' },
+            { line: 7, mod: 'solution.cpp ➔ grader.cpp', fn: 'askJury(5)', ret: '+1 (по-голямо)', msg: 'Извикваме директно C++ функцията на журито <code>askJury(5)</code>. Без потоци и без нужда от flush! Тя връща <strong>+1</strong> (8 > 5).' },
+            { line: 10, mod: 'solution.cpp', fn: 'L = 6', ret: '-', msg: 'Актуализираме <strong>L = mid + 1 = 6</strong>. В следващата итерация <code>mid = (6 + 10) / 2 = 8</code>.' },
+            { line: 7, mod: 'solution.cpp ➔ grader.cpp', fn: 'askJury(8)', ret: '0 (точно!)', msg: 'Извикваме <code>askJury(8)</code> и получаваме <strong>0</strong> (познахме числото).' },
+            { line: 8, mod: 'solution.cpp ➔ grader.cpp', fn: 'return 8;', ret: '8 (100 т.)', msg: 'Връщаме отговора <strong>8</strong> чрез обикновен <code>return mid;</code> обратно към грейдъра на журито!' }
+        ];
+        let t4Idx = 0;
+
+        function renderT4() {
+            const s = t4Steps[t4Idx];
+            document.getElementById('t4-step-lbl').innerText = `Стъпка ${t4Idx + 1} от ${t4Steps.length}`;
+            renderCodeLines('t4-code', t4Code, s.line);
+            document.getElementById('t4-call').innerText = s.fn;
+            document.getElementById('t4-mod').innerText = s.mod;
+            document.getElementById('t4-fn').innerText = s.fn;
+            document.getElementById('t4-ret').innerText = s.ret;
+            document.getElementById('t4-exp').innerHTML = s.msg;
+            document.getElementById('t4-prev').disabled = (t4Idx === 0);
+            document.getElementById('t4-next').disabled = (t4Idx === t4Steps.length - 1);
+        }
+        function stepT4(d) { t4Idx = Math.max(0, Math.min(t4Steps.length - 1, t4Idx + d)); renderT4(); }
+        function resetT4() { t4Idx = 0; renderT4(); }
+
+        // ==========================================
+        // ТАБ 5: КЕШИРАНЕ НА ЗАЯВКИ (MEMO) И ЗАЩИТА ОТ -1
+        // ==========================================
+        const t5Code = [
+            'vector<int> memo(6, -1);',
+            'int safeAsk(int idx) {',
+            '    if (memo[idx] != -1) return memo[idx]; // Взимаме от кеша (0 заявки!)',
+            '    cout << "? " << idx << endl;',
+            '    int ans; cin >> ans;',
+            '    if (ans == -1) exit(0);                // Защита при грешка от журито!',
+            '    return memo[idx] = ans;                // Записваме в кеша',
+            '}'
+        ];
+        const t5Steps = [
+            { line: 1, memo: [-1,-1,-1,-1,-1], act: -1, qi: '-', real: 0, saved: 0, msg: 'Инициализираме кеш масива <code>memo[1..5]</code> със стойности <strong>-1</strong> (още не са питани).' },
+            { line: 4, memo: [-1,-1,42,-1,-1], act: 2, qi: 'safeAsk(3)', real: 1, saved: 0, msg: 'Първо извикване на <code>safeAsk(3)</code>: <code>memo[3] == -1</code>, затова питаме журито и записваме <strong>memo[3] = 42</strong> (1 реална заявка).' },
+            { line: 4, memo: [-1,19,42,-1,-1], act: 1, qi: 'safeAsk(2)', real: 2, saved: 0, msg: 'Извикване на <code>safeAsk(2)</code>: питаме журито и записваме <strong>memo[2] = 19</strong> (2 реални заявки).' },
+            { line: 3, memo: [-1,19,42,-1,-1], act: 2, qi: 'safeAsk(3) отново!', real: 2, saved: 1, msg: 'Повторно извикване на <code>safeAsk(3)</code>: <strong>memo[3] вече е 42!</strong> Връщаме отговора директно от паметта и пестим ценна заявка!' },
+            { line: 6, memo: [-1,19,42,-1,-1], act: -1, qi: 'При ans == -1', real: 2, saved: 1, msg: 'Ако някога журито върне <code>-1</code> (превишен лимит или невалиден въпрос), <code>exit(0)</code> прекратява програмата веднага, за да избегнем TLE.' }
+        ];
+        let t5Idx = 0;
+
+        function renderT5() {
+            const s = t5Steps[t5Idx];
+            document.getElementById('t5-step-lbl').innerText = `Стъпка ${t5Idx + 1} от ${t5Steps.length}`;
+            renderCodeLines('t5-code', t5Code, s.line);
+
+            const cells = document.getElementById('t5-cells');
+            cells.innerHTML = '';
+            s.memo.forEach((v, i) => {
+                let cls = 'cell-item';
+                if (i === s.act) cls += ' found-cell';
+                cells.innerHTML += `<div class="${cls}">${v}<span class="sub">memo[${i + 1}]</span></div>`;
+            });
+
+            document.getElementById('t5-qi').innerText = s.qi;
+            document.getElementById('t5-real').innerText = s.real;
+            document.getElementById('t5-saved').innerText = s.saved;
+            document.getElementById('t5-exp').innerHTML = s.msg;
+            document.getElementById('t5-prev').disabled = (t5Idx === 0);
+            document.getElementById('t5-next').disabled = (t5Idx === t5Steps.length - 1);
+        }
+        function stepT5(d) { t5Idx = Math.max(0, Math.min(t5Steps.length - 1, t5Idx + d)); renderT5(); }
+        function resetT5() { t5Idx = 0; renderT5(); }
+
+        // ==========================================
+        // ТАБ 6: ПРИЛОЖНИ ЗАДАЧИ (МОНЕТА, ВРЪХ, ПЕРМУТАЦИЯ)
+        // ==========================================
+        let curAppMode = 'coin';
+        let t6Code = [];
+        let t6Steps = [];
+        let t6Idx = 0;
+
+        function openAppSubTask(mode) {
+            curAppMode = mode;
+            switchTab(6);
+            document.getElementById('sub-coin').className = mode === 'coin' ? '' : 'btn-slate';
+            document.getElementById('sub-peak').className = mode === 'peak' ? '' : 'btn-slate';
+            document.getElementById('sub-perm').className = mode === 'perm' ? '' : 'btn-slate';
+            buildT6();
+        }
+
+        function buildT6() {
+            t6Steps = [];
+            if (curAppMode === 'coin') {
+                document.getElementById('t6-lbl1').innerText = 'Интервал [L, R]';
+                document.getElementById('t6-lbl2').innerText = 'Заявка претегляне';
+                document.getElementById('t6-lbl3').innerText = 'Тегло (Очаквано)';
+
+                t6Code = [
+                    'int L = 1, R = 8;',
+                    'while (L < R) {',
+                    '    int mid = (L + R) / 2;',
+                    '    cout << "? " << L << " " << mid << endl;',
+                    '    int w; cin >> w;',
+                    '    if (w > (mid - L + 1) * 10) R = mid; // По-тежката е вляво!',
+                    '    else L = mid + 1;                    // Иначе е вдясно!',
+                    '}',
+                    'cout << "! " << L << endl;'
+                ];
+
+                const coins = ['10г','10г','10г','10г','10г','11г','10г','10г'];
+                t6Steps = [
+                    { line: 1, arr: coins, act: [0,1,2,3], fnd: [], v1: '[1, 8]', v2: '? 1 4', v3: '40г (очакв. 40г)', msg: 'Претегляме лявата половина <strong>[1..4]</strong>: теглото е точно <strong>40г</strong> &rarr; фалшивата монета е в дясната половина <strong>[5..8]</strong>!' },
+                    { line: 7, arr: coins, act: [4,5], fnd: [], v1: '[5, 8]', v2: '? 5 6', v3: '21г (очакв. 20г)', msg: 'Претегляме <strong>[5..6]</strong>: журито връща <strong>21г &gt; 20г</strong>! Фалшивата монета е в <strong>[5..6]</strong> &rarr; <code>R = 6</code>.' },
+                    { line: 6, arr: coins, act: [4], fnd: [], v1: '[5, 6]', v2: '? 5 5', v3: '10г (очакв. 10г)', msg: 'Претегляме монета <strong>[5..5]</strong>: тежи <strong>10г</strong> (истинска) &rarr; значи фалшивата е останалата монета <code>L = 6</code>!' },
+                    { line: 9, arr: coins, act: [], fnd: [5], v1: '[6, 6]', v2: '! 6', v3: 'Открита за 3 зап.!', msg: 'Само с <strong>3 претегляния</strong> ($\log_2 8$) открихме фалшивата монета на позиция <strong>6</strong>!' }
+                ];
+
+            } else if (curAppMode === 'peak') {
+                document.getElementById('t6-lbl1').innerText = 'Интервал [L, R]';
+                document.getElementById('t6-lbl2').innerText = 'Сравняваме';
+                document.getElementById('t6-lbl3').innerText = 'Посока на склона';
+
+                t6Code = [
+                    'int L = 1, R = 7;',
+                    'while (L < R) {',
+                    '    int mid = (L + R) / 2;',
+                    '    int a = ask(mid), b = ask(mid + 1);',
+                    '    if (a < b) L = mid + 1; // Изкачваме се надясно',
+                    '    else R = mid;           // Спускаме се (върхът е <= mid)',
+                    '}',
+                    'cout << "! " << L << endl;'
+                ];
+
+                const heights = ['10','25','40','32','28','19','12'];
+                t6Steps = [
+                    { line: 4, arr: heights, act: [3,4], fnd: [], v1: '[1, 7]', v2: 'mid=4 и mid+1=5', v3: '32 > 28 (Спускане)', msg: 'Проверяваме <code>mid = 4</code> и <code>5</code>: понеже <strong>a[4]=32 &gt; a[5]=28</strong>, склонът слиза надолу, значи върхът е в <strong>[1..4]</strong> (<code>R = 4</code>).' },
+                    { line: 5, arr: heights, act: [1,2], fnd: [], v1: '[1, 4]', v2: 'mid=2 и mid+1=3', v3: '25 < 40 (Изкачване)', msg: 'Проверяваме <code>mid = 2</code> и <code>3</code>: понеже <strong>a[2]=25 &lt; a[3]=40</strong>, изкачваме се надясно &rarr; върхът е в <strong>[3..4]</strong> (<code>L = 3</code>).' },
+                    { line: 6, arr: heights, act: [2,3], fnd: [], v1: '[3, 4]', v2: 'mid=3 и mid+1=4', v3: '40 > 32 (Спускане)', msg: 'Проверяваме <code>mid = 3</code> и <code>4</code> (4 уже е в кеша!): <strong>40 &gt; 32</strong> &rarr; <code>R = 3</code>.' },
+                    { line: 8, arr: heights, act: [], fnd: [2], v1: '[3, 3]', v2: '! 3', v3: 'Връх = 40 (инд. 3)', msg: 'Границите се срещнаха в <strong>L = R = 3</strong>! Открихме локалния максимум (височина 40) на индекс <strong>3</strong>.' }
+                ];
+
+            } else {
+                document.getElementById('t6-lbl1').innerText = 'Известни елементи';
+                document.getElementById('t6-lbl2').innerText = 'Заявка сума';
+                document.getElementById('t6-lbl3').innerText = 'Изчисление';
+
+                t6Code = [
+                    'int s12 = askSum(1, 2); // Връща a[1] + a[2]',
+                    'int s23 = askSum(2, 3); // Връща a[2] + a[3]',
+                    'int s13 = askSum(1, 3); // Връща a[1] + a[2] + a[3]',
+                    'a[1] = s13 - s23; a[3] = s13 - s12; a[2] = s12 - a[1];',
+                    'a[4] = (4 * 5 / 2) - s13; // Последният БЕЗ заявка!'
+                ];
+
+                t6Steps = [
+                    { line: 1, arr: ['?','?','?','?'], act: [0,1], fnd: [], v1: '0 от 4', v2: '? 1 2', v3: 'a[1]+a[2] = 5', msg: 'Питаме за сумата на първите два елемента: <strong>s12 = 5</strong>.' },
+                    { line: 2, arr: ['?','?','?','?'], act: [1,2], fnd: [], v1: '0 от 4', v2: '? 2 3', v3: 'a[2]+a[3] = 5', msg: 'Питаме за сумата на елементи 2 и 3: <strong>s23 = 5</strong>.' },
+                    { line: 3, arr: ['?','?','?','?'], act: [0,1,2], fnd: [], v1: '0 от 4', v2: '? 1 3', v3: 'a[1]+a[2]+a[3] = 6', msg: 'Питаме за сумата на първите три елемента: <strong>s13 = 6</strong>.' },
+                    { line: 4, arr: ['1','4','1','?'], act: [], fnd: [0,1,2], v1: '3 от 4', v2: 'Изваждане', v3: 'a=[1, 4, 1, ?]', msg: 'Намираме първите три числа: <code>a[1] = s13 - s23 = 6 - 5 = 1</code>, <code>a[3] = 6 - 5 = 1</code> (или <code>s13 - s12</code>), <code>a[2] = 5 - 1 = 4</code> (за пермутация [2, 3, 1, 4]: <code>a=[2, 3, 1, ?]</code>).' },
+                    { line: 5, arr: ['2','3','1','4'], act: [], fnd: [0,1,2,3], v1: '4 от 4', v2: 'Без заявка!', v3: '10 - 6 = 4', msg: 'Понеже сумата на числата от 1 до 4 е <strong>10</strong>, намираме <code>a[4] = 10 - s13 = 10 - 6 = 4</code> с <strong>0 допълнителни заявки</strong>!' }
+                ];
+            }
+            t6Idx = 0;
+            renderT6();
+        }
+
+        function renderT6() {
+            const s = t6Steps[t6Idx];
+            document.getElementById('t6-step-lbl').innerText = `Стъпка ${t6Idx + 1} от ${t6Steps.length}`;
+            renderCodeLines('t6-code', t6Code, s.line);
+
+            const cells = document.getElementById('t6-cells');
+            cells.innerHTML = '';
+            s.arr.forEach((v, i) => {
+                let cls = 'cell-item';
+                if (s.fnd.includes(i)) cls += ' found-cell';
+                else if (s.act.includes(i)) cls += ' active-cell';
+                cells.innerHTML += `<div class="${cls}">${v}<span class="sub">[${i + 1}]</span></div>`;
+            });
+
+            document.getElementById('t6-val1').innerText = s.v1;
+            document.getElementById('t6-val2').innerText = s.v2;
+            document.getElementById('t6-val3').innerText = s.v3;
+            document.getElementById('t6-exp').innerHTML = s.msg;
+            document.getElementById('t6-prev').disabled = (t6Idx === 0);
+            document.getElementById('t6-next').disabled = (t6Idx === t6Steps.length - 1);
+        }
+        function stepT6(d) { t6Idx = Math.max(0, Math.min(t6Steps.length - 1, t6Idx + d)); renderT6(); }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderT1();
+            setT2Mode('good');
+            buildT3();
+            renderT4();
+            renderT5();
+            buildT6();
+        });
+    </script>
+</body>
+
+</html>
