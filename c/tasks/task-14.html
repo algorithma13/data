@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C14: Тайният връх (Peak) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: var(--text-main);
+            margin: 2rem 0 1rem 0;
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.03rem; }
+        ul, ol { margin-bottom: 1.4rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 0.9rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.94rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .explanation {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        .subtask-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+
+        .subtask-table th, .subtask-table td {
+            padding: 0.65rem 0.85rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subtask-table th {
+            background-color: rgba(15, 23, 42, 0.9);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .subtask-table td { color: #cbd5e1; }
+        .subtask-table tr:last-child td { border-bottom: none; }
+
+        /* ДЕСЕН ПАНЕЛ (Интерактивна Визуализация с табове) */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.9rem 1.5rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.95rem;
+            border-radius: 0.5rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 1.75rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-bottom: 0.95rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.75rem 0.95rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            padding: 0.4rem 0.65rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--border);
+            background: var(--code-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.88rem;
+            text-align: center;
+            width: 195px;
+        }
+
+        button {
+            padding: 0.45rem 0.85rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.84rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЦЕНА С ПЛАНИНСКИТЕ ХЪЛМОВЕ */
+        .mountains-stage {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.8rem 1rem 0.9rem 1rem;
+            margin-bottom: 0.95rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 0.75rem;
+            min-height: 215px;
+            position: relative;
+        }
+
+        .hill-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .hill-col:hover {
+            transform: translateY(-4px);
+        }
+
+        .hill-bar {
+            width: 48px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 6px;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: #fff;
+            transition: all 0.25s;
+            position: relative;
+            background: linear-gradient(180deg, #334155, #1e293b);
+            border: 2px dashed #64748b;
+        }
+
+        .hill-bar.revealed {
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            border: 2px solid #60a5fa;
+        }
+
+        .hill-bar.probing {
+            background: linear-gradient(180deg, #f59e0b, #b45309);
+            border: 2px solid #fcd34d;
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.55);
+        }
+
+        .hill-bar.peak-found {
+            background: linear-gradient(180deg, #10b981, #047857);
+            border: 2px solid #34d399;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.6);
+        }
+
+        .hill-bar.outside-range {
+            opacity: 0.3;
+        }
+
+        .cache-badge {
+            position: absolute;
+            top: -19px;
+            font-size: 0.65rem;
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid var(--accent);
+            padding: 0 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .hill-lbl {
+            font-family: 'Consolas', monospace;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* ПРОМЕНЛИВИ И КОД ЗА ТРАСИРАНЕ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 0.96rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            max-height: 295px;
+            overflow-y: auto;
+            margin-bottom: 0.85rem;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.14rem 0.85rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.12s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 28px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #fff;
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.95rem 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.93rem;
+            line-height: 1.52;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Интерактивни задачи</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: УСЛОВИЕ НА ЗАДАЧАТА (ТАЙНИЯТ ВРЪХ / PEAK)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>ЗАДАЧА 14: Група С. Тайният връх <br><span style="font-size: 1.3rem; color: var(--text-muted); font-weight: normal;">(Peak)</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 0.5 с.</div>
+                    <div>💾 <strong>Памет:</strong> 64 MB</div>
+                    <div>🏫 <strong>Школа МГ</strong></div>
+                    <div>📄 <strong>Файл:</strong> peak.cpp</div>
+                </div>
+            </div>
+
+            <p>Алпинистът Петър планира експедиция в непозната планинска верига, която е скрита в гъста мъгла. Веригата се състои от <code>N</code> подредени в редица хълма, номерирани последователно от <code>1</code> до <code>N</code> от ляво надясно. Всеки хълм <code>i</code> има определена надморска височина <code>H<sub>i</sub></code>, като е гарантирано, че всеки два съседни хълма имат различна височина (<code>H<sub>i</sub> &ne; H<sub>i+1</sub></code>).</p>
+
+            <p>Петър иска да изкачи някой <strong>локален връх</strong> във веригата. Един хълм с номер <code>p</code> се нарича локален връх, ако е по-висок от непосредствените си съседи:</p>
+            <ul>
+                <li>За вътрешен хълм (<code>1 &lt; p &lt; N</code>): трябва да е изпълнено <code>H<sub>p-1</sub> &lt; H<sub>p</sub></code> и <code>H<sub>p</sub> &gt; H<sub>p+1</sub></code>.</li>
+                <li>За първия хълм (<code>p = 1</code>): достатъчно е <code>H<sub>1</sub> &gt; H<sub>2</sub></code>.</li>
+                <li>За последния хълм (<code>p = N</code>): достатъчно е <code>H<sub>N</sub> &gt; H<sub>N-1</sub></code>.</li>
+            </ul>
+
+            <p>Тъй като планината е обвита в мъгла, Петър не вижда височините на хълмовете предварително. Той разполага със специален сателитен радар, с който може да измерва височината на избран от него хълм <code>x</code>. Всяко измерване обаче хаби ценна енергия от батерията на радара.</p>
+
+            <p>Напишете функция <code>findPeak</code>, която с помощта на минимален брой радарни измервания открива и връща номера на поне един локален връх в планинската верига. Ако има няколко локални върха, вашата функция може да върне номера на произволен от тях.</p>
+
+            <h2>Детайли по реализацията (Интерактивен режим с Grader)</h2>
+            <p>Задачата е интерактивна и се компилира със служебна програма на журито. Вие трябва да предадете само един файл <code>peak.cpp</code>, който да включва заглавния файл <code>#include "peak.h"</code> в началото си. Във вашия файл <strong>не трябва</strong> да има функция <code>main()</code>, нито да се чете или пише от стандартния вход/изход (<code>cin / cout</code>).</p>
+
+            <p>Вашият файл трябва да съдържа реализацията на следната функция:</p>
+<pre><code>int findPeak(int n);</code></pre>
+            <ul>
+                <li>Функцията се извиква еднократно от програмата на журито в началото на всеки тест.</li>
+                <li>Параметърът <code>n</code> задава общия брой на хълмовете в планинската верига.</li>
+                <li>Функцията трябва да върне едно цяло число от <code>1</code> до <code>N</code> — индекса на открития локален връх.</li>
+            </ul>
+
+            <p>За да правите измервания с радара, вашата функция може да извиква следната служебна функция на журито:</p>
+<pre><code>int askHeight(int index);</code></pre>
+            <ul>
+                <li>Подавате цяло число <code>index</code> (<code>1 &le; index &le; N</code>) — номера на хълма, който искате да измерите.</li>
+                <li>Функцията връща цяло число — надморската височина <code>H<sub>index</sub></code> на съответния хълм.</li>
+                <li>Ако подадете невалиден индекс извън интервала <code>[1, N]</code> или надвишите разрешения брой заявки за съответния тест, програмата ви ще бъде прекратена служебно и ще получи 0 точки.</li>
+            </ul>
+
+            <h2>Ограничения</h2>
+            <ul>
+                <li>2 &le; <code>N</code> &le; 100 000</li>
+                <li>1 &le; <code>H<sub>i</sub></code> &le; 10<sup>9</sup></li>
+                <li><code>H<sub>i</sub> &ne; H<sub>i+1</sub></code> за всяко <code>1 &le; i &lt; N</code></li>
+            </ul>
+
+            <h2>Оценяване</h2>
+            <p>Нека <code>Q</code> е максималният брой извиквания на функцията <code>askHeight</code>, които вашата програма прави на един тест:</p>
+            <table class="subtask-table">
+                <tr><th>Подзадача</th><th>Точки</th><th>Ограничения и лимит на заявките Q</th></tr>
+                <tr><td><strong>Подзадача 1</strong></td><td>20 т.</td><td><code>N &le; 100</code>, позволени са до <code>Q &le; 100</code> заявки.</td></tr>
+                <tr><td><strong>Подзадача 2</strong></td><td>30 т.</td><td><code>N &le; 100 000</code>, веригата е строго „унимодална“, до <code>Q &le; 40</code> заявки.</td></tr>
+                <tr><td><strong>Подзадача 3</strong></td><td>35 т.</td><td><code>N &le; 100 000</code>, произволна верига с множество върхове, до <code>Q &le; 40</code> заявки.</td></tr>
+                <tr><td><strong>Подзадача 4</strong></td><td>15 т.</td><td><code>N &le; 100 000</code>, позволени са най-много <code>Q &le; 34</code> заявки (изисква кеширане).</td></tr>
+            </table>
+
+            <h2>Пример за комуникация</h2>
+            <div class="explanation">
+                Нека скритата планинска верига се състои от <code>N = 7</code> хълма с височини <code>H = [10, 25, 40, 32, 28, 19, 12]</code>.<br>
+                Журито извиква <code>findPeak(7)</code>:
+                <ol style="margin-top:0.5rem; margin-bottom:0.5rem;">
+                    <li>Средата на <code>[1, 7]</code> е <code>mid = 4</code> и съседът <code>mid + 1 = 5</code>: извикваме <code>askHeight(4) &rarr; 32</code> и <code>askHeight(5) &rarr; 28</code>. Понеже <code>32 &gt; 28</code>, склонът се спуска надясно &rarr; свиваме до <code>[1, 4]</code>.</li>
+                    <li>Средата на <code>[1, 4]</code> е <code>mid = 2</code> и съседът <code>3</code>: извикваме <code>askHeight(2) &rarr; 25</code> и <code>askHeight(3) &rarr; 40</code>. Понеже <code>25 &lt; 40</code>, склонът се изкачва надясно &rarr; свиваме до <code>[3, 4]</code>.</li>
+                    <li>Средата на <code>[3, 4]</code> е <code>mid = 3</code> и съседът <code>4</code>: височините им (<code>40</code> и <code>32</code>) вече са в кеша (<code>memo</code>), затова <strong>не правим нови заявки</strong>! Тъй като <code>40 &gt; 32</code>, свиваме до <code>[3, 3]</code>.</li>
+                    <li>При <code>L = R = 3</code> функцията изпълнява <code>return 3;</code> само с <strong>4 реални заявки</strong>!</li>
+                </ol>
+            </div>
+
+            <h2>Локално тестване</h2>
+            <p>Можете да компилирате решението си заедно с локалния грейдър чрез командата:</p>
+<pre><code>g++ Lgrader.cpp peak.cpp -o peak</code></pre>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: СИМУЛАЦИЯ С РАДАРА И ТРАСИРАНЕ НА КОДА
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('tab-trace')" id="btn-tab-trace">1. Трасиране на основната логика (Двоично търсене + Кеш)</button>
+                <button class="tab-btn" onclick="switchTab('tab-radar')" id="btn-tab-radar">2. Изследвай сам с радара в мъглата</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ТРАСИРАНЕ НА ОСНОВНАТА ЛОГИКА -->
+                <div class="tab-pane active" id="tab-trace">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Трасиране на findPeak(int n) с кеширане</span>
+                            <span id="tr-step-badge" style="font-size:0.86rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:0.85rem;">
+                            Проследете как чрез двоично търсене по наклона между <code>mid</code> и <code>mid + 1</code> и кеш масив <code>memo</code> алгоритъмът гарантирано намира локален връх за най-много <code>34</code> заявки при <code>N = 100 000</code>!
+                        </p>
+
+                        <div class="controls">
+                            <span style="font-size:0.84rem; color:var(--text-muted);">Височини H[1..N]:</span>
+                            <input type="text" id="tr-input" value="10 25 40 32 28 19 12">
+                            <button onclick="buildTrace()">Зареди</button>
+                            <button class="btn-slate" id="btn-tr-prev" onclick="moveTrace(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="btn-tr-next" onclick="moveTrace(1)">Следваща стъпка &rarr;</button>
+                            <button class="btn-slate" onclick="resetTrace()">Отначало</button>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Интервал [L, R]</div>
+                                <div class="state-val" id="st-lr">[1, 7]</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Сравняваме (mid, mid+1)</div>
+                                <div class="state-val" id="st-mid">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Реални заявки Q</div>
+                                <div class="state-val" id="st-q">0</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Спестени от кеша</div>
+                                <div class="state-val" id="st-saved" style="color:#38bdf8;">0</div>
+                            </div>
+                        </div>
+
+                        <div class="mountains-stage" id="trace-stage"></div>
+
+                        <div class="code-box" id="trace-code"></div>
+
+                        <div class="calc-box" id="trace-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: РЪЧНА ИГРА С РАДАРА В МЪГЛАТА -->
+                <div class="tab-pane" id="tab-radar">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📡 Интерактивен радар: Открий локалния връх в мъглата!</span>
+                            <span id="rad-q-badge" style="font-size:0.86rem; color:var(--warning); font-family:monospace;">Заявки askHeight: 0</span>
+                        </div>
+                        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:0.85rem;">
+                            Всички хълмове са скрити в мъглата (<code>?</code>). Кликнете върху хълм, за да извикате <code>askHeight(i)</code>, и вижте колко бързо можете да откриете хълм, който е по-висок от двата си съседа!
+                        </p>
+
+                        <div class="controls">
+                            <button onclick="initRadarGame([10, 25, 40, 32, 28, 19, 12])">Тест 1 (От примера)</button>
+                            <button class="btn-slate" onclick="initRadarGame([15, 42, 18, 29, 65, 80, 55])">Тест 2 (Два върха)</button>
+                            <button class="btn-slate" onclick="initRadarGame([90, 70, 50, 30, 20, 10, 5])">Тест 3 (Връх в края)</button>
+                        </div>
+
+                        <div class="mountains-stage" id="radar-stage"></div>
+
+                        <div class="calc-box" id="radar-status">
+                            Кликнете върху някой от хълмовете по-горе, за да измерите височината му със сателитния радар!
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПЛАВЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ТАБ 1: ТРАСИРАНЕ НА ОСНОВНАТА ЛОГИКА
+        // ==========================================
+        const cppCodeLines = [
+            '#include "peak.h"',
+            '#include <vector>',
+            'using namespace std;',
+            '',
+            'vector<int> memo;',
+            'int getH(int idx) {',
+            '    if (memo[idx] != -1) return memo[idx]; // Взимаме от кеша (0 заявки!)',
+            '    return memo[idx] = askHeight(idx);     // Заявка към радара на журито',
+            '}',
+            '',
+            'int findPeak(int n) {',
+            '    memo.assign(n + 1, -1);',
+            '    int L = 1, R = n;',
+            '    while (L < R) {',
+            '        int mid = (L + R) / 2;',
+            '        int h1 = getH(mid);',
+            '        int h2 = getH(mid + 1);',
+            '        if (h1 < h2) L = mid + 1; // Изкачваме се надясно -> връх в [mid+1, R]',
+            '        else R = mid;             // Спускаме се надясно -> връх в [L, mid]',
+            '    }',
+            '    return L; // L == R е гарантиран локален връх!',
+            '}'
+        ];
+
+        let trArr = [10, 25, 40, 32, 28, 19, 12];
+        let trSteps = [];
+        let trIdx = 0;
+
+        function buildTrace() {
+            const raw = document.getElementById('tr-input').value.trim();
+            let parsed = raw.split(/\s+/).map(Number).filter(x => !isNaN(x) && x > 0);
+            if (parsed.length < 2) parsed = [10, 25, 40, 32, 28, 19, 12];
+            trArr = parsed.slice(0, 10);
+
+            const n = trArr.length;
+            let memo = new Array(n + 1).fill(-1);
+            let L = 1, R = n;
+            let qCount = 0, savedCount = 0;
+            trSteps = [];
+
+            trSteps.push({
+                line: 13, L: L, R: R, midStr: '-', q: 0, saved: 0,
+                memo: [...memo], probing: [], peak: -1,
+                msg: `Стартираме <code>findPeak(${n})</code>. Инициализираме кеша <code>memo[1..${n}] = -1</code> и границите <strong>L = 1, R = ${n}</strong>.`
+            });
+
+            while (L < R) {
+                const mid = Math.floor((L + R) / 2);
+
+                // Стъпка за h1 = getH(mid)
+                let fromCache1 = (memo[mid] !== -1);
+                if (fromCache1) savedCount++;
+                else { memo[mid] = trArr[mid - 1]; qCount++; }
+
+                // Стъпка за h2 = getH(mid + 1)
+                let fromCache2 = (memo[mid + 1] !== -1);
+                if (fromCache2) savedCount++;
+                else { memo[mid + 1] = trArr[mid]; qCount++; }
+
+                const h1 = memo[mid];
+                const h2 = memo[mid + 1];
+
+                let cacheNote1 = fromCache1 ? `от кеша (0 заявки)` : `чрез <code>askHeight(${mid})</code>`;
+                let cacheNote2 = fromCache2 ? `от кеша (0 заявки)` : `чрез <code>askHeight(${mid + 1})</code>`;
+
+                trSteps.push({
+                    line: 16, L: L, R: R, midStr: `mid=${mid}, mid+1=${mid + 1}`, q: qCount, saved: savedCount,
+                    memo: [...memo], probing: [mid, mid + 1], peak: -1,
+                    msg: `Проверяваме средата на <strong>[${L}, ${R}]</strong> при <strong>mid = ${mid}</strong> и <strong>mid + 1 = ${mid + 1}</strong>:<br>` +
+                         `• <code>H[${mid}] = ${h1}</code> (${cacheNote1})<br>` +
+                         `• <code>H[${mid + 1}] = ${h2}</code> (${cacheNote2})`
+                });
+
+                if (h1 < h2) {
+                    const nextL = mid + 1;
+                    trSteps.push({
+                        line: 18, L: nextL, R: R, midStr: `${h1} < ${h2} (↗)`, q: qCount, saved: savedCount,
+                        memo: [...memo], probing: [mid, mid + 1], peak: -1,
+                        msg: `Тъй като <strong>H[${mid}] (${h1}) &lt; H[${mid + 1}] (${h2})</strong>, склонът се изкачва надясно! Това гарантира локален връх в дясната половина &rarr; свиваме <strong>L = ${nextL}</strong> (интервал <strong>[${nextL}, ${R}]</strong>).`
+                    });
+                    L = nextL;
+                } else {
+                    const nextR = mid;
+                    trSteps.push({
+                        line: 19, L: L, R: nextR, midStr: `${h1} > ${h2} (↘)`, q: qCount, saved: savedCount,
+                        memo: [...memo], probing: [mid, mid + 1], peak: -1,
+                        msg: `Тъй като <strong>H[${mid}] (${h1}) &gt; H[${mid + 1}] (${h2})</strong>, склонът се спуска надясно! Това гарантира локален връх в лявата половина &rarr; свиваме <strong>R = ${nextR}</strong> (интервал <strong>[${L}, ${nextR}]</strong>).`
+                    });
+                    R = nextR;
+                }
+            }
+
+            trSteps.push({
+                line: 21, L: L, R: R, midStr: `Връх = #${L}`, q: qCount, saved: savedCount,
+                memo: [...memo], probing: [], peak: L,
+                msg: `✅ Границите се срещнаха (<strong>L == R == ${L}</strong>)! Хълм <strong>#${L} (височина ${trArr[L - 1]})</strong> е гарантиран локален връх. Изпълняваме <code>return ${L};</code> само с <strong>${qCount} реални заявки</strong> (и ${savedCount} спестени от кеша)!`
+            });
+
+            trIdx = 0;
+            renderTrace();
+        }
+
+        function renderTrace() {
+            const s = trSteps[trIdx];
+            document.getElementById('tr-step-badge').innerText = `Стъпка ${trIdx + 1} от ${trSteps.length}`;
+            document.getElementById('st-lr').innerText = `[${s.L}, ${s.R}]`;
+            document.getElementById('st-mid').innerText = s.midStr;
+            document.getElementById('st-q').innerText = s.q;
+            document.getElementById('st-saved').innerText = s.saved;
+
+            // Рендериране на планинските хълмове
+            const stage = document.getElementById('trace-stage');
+            stage.innerHTML = '';
+            const maxH = Math.max(...trArr, 1);
+
+            trArr.forEach((trueH, idx0) => {
+                const idx = idx0 + 1;
+                const isKnown = (s.memo[idx] !== -1) || (s.peak === idx);
+                let cls = 'hill-bar';
+                if (s.peak === idx) cls += ' peak-found';
+                else if (s.probing.includes(idx)) cls += ' probing';
+                else if (isKnown) cls += ' revealed';
+
+                if (idx < s.L || idx > s.R) cls += ' outside-range';
+
+                const barH = isKnown ? Math.max(42, Math.round((trueH / maxH) * 145)) : 75;
+                const badge = (s.memo[idx] !== -1) ? `<span class="cache-badge">memo=${trueH}</span>` : '';
+
+                const col = document.createElement('div');
+                col.className = 'hill-col';
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${barH}px;">
+                        ${badge}
+                        <span>${isKnown ? trueH : '?'}</span>
+                    </div>
+                    <div class="hill-lbl">Хълм #${idx}</div>
+                `;
+                stage.appendChild(col);
+            });
+
+            // Рендериране на C++ кода
+            const codeBox = document.getElementById('trace-code');
+            codeBox.innerHTML = cppCodeLines.map((txt, i) => {
+                const lnum = i + 1;
+                const esc = txt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div class="code-line ${lnum === s.line ? 'active-line' : ''}" id="trline-${lnum}">
+                    <span class="line-num">${txt ? lnum : ''}</span>
+                    <span class="line-text">${esc}</span>
+                </div>`;
+            }).join('');
+
+            const activeEl = document.getElementById(`trline-${s.line}`);
+            if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+            document.getElementById('trace-exp').innerHTML = s.msg;
+            document.getElementById('btn-tr-prev').disabled = (trIdx === 0);
+            document.getElementById('btn-tr-next').disabled = (trIdx === trSteps.length - 1);
+        }
+
+        function moveTrace(dir) {
+            trIdx = Math.max(0, Math.min(trSteps.length - 1, trIdx + dir));
+            renderTrace();
+        }
+
+        function resetTrace() {
+            trIdx = 0;
+            renderTrace();
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: РЪЧНА ИГРА С РАДАРА В МЪГЛАТА
+        // ==========================================
+        let radArr = [10, 25, 40, 32, 28, 19, 12];
+        let radRevealed = [];
+        let radQueries = 0;
+
+        function initRadarGame(arr) {
+            radArr = [...arr];
+            radRevealed = new Array(radArr.length).fill(false);
+            radQueries = 0;
+            document.getElementById('rad-q-badge').innerText = `Заявки askHeight: 0`;
+            document.getElementById('radar-status').innerHTML = `Планината е скрита в мъгла! Кликнете върху хълм, за да извикате <code>askHeight(index)</code>.`;
+            renderRadarStage();
+        }
+
+        function probeHill(idx0) {
+            if (!radRevealed[idx0]) {
+                radRevealed[idx0] = true;
+                radQueries++;
+                document.getElementById('rad-q-badge').innerText = `Заявки askHeight: ${radQueries}`;
+            }
+
+            const n = radArr.length;
+            const h = radArr[idx0];
+            const leftOk = (idx0 === 0) || (radArr[idx0 - 1] < h);
+            const rightOk = (idx0 === n - 1) || (radArr[idx0 + 1] < h);
+            const isPeak = leftOk && rightOk;
+
+            const status = document.getElementById('radar-status');
+            if (isPeak) {
+                status.innerHTML = `🏆 <strong>Поздравления!</strong> Измерихте <code>askHeight(${idx0 + 1}) = ${h}</code>. Хълм <strong>#${idx0 + 1}</strong> е локален връх (по-висок е от съседите си)! Открихте го с <strong>${radQueries}</strong> заявки.`;
+            } else {
+                const hint = (idx0 < n - 1 && radArr[idx0 + 1] > h)
+                    ? `Съседният хълм вдясно (#${idx0 + 2}) е по-висок (склонът се изкачва надясно ↗).`
+                    : `Съседният хълм вляво (#${idx0}) е по-висок (склонът се изкачва наляво ↖).`;
+                status.innerHTML = `📡 <code>askHeight(${idx0 + 1})</code> върна височина <strong>${h}</strong>. Това все още не е връх. <em>Подсказка: ${hint}</em>`;
+            }
+
+            renderRadarStage(idx0);
+        }
+
+        function renderRadarStage(lastClicked = -1) {
+            const stage = document.getElementById('radar-stage');
+            stage.innerHTML = '';
+            const maxH = Math.max(...radArr, 1);
+
+            radArr.forEach((h, i) => {
+                const rev = radRevealed[i];
+                const leftOk = (i === 0) || (radArr[i - 1] < h);
+                const rightOk = (i === radArr.length - 1) || (radArr[i + 1] < h);
+                const isPeak = rev && leftOk && rightOk;
+
+                let cls = 'hill-bar';
+                if (isPeak) cls += ' peak-found';
+                else if (i === lastClicked) cls += ' probing';
+                else if (rev) cls += ' revealed';
+
+                const barH = rev ? Math.max(42, Math.round((h / maxH) * 145)) : 80;
+                const col = document.createElement('div');
+                col.className = 'hill-col';
+                col.onclick = () => probeHill(i);
+                col.innerHTML = `
+                    <div class="${cls}" style="height:${barH}px;">
+                        <span>${rev ? h : '?'}</span>
+                    </div>
+                    <div class="hill-lbl">Хълм #${i + 1}</div>
+                `;
+                stage.appendChild(col);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buildTrace();
+            initRadarGame([10, 25, 40, 32, 28, 19, 12]);
+        });
+    </script>
+</body>
+
+</html>
