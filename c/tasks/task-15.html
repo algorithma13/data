@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача C15: Тежки монети (IATI Шумен 2022) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .task-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .task-header h1 {
+            font-size: 1.95rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.9rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .task-meta div {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        h2 {
+            font-size: 1.28rem;
+            color: var(--text-main);
+            margin: 2rem 0 0.9rem 0;
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        h3 {
+            font-size: 1.08rem;
+            color: #34d399;
+            margin: 1.35rem 0 0.5rem 0;
+        }
+
+        p { margin-bottom: 0.95rem; color: var(--text-muted); font-size: 1.01rem; }
+        ul, ol { margin-bottom: 1.35rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.45rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .explanation {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1.15rem 1.4rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            color: #cbd5e1;
+        }
+
+        .subtask-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.4rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-size: 0.88rem;
+        }
+
+        .subtask-table th, .subtask-table td {
+            padding: 0.6rem 0.85rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subtask-table th {
+            background-color: rgba(15, 23, 42, 0.9);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .subtask-table td { color: #cbd5e1; }
+        .subtask-table tr:last-child td { border-bottom: none; }
+
+        /* ДЕСЕН ПАНЕЛ: ТАБОВЕ И ВИЗУАЛИЗАЦИЯ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            padding: 0.85rem 1.25rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.48rem 0.88rem;
+            border-radius: 0.45rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 1.75rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.45rem 0.85rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.83rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+        .btn-warn { background-color: var(--warning); color: #000; }
+
+        /* СЦЕНА С МОНЕТИ И ВЕЗНИ */
+        .coins-stage {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem 1rem;
+            margin-bottom: 0.95rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .coins-row {
+            display: flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .coin-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            position: relative;
+            transition: all 0.25s;
+        }
+
+        .coin-circle span.sub {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .coin-circle.left-pan {
+            border-color: var(--highlight);
+            background: rgba(59, 130, 246, 0.22);
+            color: #93c5fd;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+        }
+
+        .coin-circle.right-pan {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.2);
+            color: #fde68a;
+            transform: translateY(3px);
+        }
+
+        .coin-circle.known-heavy {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+        }
+
+        .scales-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            width: 100%;
+            align-items: center;
+        }
+
+        .pan-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.65rem;
+            text-align: center;
+            font-family: 'Consolas', monospace;
+            font-size: 0.84rem;
+        }
+
+        .pan-box.pan-l { border-top: 3px solid var(--highlight); }
+        .pan-box.pan-r { border-top: 3px solid var(--warning); }
+
+        .scale-sign {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            padding: 0 0.4rem;
+        }
+
+        /* ПРОМЕНЛИВИ И КОДОВИ ПРОЗОРЦИ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 0.94rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            max-height: 310px;
+            overflow-y: auto;
+            margin-bottom: 0.85rem;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.14rem 0.85rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.12s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 28px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #fff;
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.95rem 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.92rem;
+            line-height: 1.52;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ПАПКА С ФАЙЛОВЕ */
+        .folder-tree {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.65rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-card {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.55rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .file-card:hover, .file-card.active-file {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.12);
+        }
+
+        .file-card h5 {
+            color: var(--text-main);
+            font-family: 'Consolas', monospace;
+            font-size: 0.92rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-card p {
+            font-size: 0.76rem;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid, .folder-tree { grid-template-columns: 1fr; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Интерактивна задача &amp; Пълно решение</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: УСЛОВИЕ НА ЗАДАЧАТА + АНАЛИЗ И ОТГОВОР
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="task-header">
+                <h1>Задача 1. Тежки монети (Coins) <br><span style="font-size: 1.2rem; color: var(--text-muted); font-weight: normal;">XIV Есенен турнир по информатика (IATI), Шумен 2022</span></h1>
+                <div class="task-meta">
+                    <div>⏱️ <strong>Време:</strong> 0.7 с.</div>
+                    <div>💾 <strong>Памет:</strong> 256 MB</div>
+                    <div>🏆 <strong>Група:</strong> Junior (C)</div>
+                    <div>📄 <strong>Файл:</strong> coins.cpp</div>
+                </div>
+            </div>
+
+            <h2>Условие на задачата</h2>
+            <p>В кралството на ниската земя принцеса Мария планира да наеме опитни строители, които да възстановят разрушената защитна стена. За да им плати, тя отишла в кралската хазна и открила <code>N = 2<sup>K</sup></code> монети, всяка номерирана с число от <code>0</code> до <code>2<sup>K</sup> - 1</code>. Придворният счетоводител я информирал, че има два вида монети — <strong>леки (0)</strong> и <strong>тежки (1)</strong>, като теглото на всички тежки монети е едно и също, както и теглото на всички леки монети. Освен това в хазната има <strong>поне една тежка и поне една лека монета</strong>.</p>
+
+            <p>Принцеса Мария трябва да плати само с тежки монети, а преди работата да започне, дължи аванс от една тежка монета. Счетоводителят разполага с везни, с които може да сравни сумарната тежест на две множества, състоящи се от равен брой монети.</p>
+
+            <p>Напишете програма <code>coins</code>, която съдържа функцията <code>count_heavy</code>, компилира се с програмата на журито и намира <strong>общия брой на тежките монети</strong> в хазната, както и <strong>номера на една такава монета</strong>.</p>
+
+            <h2>Детайли по имплементацията</h2>
+            <p>Вашият файл <code>coins.cpp</code> трябва да включва <code>#include "coins.h"</code> (без функция <code>main</code> и без <code>cin/cout</code>) и да реализира функцията:</p>
+<pre><code>pair&lt;int, int&gt; count_heavy(int k);</code></pre>
+            <p>За комуникация с програмата на журито се предоставя функцията:</p>
+<pre><code>int weigh(const vector&lt;int&gt; &amp;a, const vector&lt;int&gt; &amp;b);</code></pre>
+            <p>Двата вектора <code>a</code> и <code>b</code> трябва да имат равен брой елементи без повторения. Функцията връща:</p>
+            <ul>
+                <li><code>0</code>, ако двете множества от монети имат равно сумарно тегло;</li>
+                <li><code>-1</code>, ако теглото на монетите във вектора <code>a</code> е по-малко от теглото на тези в <code>b</code>;</li>
+                <li><code>+1</code>, ако теглото на монетите във вектора <code>a</code> е по-голямо от теглото на тези в <code>b</code>.</li>
+            </ul>
+
+            <h2>Ограничения и Подзадачи</h2>
+            <p>Валидно е ограничението <code>1 &le; K &le; 20</code> (до <code>2<sup>20</sup> = 1 048 576</code> монети). Точките за всеки тест се определят по формулата <code>coef = min(1, (11 / 10) * (author + 1) / (yours + 1))</code>:</p>
+            <table class="subtask-table">
+                <tr><th>Подзадача</th><th>Точки</th><th>Лимит author</th><th>Допълнителни ограничения</th></tr>
+                <tr><td><strong>1</strong></td><td>5 т.</td><td>&le; 40</td><td>K &le; 5</td></tr>
+                <tr><td><strong>2</strong></td><td>10 т.</td><td>&le; 250</td><td>Има точно една тежка или точно една лека монета.</td></tr>
+                <tr><td><strong>3</strong></td><td>20 т.</td><td>&le; 1000</td><td>Не повече от K тежки или не повече от K леки монети.</td></tr>
+                <tr><td><strong>4</strong></td><td>25 т.</td><td>&le; 100</td><td>K &le; 10</td></tr>
+                <tr><td><strong>5</strong></td><td>40 т.</td><td>&le; 500</td><td>Няма други ограничения (K &le; 20).</td></tr>
+            </table>
+
+            <h2>Примерна комуникация (за K = 2, монети: 0, 1, 1, 1)</h2>
+            <table class="subtask-table">
+                <tr><th>Функция на състезателя</th><th>Програма на журито</th></tr>
+                <tr><td>—</td><td>Извиква <code>count_heavy(2)</code></td></tr>
+                <tr><td>Извиква <code>weigh({0, 1}, {2, 3})</code></td><td>Връща стойност <code>-1</code></td></tr>
+                <tr><td>Извиква <code>weigh({1, 2}, {0, 3})</code></td><td>Връща стойност <code>+1</code></td></tr>
+                <tr><td>Извиква <code>weigh({1}, {2})</code></td><td>Връща стойност <code>0</code></td></tr>
+                <tr><td>Връща стойност <code>(3, 2)</code></td><td>—</td></tr>
+            </table>
+
+            <!-- =======================================================
+                 ЧАСТТА ОТ ОТГОВОРА (БЕЗ ЦИТАТИ И БЕЗ ДОЛАРИ)
+            ======================================================== -->
+            <h2>1. Какво представлява файлът grade.properties и къде се поставят файловете?</h2>
+            <p>Файлът <code>grade.properties</code> не е C++ грейдърът за компилиране на задачата, а служебен конфигурационен файл за автоматизираната система за оценяване на турнира (IATI Шумен). В него са описани правилата за провеждане на тестването на сървъра:</p>
+            <ul>
+                <li><code>groups=1-3,4-6,...,58-60</code> указва, че 60-те теста са разделени на 20 групи по 3 теста всяка.</li>
+                <li><code>scoring=min</code> — точките за всяка група се определят от минималния резултат сред трите теста в нея.</li>
+                <li><code>time=0.700</code> и <code>memory=256</code> задават лимита от 0.7 секунди време и 256 MB памет.</li>
+            </ul>
+
+            <div class="explanation">
+                <strong>Къде се поставят файловете за локално тестване от учениците:</strong><br>
+                За да компилирате и тествате решението на вашия компютър, трябва да поставите в <strong>една и съща папка</strong> следните три файла (можете да ги разгледате и копирате от Таб 3 вдясно):
+                <ol style="margin-top:0.5rem; margin-bottom:0;">
+                    <li><code>coins.h</code> — заглавният файл, който свързва вашата функция с програмата на журито.</li>
+                    <li><code>Lgrader.cpp</code> — локалният грейдър на журито, който съдържа функцията <code>main()</code>, чете входа и оценява броя претегляния.</li>
+                    <li><code>coins.cpp</code> — вашият файл с решението (който единствен се предава в системата).</li>
+                </ol>
+            </div>
+
+            <h2>2. Подробно обяснение на алгоритъма (Стъпка по стъпка)</h2>
+            <p>За пълен брой точки при <code>K = 20</code> (<code>N = 2<sup>20</sup> = 1 048 576</code> монети) разполагаме с лимит на автора от едва <code>500</code> претегляния. Това означава, че търсим алгоритъм със сложност <code>O(K<sup>2</sup>)</code> претегляния (<code>(20 &times; 21) / 2 = 210 &le; 500</code>).</p>
+
+            <h3>Основна математическа идея (Плъзгащ се прозорец и двоично търсене)</h3>
+            <p>Нека на текущата стъпка разглеждаме множество от <code>2<sup>m</sup></code> монети (първоначално всички <code>2<sup>K</sup></code> монети) и търсим общия брой тежки монети <code>H</code> в него. Разделяме монетите на две половини с дължина <code>half = 2<sup>m-1</sup></code>. За всяко отместване <code>j</code> (<code>0 &le; j &le; half</code>) дефинираме:</p>
+            <ul>
+                <li><strong>Лява везна L<sub>j</sub>:</strong> подмасивът от <code>half</code> последователни монети с индекси от <code>j</code> до <code>j + half - 1</code>.</li>
+                <li><strong>Дясна везна R<sub>j</sub>:</strong> всички останали <code>half</code> монети от текущото множество.</li>
+            </ul>
+
+            <p>Нека проследим какво се случва с разликата в теглата между <code>L<sub>j</sub></code> и <code>R<sub>j</sub></code>:</p>
+            <ol>
+                <li><strong>При j = 0:</strong> Проверяваме чрез <code>d0 = weigh(L<sub>0</sub>, R<sub>0</sub>)</code> първата половина срещу втората. Ако <code>d0 == 0</code>, двете половини имат равен брой тежки монети! Тогава общият брой тежки монети в цялото множество е просто <code>2 &times; (броя тежки в L<sub>0</sub>)</code>. Задачата веднага се свежда до два пъти по-малка (<code>2<sup>m-1</sup></code>).</li>
+                <li><strong>Ако d0 != 0 (например L<sub>0</sub> &lt; R<sub>0</sub>, т.е. d0 = -1):</strong>
+                    <ul>
+                        <li>Забележете, че при <code>j = half</code> лявата везна <code>L<sub>half</sub></code> съвпада с <code>R<sub>0</sub></code>, а дясната <code>R<sub>half</sub></code> съвпада с <code>L<sub>0</sub></code>. Следователно при <code>j = half</code> знакът на везната е обратен (<code>+1</code>)!</li>
+                        <li>На всяка стъпка при преход от <code>j</code> към <code>j + 1</code> от лявата везна излиза точно една монета (<code>v[j]</code>) и влиза точно една нова монета (<code>v[j + half]</code>). Това означава, че броят на тежките монети в <code>L<sub>j</sub></code> се променя най-много с 1!</li>
+                        <li>Тъй като в двата края (<code>j = 0</code> и <code>j = half</code>) везната е наклонена в различни посоки, можем да приложим <strong>двоично търсене по j</strong> (за най-много <code>m - 1</code> претегляния), за да намерим точката на преобръщане!</li>
+                    </ul>
+                </li>
+                <li><strong>Два възможни изхода от двоичното търсене:</strong>
+                    <ul>
+                        <li><strong>Случай А (Точен баланс):</strong> Намираме позиция <code>mid</code>, при която <code>weigh(L<sub>mid</sub>, R<sub>mid</sub>) == 0</code>. Тогава в <code>L<sub>mid</sub></code> и <code>R<sub>mid</sub></code> има равен брой тежки монети и общият брой е <code>2 &times; solve(L<sub>mid</sub>)</code>.</li>
+                        <li><strong>Случай Б (Прескачане при нечетен брой тежки монети):</strong> Двоичното търсене се свива до две съседни позиции <code>low</code> и <code>low + 1</code>, между които знакът се обръща (напр. от <code>-1</code> на <code>+1</code>). Това е възможно само ако:
+                            <br>• Общият брой тежки монети <code>H</code> в текущото множество е нечетен (сумата в <code>L<sub>low+1</sub></code> е <code>(H + 1) / 2</code>, откъдето <code>H = 2 &times; solve(L<sub>low+1</sub>) + d0</code>).
+                            <br>• Монетата <code>v[low]</code>, която току-що е излязла от <code>L<sub>low</sub></code>, и монетата <code>v[low + half]</code>, която е влязла в <code>L<sub>low+1</sub></code>, са от различен вид! Така директно откриваме коя от двете е 100% тежка и коя е 100% лека!
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h2>3. Постъпково писане на решението (coins.cpp)</h2>
+            <ul>
+                <li><strong>Стъпка 1 (Глобални променливи и разделяне):</strong> Създаваме вектор <code>known</code>, в който пазим вече разкритите монети (<code>-1</code> = неизвестна, <code>0</code> = лека, <code>1</code> = тежка), и променлива <code>heavy_idx</code> за индекса на поне една открита тежка монета. Функцията <code>split_coins</code> разделя текущия вектор <code>v</code> на <code>L<sub>j</sub></code> и <code>R<sub>j</sub></code>.</li>
+                <li><strong>Стъпка 2 (Дъно на рекурсията при 1 монета):</strong> Когато размерът на вектора <code>v</code> стане 1, проверяваме дали вече знаем вида на тази монета <code>v[0]</code>. Ако сме стигнали до нея чрез избиране на половината, съдържаща вече разкрита монета, стойността ѝ е вече записана в <code>known[v[0]]</code> и <strong>не хабим претегляне</strong>!</li>
+                <li><strong>Стъпка 3 (Двоично търсене на точката на баланс и рекурсивно спускане):</strong> Вътре в <code>solve(v)</code> първо проверяваме <code>j = 0</code>. Ако има равенство (<code>d0 == 0</code>), продължаваме към половината, която съдържа вече известна монета. Ако няма равенство, правим двоично търсене по <code>j</code> в интервала <code>[0, half]</code>.</li>
+            </ul>
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: СИМУЛАТОР НА ПЛЪЗГАЩИЯ ПРОЗОРЕЦ, ТРАСИРАНЕ И ФАЙЛОВЕ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(1)" id="tab-btn-1">1. Симулатор: Плъзгащ прозорец</button>
+                <button class="tab-btn" onclick="switchTab(2)" id="tab-btn-2">2. Трасиране на coins.cpp</button>
+                <button class="tab-btn" onclick="switchTab(3)" id="tab-btn-3">3. Файлове за тестване (Lgrader)</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: ИНТЕРАКТИВЕН СИМУЛАТОР НА ПЛЪЗГАЩИЯ ПРОЗОРЕЦ L_j и R_j -->
+                <div class="tab-pane active" id="tab-1">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚖️ Интерактивна везна: Плъзгащ се прозорец L<sub>j</sub> срещу R<sub>j</sub></span>
+                            <span id="sim-j-badge" style="font-size:0.85rem; color:var(--accent); font-family:monospace;">Отместване j = 0</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.85rem;">
+                            Променяйте отместването <code>j</code> или изберете пример, за да видите как при плъзгане на синия прозорец <code>L<sub>j</sub></code> с 1 позиция надясно една монета излиза, друга влиза и знакът на везната се преобръща!
+                        </p>
+
+                        <div class="controls">
+                            <button onclick="loadCoinPreset([0, 1, 1, 1])">Пример K=2 (0, 1, 1, 1)</button>
+                            <button class="btn-slate" onclick="loadCoinPreset([0, 0, 1, 1, 1, 0, 1, 1])">Пример K=3 (5 тежки от 8)</button>
+                            <button class="btn-slate" onclick="loadCoinPreset([1, 0, 0, 1, 0, 1, 1, 0])">Пример K=3 (Четни 4 тежки)</button>
+                        </div>
+
+                        <div class="controls" id="j-buttons-bar"></div>
+
+                        <div class="coins-stage">
+                            <div style="font-size:0.78rem; color:var(--text-muted);">Синьо = Лява везна L<sub>j</sub> | Оранжево = Дясна везна R<sub>j</sub></div>
+                            <div class="coins-row" id="sim-coins-row"></div>
+
+                            <div class="scales-grid">
+                                <div class="pan-box pan-l">
+                                    <div style="color:#60a5fa; font-weight:700; margin-bottom:4px;">Лява везна L<sub>j</sub></div>
+                                    <div id="pan-l-indices">{0, 1}</div>
+                                    <div id="pan-l-sum" style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">Тежки: 1</div>
+                                </div>
+                                <div class="scale-sign" id="scale-rel">&lt;</div>
+                                <div class="pan-box pan-r">
+                                    <div style="color:#fbbf24; font-weight:700; margin-bottom:4px;">Дясна везна R<sub>j</sub></div>
+                                    <div id="pan-r-indices">{2, 3}</div>
+                                    <div id="pan-r-sum" style="color:var(--text-muted); font-size:0.78rem; margin-top:3px;">Тежки: 2</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="calc-box" id="sim-exp-box"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: ПОСТЪПКОВО ТРАСИРАНЕ НА COINS.CPP -->
+                <div class="tab-pane" id="tab-2">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Трасиране на пълното решение coins.cpp (K = 2, монети: 0, 1, 1, 1)</span>
+                            <span id="tr-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="tr-prev" onclick="moveTrace(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="tr-next" onclick="moveTrace(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetTrace()">Отначало</button>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Текущо v</div>
+                                <div class="state-val" id="tr-v">{0, 1, 2, 3}</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">known[0..3]</div>
+                                <div class="state-val" id="tr-known">[-1,-1,-1,-1]</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">heavy_idx</div>
+                                <div class="state-val" id="tr-hidx">-1</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Заявки weigh</div>
+                                <div class="state-val" id="tr-q">0</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="tr-code-box"></div>
+                        <div class="calc-box" id="tr-exp-box"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: ТРИТЕ ФАЙЛА ЗА ЛОКАЛНО ТЕСТВАНЕ -->
+                <div class="tab-pane" id="tab-3">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📂 Трите файла за локално компилиране и тестване</span>
+                            <button onclick="copyActiveFile()">📋 Копирай кода</button>
+                        </div>
+                        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:0.85rem;">
+                            Кликнете върху някой от трите файла по-долу, за да прегледате и копирате пълния му C++ код. Поставете ги в обща папка и компилирайте с <code>g++ Lgrader.cpp coins.cpp -o coins</code>.
+                        </p>
+
+                        <div class="folder-tree">
+                            <div class="file-card active-file" id="fcard-1" onclick="showFile(1)">
+                                <h5>📄 coins.cpp</h5>
+                                <p>Вашето решение (предава се)</p>
+                            </div>
+                            <div class="file-card" id="fcard-2" onclick="showFile(2)">
+                                <h5>⚙️ Lgrader.cpp</h5>
+                                <p>Локален грейдър с main()</p>
+                            </div>
+                            <div class="file-card" id="fcard-3" onclick="showFile(3)">
+                                <h5>🔗 coins.h</h5>
+                                <p>Заглавен файл за връзка</p>
+                            </div>
+                        </div>
+
+                        <pre id="file-viewer" style="max-height:390px; overflow-y:auto;"></pre>
+                        <div class="calc-box" id="file-status">
+                            Показан е файлът <strong>coins.cpp</strong> — готов за предаване за 100 точки (най-много 210 претегляния при K = 20).
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПЛАВЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + num).classList.add('active');
+            document.getElementById('tab-btn-' + num).classList.add('active');
+        }
+
+        // ==========================================
+        // 1. ТАБ 1: СИМУЛАТОР НА ПЛЪЗГАЩИЯ ПРОЗОРЕЦ
+        // ==========================================
+        let simCoins = [0, 1, 1, 1];
+        let simJ = 0;
+
+        function loadCoinPreset(arr) {
+            simCoins = [...arr];
+            simJ = 0;
+            renderJButtons();
+            renderSlidingWindow();
+        }
+
+        function renderJButtons() {
+            const half = simCoins.length / 2;
+            const bar = document.getElementById('j-buttons-bar');
+            bar.innerHTML = `<span style="font-size:0.84rem; color:var(--text-muted);">Избери отместване j (0..${half}):</span>`;
+            for (let j = 0; j <= half; j++) {
+                const btn = document.createElement('button');
+                btn.className = (j === simJ) ? '' : 'btn-slate';
+                btn.innerText = `j = ${j}`;
+                btn.onclick = () => { simJ = j; renderJButtons(); renderSlidingWindow(); };
+                bar.appendChild(btn);
+            }
+        }
+
+        function renderSlidingWindow() {
+            const n = simCoins.length;
+            const half = n / 2;
+            document.getElementById('sim-j-badge').innerText = `Отместване j = ${simJ} (half = ${half})`;
+
+            const row = document.getElementById('sim-coins-row');
+            row.innerHTML = '';
+
+            let L = [], R = [];
+            let sumL = 0, sumR = 0;
+
+            for (let i = 0; i < n; i++) {
+                const inLeft = (i >= simJ && i < simJ + half);
+                if (inLeft) { L.push(i); sumL += simCoins[i]; }
+                else { R.push(i); sumR += simCoins[i]; }
+
+                const c = document.createElement('div');
+                c.className = 'coin-circle ' + (inLeft ? 'left-pan' : 'right-pan');
+                c.innerHTML = `${simCoins[i] === 1 ? '1 (Т)' : '0 (Л)'}<span class="sub">#${i}</span>`;
+                row.appendChild(c);
+            }
+
+            document.getElementById('pan-l-indices').innerText = `{${L.join(', ')}}`;
+            document.getElementById('pan-r-indices').innerText = `{${R.join(', ')}}`;
+            document.getElementById('pan-l-sum').innerText = `Тежки монети: ${sumL}`;
+            document.getElementById('pan-r-sum').innerText = `Тежки монети: ${sumR}`;
+
+            const d = sumL === sumR ? 0 : (sumL < sumR ? -1 : 1);
+            const relSign = d === 0 ? '=' : (d < 0 ? '< (-1)' : '> (+1)');
+            document.getElementById('scale-rel').innerText = relSign;
+
+            const exp = document.getElementById('sim-exp-box');
+            if (d === 0) {
+                exp.innerHTML = `✅ <strong>Точен баланс (weigh = 0)!</strong> При <strong>j = ${simJ}</strong> в лявата везна <code>L<sub>${simJ}</sub> = {${L.join(', ')}}</code> и дясната <code>R<sub>${simJ}</sub> = {${R.join(', ')}}</code> има равен брой тежки монети (по <strong>${sumL}</strong>). Общият брой тежки монети е <code>2 &times; solve(L<sub>${simJ}</sub>) = ${2 * sumL}</code>!`;
+            } else {
+                exp.innerHTML = `⚖️ При <strong>j = ${simJ}</strong>: <code>weigh({${L.join(', ')}}, {${R.join(', ')}})</code> връща <strong>${d > 0 ? '+1' : '-1'}</strong>. ` +
+                    (simJ < half
+                        ? `Ако увеличим към <strong>j = ${simJ + 1}</strong>, монета <strong>#${simJ}</strong> ще излезе от <code>L</code>, а монета <strong>#${simJ + half}</strong> ще влезе в <code>L</code>.`
+                        : `При <strong>j = ${half}</strong> везните са напълно разменени спрямо <strong>j = 0</strong> и знакът е обратен!`);
+            }
+        }
+
+        // ==========================================
+        // 2. ТАБ 2: ПОСТЪПКОВО ТРАСИРАНЕ НА COINS.CPP
+        // ==========================================
+        const solCodeLines = [
+            'int solve(const vector<int>& v) {',
+            '    int n = v.size(), half = n / 2;',
+            '    if (n == 1) {',
+            '        int coin = v[0];',
+            '        if (known[coin] == -1)',
+            '            known[coin] = (weigh({coin}, {heavy_idx}) == 0 ? 1 : 0);',
+            '        return known[coin];',
+            '    }',
+            '    vector<int> L, R;',
+            '    split_coins(v, 0, L, R);',
+            '    int d0 = weigh(L, R); // Тестваме j = 0',
+            '    if (d0 == 0) return 2 * solve(has_known(R) ? R : L);',
+            '    int low = 0, high = half;',
+            '    while (high - low > 1) {',
+            '        int mid = (low + high) / 2;',
+            '        split_coins(v, mid, L, R);',
+            '        int d = weigh(L, R);',
+            '        if (d == 0) return 2 * solve(has_known(R) ? R : L);',
+            '        if (d == d0) low = mid; else high = mid;',
+            '    }',
+            '    int out_coin = v[low], in_coin = v[low + half];',
+            '    if (d0 == -1) { known[out_coin] = 0; known[in_coin] = 1; heavy_idx = in_coin; }',
+            '    else          { known[out_coin] = 1; known[in_coin] = 0; heavy_idx = out_coin; }',
+            '    split_coins(v, low + 1, L, R);',
+            '    return 2 * solve(L) + d0;',
+            '}'
+        ];
+
+        const traceSteps = [
+            { line: 1, v: '{0, 1, 2, 3}', kn: '[-1, -1, -1, -1]', hidx: -1, q: 0, msg: 'Журито извиква <code>count_heavy(2)</code> за скритите монети <strong>[0, 1, 1, 1]</strong>. Стартираме <code>solve({0, 1, 2, 3})</code> с <code>n = 4, half = 2</code>.' },
+            { line: 11, v: '{0, 1, 2, 3}', kn: '[-1, -1, -1, -1]', hidx: -1, q: 1, msg: 'Заявка #1 (при <code>j = 0</code>): Извикваме <code>weigh({0, 1}, {2, 3})</code>. Тъй като в {0, 1} има една тежка, а в {2, 3} има две тежки, журито връща <strong>d0 = -1</strong>.' },
+            { line: 16, v: '{0, 1, 2, 3}', kn: '[-1, -1, -1, -1]', hidx: -1, q: 2, msg: 'Двоично търсене по <code>j</code> в <code>[0, 2]</code>: тестваме средата <strong>mid = 1</strong> чрез Заявка #2: <code>weigh({1, 2}, {0, 3})</code>. Журито връща <strong>d = +1</strong>!' },
+            { line: 19, v: '{0, 1, 2, 3}', kn: '[-1, -1, -1, -1]', hidx: -1, q: 2, msg: 'Понеже при <code>j = 0</code> везната даде <code>-1</code>, а при <code>j = 1</code> даде <code>+1</code>, преобръщането се случва точно между <strong>low = 0</strong> и <strong>low + 1 = 1</strong>!' },
+            { line: 22, v: '{0, 1, 2, 3}', kn: '[0, -1, 1, -1]', hidx: 2, q: 2, msg: 'При прехода от <code>j = 0</code> към <code>j = 1</code> монета <code>out_coin = 0</code> излезе, а монета <code>in_coin = 2</code> влезе и наклони везната! Веднага научаваме без претегляне: <strong>known[0] = 0 (лека), known[2] = 1 (тежка), heavy_idx = 2</strong>!' },
+            { line: 25, v: '{1, 2}', kn: '[0, -1, 1, -1]', hidx: 2, q: 2, msg: 'Спускаме се рекурсивно към <code>L<sub>1</sub> = {1, 2}</code> по формулата <code>2 * solve({1, 2}) + (-1)</code>. Забележете, че монета 2 вече е известна вътре в това множество!' },
+            { line: 11, v: '{1, 2}', kn: '[0, -1, 1, -1]', hidx: 2, q: 3, msg: 'В <code>solve({1, 2})</code> тестваме <code>j = 0</code> чрез Заявка #3: <code>weigh({1}, {2})</code>. Журито връща <strong>d0 = 0</strong> (равенство)!' },
+            { line: 12, v: '{2}', kn: '[0, -1, 1, -1]', hidx: 2, q: 3, msg: 'Ключова оптимизация: Тъй като <code>d0 == 0</code>, избираме да извикаме <code>solve({2})</code> (защото <code>has_known({2})</code> е <code>true</code>!).' },
+            { line: 7, v: '{2}', kn: '[0, -1, 1, -1]', hidx: 2, q: 3, msg: 'Дъно на рекурсията за <code>v = {2}</code>: понеже <code>known[2] == 1</code> вече е известно, връщаме <strong>1</strong> с <strong>0 нови претегляния</strong>!' },
+            { line: 25, v: 'Край', kn: '[0, 1, 1, 1]', hidx: 2, q: 3, msg: 'Връщаме се нагоре по рекурсията: <code>solve({1, 2}) = 2 * 1 = 2</code>, а общият брой тежки монети е <code>2 * 2 - 1 = 3</code>. Финален отговор: <strong>(3, 2)</strong> само с <strong>3 претегляния</strong>!' }
+        ];
+
+        let curTr = 0;
+
+        function renderTrace() {
+            const s = traceSteps[curTr];
+            document.getElementById('tr-step-lbl').innerText = `Стъпка ${curTr + 1} от ${traceSteps.length}`;
+            document.getElementById('tr-v').innerText = s.v;
+            document.getElementById('tr-known').innerText = s.kn;
+            document.getElementById('tr-hidx').innerText = s.hidx;
+            document.getElementById('tr-q').innerText = s.q;
+
+            const box = document.getElementById('tr-code-box');
+            box.innerHTML = solCodeLines.map((txt, idx) => {
+                const lnum = idx + 1;
+                const esc = txt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div class="code-line ${lnum === s.line ? 'active-line' : ''}" id="sol-line-${lnum}">
+                    <span class="line-num">${lnum}</span>
+                    <span class="line-text">${esc}</span>
+                </div>`;
+            }).join('');
+
+            const activeEl = document.getElementById(`sol-line-${s.line}`);
+            if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+            document.getElementById('tr-exp-box').innerHTML = s.msg;
+            document.getElementById('tr-prev').disabled = (curTr === 0);
+            document.getElementById('tr-next').disabled = (curTr === traceSteps.length - 1);
+        }
+
+        function moveTrace(d) {
+            curTr = Math.max(0, Math.min(traceSteps.length - 1, curTr + d));
+            renderTrace();
+        }
+
+        function resetTrace() {
+            curTr = 0;
+            renderTrace();
+        }
+
+        // ==========================================
+        // 3. ТАБ 3: ФАЙЛОВЕ ЗА ЛОКАЛНО ТЕСТВАНЕ
+        // ==========================================
+        const filesContent = {
+            1: `#include "coins.h"
+#include <vector>
+#include <utility>
+using namespace std;
+
+static vector<int> known;
+static int heavy_idx = -1;
+
+// Помощна функция за образуване на везните L_j и R_j
+void split_coins(const vector<int>& v, int j, vector<int>& L, vector<int>& R) {
+    int n = v.size();
+    int half = n / 2;
+    L.clear();
+    R.clear();
+    L.reserve(half);
+    R.reserve(half);
+    for (int i = 0; i < n; i++) {
+        if (i >= j && i < j + half) {
+            L.push_back(v[i]);
+        } else {
+            R.push_back(v[i]);
+        }
+    }
+}
+
+// Проверява дали във вектора има вече разкрита монета
+bool has_known(const vector<int>& arr) {
+    for (int x : arr) {
+        if (known[x] != -1) return true;
+    }
+    return false;
+}
+
+int solve(const vector<int>& v) {
+    int n = v.size();
+
+    // Дъно на рекурсията: само 1 монета
+    if (n == 1) {
+        int coin = v[0];
+        if (known[coin] == -1) {
+            if (weigh({coin}, {heavy_idx}) == 0) known[coin] = 1;
+            else known[coin] = 0;
+        }
+        return known[coin];
+    }
+
+    int half = n / 2;
+    vector<int> L, R;
+
+    // 1. Тестваме началното разделяне при j = 0
+    split_coins(v, 0, L, R);
+    int d0 = weigh(L, R);
+    if (d0 == 0) {
+        if (has_known(R) && !has_known(L)) return 2 * solve(R);
+        return 2 * solve(L);
+    }
+
+    // 2. Двоично търсене за позицията j, където везната се изравнява или преобръща
+    int low = 0, high = half;
+    while (high - low > 1) {
+        int mid = (low + high) / 2;
+        split_coins(v, mid, L, R);
+        int d = weigh(L, R);
+        if (d == 0) {
+            if (has_known(R) && !has_known(L)) return 2 * solve(R);
+            return 2 * solve(L);
+        }
+        if (d == d0) low = mid;
+        else high = mid;
+    }
+
+    // 3. Везната се е преобърнала между j = low и j = low + 1 (нечетен брой тежки)
+    int out_coin = v[low];
+    int in_coin = v[low + half];
+    if (d0 == -1) {
+        known[out_coin] = 0;
+        known[in_coin] = 1;
+        heavy_idx = in_coin;
+    } else {
+        known[out_coin] = 1;
+        known[in_coin] = 0;
+        heavy_idx = out_coin;
+    }
+
+    // Продължаваме рекурсивно за L_{low + 1} (в нея вече се намира разкритата in_coin)
+    split_coins(v, low + 1, L, R);
+    return 2 * solve(L) + d0;
+}
+
+pair<int, int> count_heavy(int k) {
+    int n = 1 << k;
+    known.assign(n, -1);
+    heavy_idx = -1;
+    vector<int> all_coins(n);
+    for (int i = 0; i < n; i++) {
+        all_coins[i] = i;
+    }
+    int total_heavy = solve(all_coins);
+    return {total_heavy, heavy_idx};
+}`,
+            2: `#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include "coins.h"
+using namespace std;
+
+static int K, N;
+static vector<int> coins_weight;
+static int queries = 0;
+
+int weigh(const vector<int> &a, const vector<int> &b) {
+    queries++;
+    if (a.size() != b.size() || a.empty()) {
+        cout << "Грешка: Векторите трябва да са непразни и с равна дължина!\\n";
+        exit(0);
+    }
+    long long sumA = 0, sumB = 0;
+    for (int x : a) sumA += coins_weight[x];
+    for (int x : b) sumB += coins_weight[x];
+    if (sumA == sumB) return 0;
+    return (sumA < sumB) ? -1 : 1;
+}
+
+int main() {
+    if (!(cin >> K)) return 0;
+    N = 1 << K;
+    coins_weight.resize(N);
+    int actual_heavy = 0;
+    for (int i = 0; i < N; i++) {
+        cin >> coins_weight[i];
+        actual_heavy += coins_weight[i];
+    }
+    pair<int, int> ans = count_heavy(K);
+    cout << "Брой извиквания на weigh: " << queries << "\\n";
+    cout << "Върнат отговор: брой тежки = " << ans.first
+         << ", индекс на тежка = " << ans.second << "\\n";
+    if (ans.first == actual_heavy && ans.second >= 0 && ans.second < N && coins_weight[ans.second] == 1) {
+        cout << "ВЕРЕН ОТГОВОР (AC)!\\n";
+    } else {
+        cout << "ГРЕШЕН ОТГОВОР (WA)!\\n";
+    }
+    return 0;
+}`,
+            3: `#ifndef COINS_H
+#define COINS_H
+
+#include <vector>
+#include <utility>
+
+std::pair<int, int> count_heavy(int k);
+int weigh(const std::vector<int> &a, const std::vector<int> &b);
+
+#endif`
+        };
+
+        const fileDescriptions = {
+            1: 'Показан е файлът <strong>coins.cpp</strong> — вашето решение, което единствено се предава в системата.',
+            2: 'Показан е файлът <strong>Lgrader.cpp</strong> — локалният грейдър за тестване на вашия компютър (съдържа main функцията).',
+            3: 'Показан е заглавният файл <strong>coins.h</strong> — поставете го в същата папка до Lgrader.cpp и coins.cpp.'
+        };
+
+        let activeFileId = 1;
+
+        function showFile(id) {
+            activeFileId = id;
+            document.querySelectorAll('.file-card').forEach(c => c.classList.remove('active-file'));
+            document.getElementById('fcard-' + id).classList.add('active-file');
+            document.getElementById('file-viewer').innerText = filesContent[id];
+            document.getElementById('file-status').innerHTML = fileDescriptions[id];
+        }
+
+        function copyActiveFile() {
+            navigator.clipboard.writeText(filesContent[activeFileId]);
+            document.getElementById('file-status').innerHTML = `✅ Кодът на файла беше копиран успешно в клипборда!`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCoinPreset([0, 1, 1, 1]);
+            renderTrace();
+            showFile(1);
+        });
+    </script>
+</body>
+
+</html>
