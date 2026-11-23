@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 11 (С): Едномерни и двумерни задачи (Bottom-Up ДП) - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .lesson-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .lesson-header h1 {
+            font-size: 2.05rem;
+            color: var(--accent);
+            margin-bottom: 0.85rem;
+            line-height: 1.25;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .section-block {
+            margin-bottom: 2.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1.5rem 0 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            font-size: 1.32rem;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #34d399;
+            margin: 1.25rem 0 0.5rem 0;
+        }
+
+        .btn-try-right {
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-try-right:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        p { margin-bottom: 0.95rem; color: var(--text-muted); font-size: 1.02rem; }
+        ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.45rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.95rem 1.1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.2rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.91rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+        }
+
+        .note-box.warn {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .note-box h4 {
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+            font-size: 1rem;
+        }
+
+        .note-box.warn h4 { color: var(--warning); }
+
+        table.func-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.25rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-size: 0.89rem;
+        }
+
+        table.func-table th, table.func-table td {
+            padding: 0.65rem 0.85rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.func-table th {
+            background-color: rgba(15, 23, 42, 0.9);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        table.func-table td { color: #cbd5e1; }
+        table.func-table tr:last-child td { border-bottom: none; }
+
+        .app-task-card {
+            background-color: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 0.6rem;
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .app-task-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .app-task-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .app-task-card h4 span {
+            font-size: 0.75rem;
+            background: rgba(16, 185, 129, 0.18);
+            color: var(--accent);
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.3rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ДЕСЕН ПАНЕЛ: ТАБОВЕ И ВИЗУАЛИЗАЦИЯ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.85rem 1.25rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.75rem;
+            border-radius: 0.45rem;
+            font-size: 0.79rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 1.75rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.45rem 0.85rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.83rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+
+        /* СЦЕНИ, МАСИВИ И 2D МРЕЖИ */
+        .stage-box {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.15rem 1rem;
+            margin-bottom: 0.95rem;
+            min-height: 115px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .cells-row {
+            display: flex;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cell-item {
+            min-width: 50px;
+            height: 52px;
+            padding: 0 0.45rem;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.25s;
+        }
+
+        .cell-item span.sub {
+            font-size: 0.63rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .cell-item.target-cell {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            transform: scale(1.08);
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+            z-index: 5;
+        }
+
+        .cell-item.source-cell {
+            border-color: var(--highlight);
+            background: rgba(59, 130, 246, 0.24);
+            color: #93c5fd;
+            transform: translateY(-3px);
+        }
+
+        .cell-item.done-cell {
+            border-color: rgba(16, 185, 129, 0.45);
+            color: #cbd5e1;
+        }
+
+        .cell-item.wall-cell {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .cell-item.pad-cell {
+            border-style: dashed;
+            opacity: 0.55;
+            color: var(--text-muted);
+        }
+
+        .grid-2d {
+            display: grid;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        /* ПРОМЕНЛИВИ И КОДОВИ ПРОЗОРЦИ */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-bottom: 0.85rem;
+            max-height: 255px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.14rem 0.85rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 28px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #fff;
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.9rem 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: 1fr; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Раздел IV: Динамично програмиране</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ТЕОРИЯ И ПРИЛОЖНИ ЗАДАЧИ (ТОЧКИ 1 ДО 6)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-header">
+                <h1>Едномерни и двумерни задачи (Bottom-Up ДП)</h1>
+                <div class="lesson-meta">
+                    <div>🎓 <strong>Група C:</strong> 7–8. клас</div>
+                    <div>⏱️ <strong>Време:</strong> 60 мин</div>
+                    <div>📦 <strong>Ключови понятия:</strong> 1D и 2D ДП, Pull vs Push, Мрежи с препятствия, Оптимизация на паметта</div>
+                </div>
+            </div>
+
+            <div class="note-box">
+                <h4>🚀 Философията на Bottom-Up (Отдолу-нагоре)</h4>
+                <p style="margin:0; color:#fff;">Вместо да тръгваме от голямото число <code>N</code> и да се спускаме с рекурсия, при <strong>Bottom-Up</strong> подхода започваме от най-малките базови случаи (<code>0</code> и <code>1</code>) и с обикновени <code>for</code> цикли строим таблицата последователно до <code>N</code>!</p>
+            </div>
+
+            <!-- ТОЧКА 1 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>1. Едномерно ДП (1D DP) — Състояние и попълване</h2>
+                    <button class="btn-try-right" onclick="switchTab(1)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Използваме <strong>едномерен масив <code>dp[i]</code></strong>, когато всяка подзадача се описва напълно само с един параметър — индекса <code>i</code> (например позиция в редица, сума в лева или номер на стъпало).</p>
+                <ul>
+                    <li><strong>Състояние:</strong> <code>dp[i]</code> е „склад“, в който пазим готовия отговор за подпроблема с размер <code>i</code>.</li>
+                    <li><strong>Златно правило за реда на цикъла:</strong> Преди да пресметнем <code>dp[i]</code>, всички клетки, от които то зависи (напр. <code>dp[i - 1]</code> и <code>dp[i - 2]</code>), трябва <strong>вече да са сметнати</strong>! Затова цикълът върви от малките индекси към големите.</li>
+                </ul>
+<pre><code>long long fib(int n) {
+    vector&lt;long long&gt; dp(n + 1, 0);
+    dp[0] = 0; // Базов случай 0
+    dp[1] = 1; // Базов случай 1
+    for (int i = 2; i &lt;= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2]; // Преход от вече готовите клетки
+    }
+    return dp[n];
+}</code></pre>
+            </div>
+
+            <!-- ТОЧКА 2 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>2. Два начина на мислене: Pull DP срещу Push DP</h2>
+                    <button class="btn-try-right" onclick="switchTab(2)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Много важна състезателна концепция, която улеснява писането на формулите при Bottom-Up ДП, е изборът между двата вида преходи:</p>
+                <ol>
+                    <li><strong>„Издърпващо“ ДП (Pull DP — Откъде идвам?):</strong> Заставаме на клетка <code>i</code> и питаме от кои предходни клетки сме могли да скочим тук:
+                        <br><code>dp[i] = dp[i - 1] + dp[i - 2];</code></li>
+                    <li><strong>„Избутващо“ ДП (Push DP — Накъде отивам?):</strong> Заставаме на вече сметнатата клетка <code>i</code> и „раздаваме“ нейната стойност напред към всички клетки, до които можем да скочим от нея:
+                        <br><code>dp[i + 1] += dp[i];</code> и <code>dp[i + 2] += dp[i];</code></li>
+                </ol>
+                <div class="note-box warn">
+                    <h4>💡 Кога Push DP е по-удобно?</h4>
+                    <p style="margin:0;">Когато от клетка <code>i</code> правилата за скок зависят от стойността в масива <code>A[i]</code> (напр. „от клетка <code>i</code> можеш да скочиш с точно <code>A[i]</code> позиции напред“). Тогава с Push DP просто пишем <code>dp[i + A[i]] += dp[i];</code>!</p>
+                </div>
+            </div>
+
+            <!-- ТОЧКА 3 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>3. Двумерно ДП (2D DP) — Пътища в таблица</h2>
+                    <button class="btn-try-right" onclick="switchTab(3)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Когато подпроблемът зависи от два параметъра (например ред <code>i</code> и колона <code>j</code> в матрица), използваме двумерна таблица <code>dp[i][j]</code>.</p>
+                <p><strong>Класическа задача:</strong> В мрежа с размери <code>N &times; M</code> тръгваме от горния ляв ъгъл <code>(0, 0)</code> и искаме да стигнем до долния десен ъгъл <code>(N - 1, M - 1)</code>, като се движим <strong>само надолу и надясно</strong>. По колко различни начина можем да го направим?</p>
+                <ul>
+                    <li><strong>Състояние:</strong> <code>dp[i][j]</code> = брой пътища от старта до клетка <code>(i, j)</code>.</li>
+                    <li><strong>Базови случаи:</strong> Целият първи ред <code>dp[0][j] = 1</code> (има само 1 път — само надясно) и цялата първа колона <code>dp[i][0] = 1</code> (само надолу).</li>
+                    <li><strong>Преход:</strong> В клетка <code>(i, j)</code> можем да влезем само отгоре <code>(i - 1, j)</code> или отляво <code>(i, j - 1)</code>:
+                        <br><code>dp[i][j] = dp[i - 1][j] + dp[i][j - 1];</code></li>
+                </ul>
+            </div>
+
+            <!-- ТОЧКА 4 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>4. Мрежи с препятствия и трикът с 1-базираната рамка</h2>
+                    <button class="btn-try-right" onclick="switchTab(4)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>В реалните състезателни задачи в мрежата почти винаги има <strong>препятствия (стени/капани)</strong>, през които не може да се минава, и кодът трябва да бъде защитен от излизане извън границите на масива.</p>
+                <ul>
+                    <li><strong>Как се обработва стена:</strong> Ако клетка <code>(i, j)</code> е блокирана (напр. <code>grid[i][j] == '#'</code>), просто полагаме <code>dp[i][j] = 0</code> (през нея минават 0 пътя!).</li>
+                    <li><strong>Професионален трик (1-базирана рамка / Padding):</strong> Вместо да пишем отделни цикли за нулевия ред и нулевата колона (които се чупят, ако на първия ред има стена!), дефинираме таблицата с размер <code>(N + 1) &times; (M + 1)</code>, запълнена с <code>0</code>, и индексираме от <code>1</code> до <code>N</code>! Тогава нулевият ред и нулевата колона служат като автоматична „предпазна стена“ от нули!</li>
+                </ul>
+<pre><code>// Универсален шаблон за 2D ДП с препятствия (1-базирано):
+vector&lt;vector&lt;long long&gt;&gt; dp(N + 1, vector&lt;long long&gt;(M + 1, 0));
+if (grid[1][1] != '#') dp[1][1] = 1; // Стартова клетка
+
+for (int i = 1; i &lt;= N; i++) {
+    for (int j = 1; j &lt;= M; j++) {
+        if (i == 1 &amp;&amp; j == 1) continue;
+        if (grid[i][j] == '#') dp[i][j] = 0; // Стена!
+        else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+    }
+}</code></pre>
+            </div>
+
+            <!-- ТОЧКА 5 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>5. Оптимизация на паметта (Space Optimization)</h2>
+                    <button class="btn-try-right" onclick="switchTab(5)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Забелязахте ли нещо много важно? За да сметнем <code>dp[i]</code> във Фибоначи, ни трябват <strong>само предните две числа</strong> (<code>dp[i - 1]</code> и <code>dp[i - 2]</code>) — по-старите клетки <code>dp[0..i-3]</code> никога повече не се използват!</p>
+                <table class="func-table">
+                    <tr><th>Задача</th><th>Стандартна памет</th><th>Оптимизирана памет</th><th>Как се прави?</th></tr>
+                    <tr><td><strong>1D ДП (Фибоначи)</strong></td><td><code>O(N)</code> масив</td><td><strong><code>O(1)</code></strong> (3 променливи)</td><td>Пазим само <code>prev2</code>, <code>prev1</code> и <code>cur</code>.</td></tr>
+                    <tr><td><strong>2D ДП в таблица</strong></td><td><code>O(N &times; M)</code> матрица</td><td><strong><code>O(M)</code></strong> (1 ред)</td><td>Пазим само един вектор <code>dp[j] += dp[j - 1]</code>!</td></tr>
+                </table>
+                <p>Тази техника спасява решението ви от <strong>Memory Limit Exceeded (MLE)</strong> при големи таблици (напр. <code>10 000 &times; 10 000</code>)!</p>
+            </div>
+
+            <!-- ТОЧКА 6 -->
+            <div class="section-block" style="border-bottom:none;">
+                <div class="section-head">
+                    <h2>6. Класически приложни задачи (1D и 2D Bottom-Up)</h2>
+                    <button class="btn-try-right" onclick="switchTab(6)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Кликнете върху някоя от трите златни класики в състезателното програмиране по-долу, за да я разгледате и трасирате в десния панел:</p>
+
+                <div class="app-task-card" onclick="openAppTask('turtle')">
+                    <h4>Задача А: Костенурката — Максимална сума в таблица <span>2D Оптимизационно ДП</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Всяка клетка <code>(i, j)</code> съдържа <code>A[i][j]</code> монети. Движим се само надолу и надясно. Намерете максималния брой монети по пътя до <code>(N, M)</code>: <code>dp[i][j] = A[i][j] + max(dp[i - 1][j], dp[i][j - 1])</code>.</p>
+                </div>
+
+                <div class="app-task-card" onclick="openAppTask('coins')">
+                    <h4>Задача Б: Размяна на сума с минимален брой монети (Coin Change) <span>1D ДП по сума</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Имаме монети с номинали <code>{1, 3, 4}</code> и търсим минималния брой монети за сума <code>S = 6</code>. Забележете: Алчният алгоритъм взима <code>4 + 1 + 1</code> (3 монети — ГРЕШНО!), а ДП намира <code>3 + 3</code> (2 монети)!</p>
+                </div>
+
+                <div class="app-task-card" onclick="openAppTask('lis')">
+                    <h4>Задача В: Най-дълга нарастваща подредица (LIS) <span>O(N<sup>2</sup>) Класическо ДП</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">За всеки елемент <code>A[i]</code> търсим най-дългата строго растяща подредица, завършваща в индекс <code>i</code>, като проверяваме всички предходни елементи <code>j &lt; i</code> с <code>A[j] &lt; A[i]</code>: <code>dp[i] = max(dp[i], dp[j] + 1)</code>.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: 6 ТАБА С КОНКРЕТНИ ПРИМЕРИ И ТРАСИРАНЕ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(1)" id="tab-btn-1">1. 1D ДП Таблица</button>
+                <button class="tab-btn" onclick="switchTab(2)" id="tab-btn-2">2. Pull vs Push ДП</button>
+                <button class="tab-btn" onclick="switchTab(3)" id="tab-btn-3">3. 2D Мрежа (Пътища)</button>
+                <button class="tab-btn" onclick="switchTab(4)" id="tab-btn-4">4. Стени и 1-база</button>
+                <button class="tab-btn" onclick="switchTab(5)" id="tab-btn-5">5. O(1) Памет</button>
+                <button class="tab-btn" onclick="switchTab(6)" id="tab-btn-6">6. Приложни задачи</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: 1D DP ПОПЪЛВАНЕ -->
+                <div class="tab-pane active" id="tab-1">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📏 Трасиране на Точка 1: Попълване на 1D масив dp[0..6]</span>
+                            <span id="t1-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Сините клетки са <strong>източниците</strong> (вече пресметнатите подзадачи), а зелената е <strong>целевата клетка <code>dp[i]</code></strong>, която изчисляваме в момента.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t1-prev" onclick="stepT1(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t1-next" onclick="stepT1(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT1()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="cells-row" id="t1-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Текущ индекс i</div>
+                                <div class="state-val" id="t1-i">База</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Източници</div>
+                                <div class="state-val" id="t1-src">dp[0], dp[1]</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Резултат dp[i]</div>
+                                <div class="state-val" id="t1-val">0, 1</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t1-code"></div>
+                        <div class="calc-box" id="t1-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: PULL DP СРЕЩУ PUSH DP -->
+                <div class="tab-pane" id="tab-2">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🔄 Трасиране на Точка 2: Pull DP („Откъде идвам?“) срещу Push DP („Накъде отивам?“)</span>
+                            <span id="t2-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button id="t2-btn-pull" onclick="setT2Mode('pull')">⬅️ Pull DP (Издърпващо)</button>
+                            <button class="btn-slate" id="t2-btn-push" onclick="setT2Mode('push')">➡️ Push DP (Избутващо)</button>
+                            <button class="btn-slate" id="t2-prev" onclick="stepT2(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t2-next" onclick="stepT2(1)">Следваща стъпка &rarr;</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="cells-row" id="t2-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Режим</div>
+                                <div class="state-val" id="t2-mode-lbl">Pull DP</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Активен индекс i</div>
+                                <div class="state-val" id="t2-i">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Операция</div>
+                                <div class="state-val" id="t2-op">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t2-code"></div>
+                        <div class="calc-box" id="t2-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: 2D DP ПЪТИЩА В МРЕЖА -->
+                <div class="tab-pane" id="tab-3">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🗺️ Трасиране на Точка 3: 2D ДП — Пътища в мрежа 3 &times; 4</span>
+                            <span id="t3-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t3-prev" onclick="stepT3(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t3-next" onclick="stepT3(1)">Следваща клетка &rarr;</button>
+                            <button onclick="resetT3()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="grid-2d" id="t3-grid" style="grid-template-columns: repeat(4, 56px);"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Клетка (i, j)</div>
+                                <div class="state-val" id="t3-ij">База</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Отгоре + Отляво</div>
+                                <div class="state-val" id="t3-sum">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Записано в dp[i][j]</div>
+                                <div class="state-val" id="t3-res">1</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t3-code"></div>
+                        <div class="calc-box" id="t3-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 4: МРЕЖА С ПРЕПЯТСТВИЯ И 1-БАЗИРАНА РАМКА -->
+                <div class="tab-pane" id="tab-4">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🧱 Трасиране на Точка 4: Стена '#' и предпазна рамка от нули (1-базирано)</span>
+                            <span id="t4-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Пунктираните клетки са нулевият ред и нулевата колона (рамката с <code>0</code>). Клетка <code>(2, 2)</code> съдържа стена <code>#</code>!
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t4-prev" onclick="stepT4(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t4-next" onclick="stepT4(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT4()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="grid-2d" id="t4-grid" style="grid-template-columns: repeat(4, 56px);"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Клетка (i, j)</div>
+                                <div class="state-val" id="t4-ij">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Проверка</div>
+                                <div class="state-val" id="t4-chk">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">dp[i][j]</div>
+                                <div class="state-val" id="t4-val">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t4-code"></div>
+                        <div class="calc-box" id="t4-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 5: ОПТИМИЗАЦИЯ НА ПАМЕТТА ДО O(1) -->
+                <div class="tab-pane" id="tab-5">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>💾 Трасиране на Точка 5: Свиване на паметта от O(N) масив до O(1)</span>
+                            <span id="t5-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Вижте как само с три променливи (<code>prev2</code>, <code>prev1</code> и <code>cur</code>) пресмятаме произволно далечно число без масив!
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t5-prev" onclick="stepT5(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t5-next" onclick="stepT5(1)">Следваща итерация &rarr;</button>
+                            <button onclick="resetT5()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="cells-row" id="t5-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">prev2 (i - 2)</div>
+                                <div class="state-val" id="t5-p2">0</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">prev1 (i - 1)</div>
+                                <div class="state-val" id="t5-p1">1</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">cur (i)</div>
+                                <div class="state-val" id="t5-cur">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t5-code"></div>
+                        <div class="calc-box" id="t5-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 6: ПРИЛОЖНИ ЗАДАЧИ -->
+                <div class="tab-pane" id="tab-6">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🏆 Трасиране на Точка 6: Приложни задачи (Костенурка, Монети, LIS)</span>
+                            <span id="t6-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button id="sub-turtle" onclick="openAppTask('turtle')">Задача А: Костенурка (2D)</button>
+                            <button class="btn-slate" id="sub-coins" onclick="openAppTask('coins')">Задача Б: Монети (Coin Change)</button>
+                            <button class="btn-slate" id="sub-lis" onclick="openAppTask('lis')">Задача В: ННП (LIS)</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t6-prev" onclick="stepT6(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t6-next" onclick="stepT6(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="buildT6()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div id="t6-subtitle" style="font-size:0.78rem; color:var(--text-muted);"></div>
+                            <div id="t6-stage-inner"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl1">Състояние</div>
+                                <div class="state-val" id="t6-val1">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl2">Преход</div>
+                                <div class="state-val" id="t6-val2">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl3">Стойност</div>
+                                <div class="state-val" id="t6-val3">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t6-code"></div>
+                        <div class="calc-box" id="t6-exp"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПОДВИЖЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + num).classList.add('active');
+            document.getElementById('tab-btn-' + num).classList.add('active');
+        }
+
+        function renderCodeLines(boxId, linesArr, activeLine) {
+            const box = document.getElementById(boxId);
+            box.innerHTML = linesArr.map((txt, idx) => {
+                const lnum = idx + 1;
+                const esc = txt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div class="code-line ${lnum === activeLine ? 'active-line' : ''}">
+                    <span class="line-num">${lnum}</span>
+                    <span class="line-text">${esc}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ==========================================
+        // ТАБ 1: 1D DP ТАБЛИЦА
+        // ==========================================
+        const t1Code = [
+            'vector<long long> dp(7, 0);',
+            'dp[0] = 0; dp[1] = 1;               // Базови случаи',
+            'for (int i = 2; i <= 6; i++) {',
+            '    dp[i] = dp[i - 1] + dp[i - 2];  // Преход от i-1 и i-2',
+            '}',
+            'return dp[6];'
+        ];
+        const t1Steps = [
+            { line: 2, arr: ['0','1','?','?','?','?','?'], src: [], tgt: 1, i: 'База (0 и 1)', s: 'Директни стойности', v: '0 и 1', msg: 'Поставяме основите на таблицата: <code>dp[0] = 0</code> и <code>dp[1] = 1</code>.' },
+            { line: 4, arr: ['0','1','1','?','?','?','?'], src: [0,1], tgt: 2, i: 'i = 2', s: 'dp[1] + dp[0]', v: '1 + 0 = 1', msg: 'За <strong>i = 2</strong> взимаме готовите клетки <code>dp[1]</code> и <code>dp[0]</code>: <code>1 + 0 = 1</code>.' },
+            { line: 4, arr: ['0','1','1','2','?','?','?'], src: [1,2], tgt: 3, i: 'i = 3', s: 'dp[2] + dp[1]', v: '1 + 1 = 2', msg: 'За <strong>i = 3</strong> събираме <code>dp[2] + dp[1] = 1 + 1 = 2</code>.' },
+            { line: 4, arr: ['0','1','1','2','3','?','?'], src: [2,3], tgt: 4, i: 'i = 4', s: 'dp[3] + dp[2]', v: '2 + 1 = 3', msg: 'За <strong>i = 4</strong> събираме <code>dp[3] + dp[2] = 2 + 1 = 3</code>.' },
+            { line: 4, arr: ['0','1','1','2','3','5','?'], src: [3,4], tgt: 5, i: 'i = 5', s: 'dp[4] + dp[3]', v: '3 + 2 = 5', msg: 'За <strong>i = 5</strong> събираме <code>dp[4] + dp[3] = 3 + 2 = 5</code>.' },
+            { line: 6, arr: ['0','1','1','2','3','5','8'], src: [4,5], tgt: 6, i: 'i = 6 (Финал)', s: 'dp[5] + dp[4]', v: '5 + 3 = 8', msg: 'За <strong>i = 6</strong> събираме <code>dp[5] + dp[4] = 5 + 3 = 8</code>. Връщаме отговора <strong>dp[6] = 8</strong>!' }
+        ];
+        let t1Idx = 0;
+
+        function renderT1() {
+            const s = t1Steps[t1Idx];
+            document.getElementById('t1-step-lbl').innerText = `Стъпка ${t1Idx + 1} от ${t1Steps.length}`;
+            renderCodeLines('t1-code', t1Code, s.line);
+
+            const box = document.getElementById('t1-cells');
+            box.innerHTML = '';
+            s.arr.forEach((val, idx) => {
+                let cls = 'cell-item';
+                if (idx === s.tgt) cls += ' target-cell';
+                else if (s.src.includes(idx)) cls += ' source-cell';
+                else if (val !== '?') cls += ' done-cell';
+                box.innerHTML += `<div class="${cls}">${val}<span class="sub">dp[${idx}]</span></div>`;
+            });
+
+            document.getElementById('t1-i').innerText = s.i;
+            document.getElementById('t1-src').innerText = s.s;
+            document.getElementById('t1-val').innerText = s.v;
+            document.getElementById('t1-exp').innerHTML = s.msg;
+            document.getElementById('t1-prev').disabled = (t1Idx === 0);
+            document.getElementById('t1-next').disabled = (t1Idx === t1Steps.length - 1);
+        }
+        function stepT1(d) { t1Idx = Math.max(0, Math.min(t1Steps.length - 1, t1Idx + d)); renderT1(); }
+        function resetT1() { t1Idx = 0; renderT1(); }
+
+        // ==========================================
+        // ТАБ 2: PULL DP СРЕЩУ PUSH DP
+        // ==========================================
+        let t2Mode = 'pull';
+        let t2Idx = 0;
+        let t2Code = [];
+        let t2Steps = [];
+
+        function setT2Mode(m) {
+            t2Mode = m;
+            document.getElementById('t2-btn-pull').className = (m === 'pull') ? '' : 'btn-slate';
+            document.getElementById('t2-btn-push').className = (m === 'push') ? '' : 'btn-slate';
+
+            if (m === 'pull') {
+                t2Code = [
+                    '// Pull DP: Заставаме на i и дърпаме от i-1 и i-2',
+                    'dp[0] = 1; dp[1] = 1;',
+                    'for (int i = 2; i <= 4; i++) {',
+                    '    dp[i] = dp[i - 1] + dp[i - 2];',
+                    '}'
+                ];
+                t2Steps = [
+                    { line: 2, arr: ['1','1','0','0','0'], src: [], tgt: [0,1], i: 'База', op: 'dp[0]=1, dp[1]=1', msg: 'В Pull DP първо задаваме <code>dp[0] = 1</code> и <code>dp[1] = 1</code>.' },
+                    { line: 4, arr: ['1','1','2','0','0'], src: [0,1], tgt: [2], i: 'i = 2', op: 'dp[2] = dp[1] + dp[0]', msg: 'Заставаме на <strong>i = 2</strong> и „издърпваме“ сумата от <code>dp[1]</code> и <code>dp[0]</code> &rarr; <strong>dp[2] = 2</strong>.' },
+                    { line: 4, arr: ['1','1','2','3','0'], src: [1,2], tgt: [3], i: 'i = 3', op: 'dp[3] = dp[2] + dp[1]', msg: 'Заставаме на <strong>i = 3</strong> и издърпваме сумата от <code>dp[2]</code> и <code>dp[1]</code> &rarr; <strong>dp[3] = 3</strong>.' },
+                    { line: 4, arr: ['1','1','2','3','5'], src: [2,3], tgt: [4], i: 'i = 4', op: 'dp[4] = dp[3] + dp[2]', msg: 'Заставаме на <strong>i = 4</strong> и издърпваме сумата от <code>dp[3]</code> и <code>dp[2]</code> &rarr; <strong>dp[4] = 5</strong>.' }
+                ];
+            } else {
+                t2Code = [
+                    '// Push DP: Заставаме на i и прибавяме към i+1 и i+2',
+                    'dp[0] = 1;',
+                    'for (int i = 0; i < 4; i++) {',
+                    '    if (i + 1 <= 4) dp[i + 1] += dp[i];',
+                    '    if (i + 2 <= 4) dp[i + 2] += dp[i];',
+                    '}'
+                ];
+                t2Steps = [
+                    { line: 4, arr: ['1','1','1','0','0'], src: [0], tgt: [1,2], i: 'i = 0 (dp[0]=1)', op: 'Избутва +1 към [1] и [2]', msg: 'От <strong>i = 0</strong> (стойност 1) избутваме <code>+1</code> напред към съседите <code>dp[1]</code> и <code>dp[2]</code>!' },
+                    { line: 4, arr: ['1','1','2','1','0'], src: [1], tgt: [2,3], i: 'i = 1 (dp[1]=1)', op: 'Избутва +1 към [2] и [3]', msg: 'От <strong>i = 1</strong> (стойност 1) избутваме <code>+1</code> напред към <code>dp[2]</code> (става 2) и <code>dp[3]</code> (става 1)!' },
+                    { line: 4, arr: ['1','1','2','3','2'], src: [2], tgt: [3,4], i: 'i = 2 (dp[2]=2)', op: 'Избутва +2 към [3] и [4]', msg: 'От <strong>i = 2</strong> (стойност 2) избутваме <code>+2</code> напред към <code>dp[3]</code> (става 3) и <code>dp[4]</code> (става 2)!' },
+                    { line: 4, arr: ['1','1','2','3','5'], src: [3], tgt: [4], i: 'i = 3 (dp[3]=3)', op: 'Избутва +3 към [4]', msg: 'От <strong>i = 3</strong> (стойност 3) избутваме <code>+3</code> към <code>dp[4]</code> и получаваме същия отговор <strong>dp[4] = 5</strong>!' }
+                ];
+            }
+            t2Idx = 0;
+            renderT2();
+        }
+
+        function renderT2() {
+            const s = t2Steps[t2Idx];
+            document.getElementById('t2-step-lbl').innerText = `Стъпка ${t2Idx + 1} от ${t2Steps.length}`;
+            renderCodeLines('t2-code', t2Code, s.line);
+
+            const box = document.getElementById('t2-cells');
+            box.innerHTML = '';
+            s.arr.forEach((val, idx) => {
+                let cls = 'cell-item';
+                if (s.tgt.includes(idx)) cls += ' target-cell';
+                else if (s.src.includes(idx)) cls += ' source-cell';
+                else cls += ' done-cell';
+                box.innerHTML += `<div class="${cls}">${val}<span class="sub">dp[${idx}]</span></div>`;
+            });
+
+            document.getElementById('t2-mode-lbl').innerText = (t2Mode === 'pull') ? 'Pull DP' : 'Push DP';
+            document.getElementById('t2-i').innerText = s.i;
+            document.getElementById('t2-op').innerText = s.op;
+            document.getElementById('t2-exp').innerHTML = s.msg;
+            document.getElementById('t2-prev').disabled = (t2Idx === 0);
+            document.getElementById('t2-next').disabled = (t2Idx === t2Steps.length - 1);
+        }
+        function stepT2(d) { t2Idx = Math.max(0, Math.min(t2Steps.length - 1, t2Idx + d)); renderT2(); }
+
+        // ==========================================
+        // ТАБ 3: 2D DP ПЪТИЩА В МРЕЖА 3x4
+        // ==========================================
+        const t3Code = [
+            'for (int i = 0; i < 3; i++) dp[i][0] = 1; // Първа колона = 1',
+            'for (int j = 0; j < 4; j++) dp[0][j] = 1; // Първи ред = 1',
+            'for (int i = 1; i < 3; i++) {',
+            '    for (int j = 1; j < 4; j++) {',
+            '        dp[i][j] = dp[i - 1][j] + dp[i][j - 1]; // Отгоре + Отляво',
+            '    }',
+            '}'
+        ];
+        let t3Steps = [];
+        let t3Idx = 0;
+
+        function buildT3() {
+            const R = 3, C = 4;
+            let g = Array.from({ length: R }, () => new Array(C).fill('?'));
+            for (let i = 0; i < R; i++) g[i][0] = 1;
+            for (let j = 0; j < C; j++) g[0][j] = 1;
+
+            t3Steps = [{
+                line: 2, grid: g.map(r => [...r]), tgt: [-1,-1], src: [],
+                ij: 'Базов ред и колона', sum: 'Само по 1 път', res: '1',
+                msg: 'Запълваме нулевия ред и нулевата колона с <strong>1</strong>, защото до тях се стига само с движение право надясно или право надолу.'
+            }];
+
+            for (let i = 1; i < R; i++) {
+                for (let j = 1; j < C; j++) {
+                    const top = g[i - 1][j];
+                    const left = g[i][j - 1];
+                    g[i][j] = top + left;
+                    t3Steps.push({
+                        line: 5, grid: g.map(r => [...r]), tgt: [i, j], src: [[i-1, j], [i, j-1]],
+                        ij: `(${i}, ${j})`, sum: `${top} (отгоре) + ${left} (отляво)`, res: `${g[i][j]}`,
+                        msg: `За клетка <strong>(${i}, ${j})</strong> събираме пътищата отгоре <code>dp[${i-1}][${j}] = ${top}</code> и отляво <code>dp[${i}][${j-1}] = ${left}</code> &rarr; записваме <strong>${g[i][j]}</strong>.`
+                    });
+                }
+            }
+            t3Idx = 0;
+            renderT3();
+        }
+
+        function renderT3() {
+            const s = t3Steps[t3Idx];
+            document.getElementById('t3-step-lbl').innerText = `Стъпка ${t3Idx + 1} от ${t3Steps.length}`;
+            renderCodeLines('t3-code', t3Code, s.line);
+
+            const gridEl = document.getElementById('t3-grid');
+            gridEl.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const v = s.grid[i][j];
+                    let cls = 'cell-item';
+                    if (s.tgt[0] === i && s.tgt[1] === j) cls += ' target-cell';
+                    else if (s.src.some(p => p[0] === i && p[1] === j)) cls += ' source-cell';
+                    else if (v !== '?') cls += ' done-cell';
+                    gridEl.innerHTML += `<div class="${cls}">${v}<span class="sub">[${i}][${j}]</span></div>`;
+                }
+            }
+
+            document.getElementById('t3-ij').innerText = s.ij;
+            document.getElementById('t3-sum').innerText = s.sum;
+            document.getElementById('t3-res').innerText = s.res;
+            document.getElementById('t3-exp').innerHTML = s.msg;
+            document.getElementById('t3-prev').disabled = (t3Idx === 0);
+            document.getElementById('t3-next').disabled = (t3Idx === t3Steps.length - 1);
+        }
+        function stepT3(d) { t3Idx = Math.max(0, Math.min(t3Steps.length - 1, t3Idx + d)); renderT3(); }
+        function resetT3() { t3Idx = 0; renderT3(); }
+
+        // ==========================================
+        // ТАБ 4: СТЕНИ '#' И 1-БАЗИРАНА РАМКА
+        // ==========================================
+        const t4Code = [
+            'vector<vector<int>> dp(4, vector<int>(4, 0)); // Рамка от нули в ред 0 и кол. 0',
+            'dp[1][1] = 1; // Стартова клетка (1, 1)',
+            'for (int i = 1; i <= 3; i++) {',
+            '    for (int j = 1; j <= 3; j++) {',
+            '        if (i == 1 && j == 1) continue;',
+            '        if (grid[i][j] == \'#\') dp[i][j] = 0; // Стена -> 0 пътища!',
+            '        else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];',
+            '    }',
+            '}'
+        ];
+        const t4Steps = [
+            {
+                line: 2,
+                g: [['0','0','0','0'], ['0','1','?','?'], ['0','?','#','?'], ['0','?','?','?']],
+                tgt: [1,1], ij: '(1, 1)', chk: 'Старт', val: '1',
+                msg: 'Ред 0 и колона 0 са <strong>предпазната рамка от нули</strong>. Поставяме <code>dp[1][1] = 1</code>. На позиция <code>(2, 2)</code> има стена <code>#</code>.'
+            },
+            {
+                line: 7,
+                g: [['0','0','0','0'], ['0','1','1','1'], ['0','1','#','?'], ['0','?','?','?']],
+                tgt: [2,1], ij: '(1, 2), (1, 3), (2, 1)', chk: 'Свободни клетки', val: '1',
+                msg: 'Благодарение на нулевата рамка формулата <code>dp[i-1][j] + dp[i][j-1]</code> работи дори за първия ред (<code>0 + 1 = 1</code>) без никакви специални <code>if</code> проверки за граници!'
+            },
+            {
+                line: 6,
+                g: [['0','0','0','0'], ['0','1','1','1'], ['0','1','0','?'], ['0','?','?','?']],
+                tgt: [2,2], ij: '(2, 2) СТЕНА #', chk: "grid[2][2] == '#'", val: '0 пътища!',
+                msg: 'На клетка <strong>(2, 2)</strong> срещаме стена <code>#</code>! Записваме <strong>dp[2][2] = 0</strong>, за да не може никой път да премине през нея.'
+            },
+            {
+                line: 7,
+                g: [['0','0','0','0'], ['0','1','1','1'], ['0','1','0','1'], ['0','1','1','2']],
+                tgt: [3,3], ij: 'До финала (3, 3)', chk: '1 (отгоре) + 1 (отляво)', val: 'dp[3][3] = 2',
+                msg: 'Клетка <code>(2, 3)</code> получава <code>1 + 0 = 1</code> (защото отляво е стената с 0!), а финалът <strong>(3, 3)</strong> получава <code>1 + 1 = 2</code> валидни заобикалящи пътя!'
+            }
+        ];
+        let t4Idx = 0;
+
+        function renderT4() {
+            const s = t4Steps[t4Idx];
+            document.getElementById('t4-step-lbl').innerText = `Стъпка ${t4Idx + 1} от ${t4Steps.length}`;
+            renderCodeLines('t4-code', t4Code, s.line);
+
+            const gridEl = document.getElementById('t4-grid');
+            gridEl.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const v = s.g[i][j];
+                    let cls = 'cell-item';
+                    if (i === 0 || j === 0) cls += ' pad-cell';
+                    else if (i === 2 && j === 2) cls += ' wall-cell';
+                    else if (s.tgt[0] === i && s.tgt[1] === j) cls += ' target-cell';
+                    else if (v !== '?') cls += ' done-cell';
+                    gridEl.innerHTML += `<div class="${cls}">${v}<span class="sub">[${i}][${j}]</span></div>`;
+                }
+            }
+
+            document.getElementById('t4-ij').innerText = s.ij;
+            document.getElementById('t4-chk').innerText = s.chk;
+            document.getElementById('t4-val').innerText = s.val;
+            document.getElementById('t4-exp').innerHTML = s.msg;
+            document.getElementById('t4-prev').disabled = (t4Idx === 0);
+            document.getElementById('t4-next').disabled = (t4Idx === t4Steps.length - 1);
+        }
+        function stepT4(d) { t4Idx = Math.max(0, Math.min(t4Steps.length - 1, t4Idx + d)); renderT4(); }
+        function resetT4() { t4Idx = 0; renderT4(); }
+
+        // ==========================================
+        // ТАБ 5: O(1) ОПТИМИЗАЦИЯ НА ПАМЕТТА
+        // ==========================================
+        const t5Code = [
+            'long long prev2 = 0, prev1 = 1, cur = 1;',
+            'for (int i = 2; i <= 5; i++) {',
+            '    cur = prev1 + prev2; // Изчисляваме новото число',
+            '    prev2 = prev1;       // Плъзгаме прозореца напред',
+            '    prev1 = cur;',
+            '}',
+            'cout << prev1 << endl;'
+        ];
+        const t5Steps = [
+            { line: 1, p2: 0, p1: 1, cur: '-', i: 'Начало', msg: 'Вместо да заделяме масив <code>dp[1..N]</code>, държим в паметта само двете последни числа: <code>prev2 = 0</code> и <code>prev1 = 1</code>.' },
+            { line: 3, p2: 1, p1: 1, cur: 1, i: 'i = 2', msg: 'При <strong>i = 2</strong>: <code>cur = 1 + 0 = 1</code>. След това преместваме: <code>prev2 = 1, prev1 = 1</code>.' },
+            { line: 3, p2: 1, p1: 2, cur: 2, i: 'i = 3', msg: 'При <strong>i = 3</strong>: <code>cur = 1 + 1 = 2</code>. Преместваме: <code>prev2 = 1, prev1 = 2</code>.' },
+            { line: 3, p2: 2, p1: 3, cur: 3, i: 'i = 4', msg: 'При <strong>i = 4</strong>: <code>cur = 2 + 1 = 3</code>. Преместваме: <code>prev2 = 2, prev1 = 3</code>.' },
+            { line: 7, p2: 3, p1: 5, cur: 5, i: 'i = 5 (Финал)', msg: 'При <strong>i = 5</strong>: <code>cur = 3 + 2 = 5</code>. Намерихме отговора <strong>5</strong> с памет <strong>O(1)</strong> (само 24 байта памет за всяко N)!' }
+        ];
+        let t5Idx = 0;
+
+        function renderT5() {
+            const s = t5Steps[t5Idx];
+            document.getElementById('t5-step-lbl').innerText = `Стъпка ${t5Idx + 1} от ${t5Steps.length}`;
+            renderCodeLines('t5-code', t5Code, s.line);
+
+            const box = document.getElementById('t5-cells');
+            box.innerHTML = `
+                <div class="cell-item source-cell" style="min-width:95px;">${s.p2}<span class="sub">prev2</span></div>
+                <div class="cell-item source-cell" style="min-width:95px;">${s.p1}<span class="sub">prev1</span></div>
+                <div class="cell-item target-cell" style="min-width:95px;">${s.cur}<span class="sub">cur (${s.i})</span></div>
+            `;
+
+            document.getElementById('t5-p2').innerText = s.p2;
+            document.getElementById('t5-p1').innerText = s.p1;
+            document.getElementById('t5-cur').innerText = s.cur;
+            document.getElementById('t5-exp').innerHTML = s.msg;
+            document.getElementById('t5-prev').disabled = (t5Idx === 0);
+            document.getElementById('t5-next').disabled = (t5Idx === t5Steps.length - 1);
+        }
+        function stepT5(d) { t5Idx = Math.max(0, Math.min(t5Steps.length - 1, t5Idx + d)); renderT5(); }
+        function resetT5() { t5Idx = 0; renderT5(); }
+
+        // ==========================================
+        // ТАБ 6: ПРИЛОЖНИ ЗАДАЧИ (КОСТЕНУРКА, МОНЕТИ, LIS)
+        // ==========================================
+        let curApp = 'turtle';
+        let t6Code = [];
+        let t6Steps = [];
+        let t6Idx = 0;
+
+        function openAppTask(mode) {
+            curApp = mode;
+            switchTab(6);
+            document.getElementById('sub-turtle').className = (mode === 'turtle') ? '' : 'btn-slate';
+            document.getElementById('sub-coins').className = (mode === 'coins') ? '' : 'btn-slate';
+            document.getElementById('sub-lis').className = (mode === 'lis') ? '' : 'btn-slate';
+            buildT6();
+        }
+
+        function buildT6() {
+            if (curApp === 'turtle') {
+                document.getElementById('t6-subtitle').innerText = 'Задача А: Костенурка — Максимално монети до долен десен ъгъл:';
+                t6Code = [
+                    'for (int i = 1; i <= N; i++) {',
+                    '    for (int j = 1; j <= M; j++) {',
+                    '        dp[i][j] = A[i][j] + max(dp[i - 1][j], dp[i][j - 1]);',
+                    '    }',
+                    '}'
+                ];
+                t6Steps = [
+                    { line: 3, arr: ['5 (+5)', '8 (+3)', '10 (+2)', '9 (+4)', '15 (+7)', '18 (+3)'], act: 0, v1: '(1, 1) -> (1, 3)', v2: 'Първи ред', v3: '5 -> 8 -> 10', msg: 'В първия ред идваме само отляво: <code>5 &rarr; 5+3=8 &rarr; 8+2=10</code>.' },
+                    { line: 3, arr: ['5 (+5)', '8 (+3)', '10 (+2)', '9 (+4)', '15 (+7)', '? (+3)'], act: 4, v1: 'Клетка (2, 2) с +7', v2: '7 + max(8 отгоре, 9 отляво)', v3: 'dp[2][2] = 16', msg: 'За клетка <code>(2, 2)</code> с монети <code>7</code> избираме по-добрия вход между горната клетка (8) и лявата (9): <code>7 + max(8, 9) = 16</code>!' },
+                    { line: 3, arr: ['5 (+5)', '8 (+3)', '10 (+2)', '9 (+4)', '16 (+7)', '19 (+3)'], act: 5, v1: 'Финал (2, 3) с +3', v2: '3 + max(10 отгоре, 16 отляво)', v3: 'Макс: 19 монети', msg: 'Във финалната клетка <code>(2, 3)</code> с 3 монети взимаме <code>3 + max(10, 16) = 19</code> монети!' }
+                ];
+            } else if (curApp === 'coins') {
+                document.getElementById('t6-subtitle').innerText = 'Задача Б: Минимален брой монети от {1, 3, 4} за сума S = 6:';
+                t6Code = [
+                    'vector<int> dp(7, INF); dp[0] = 0;',
+                    'for (int s = 1; s <= 6; s++) {',
+                    '    for (int c : {1, 3, 4}) {',
+                    '        if (s >= c) dp[s] = min(dp[s], dp[s - c] + 1);',
+                    '    }',
+                    '}'
+                ];
+                t6Steps = [
+                    { line: 1, arr: ['0','1','2','1','1','?','?'], act: 4, v1: 'Суми s = 0..4', v2: 'dp[3]=1 (мон. 3), dp[4]=1 (мон. 4)', v3: 'dp[4] = 1', msg: 'За суми 1, 3 и 4 ни трябва само по <strong>1 монета</strong>, а за сума 2 &rarr; 2 монети (1+1).' },
+                    { line: 4, arr: ['0','1','2','1','1','2','?'], act: 5, v1: 'Сума s = 5', v2: 'min(dp[4]+1, dp[2]+1, dp[1]+1)', v3: 'dp[5] = 2 (4+1)', msg: 'За <strong>s = 5</strong>: пробваме монети 1, 3 и 4 &rarr; <code>min(dp[4]+1=2, dp[2]+1=3, dp[1]+1=2) = 2</code> монети.' },
+                    { line: 4, arr: ['0','1','2','1','1','2','2'], act: 6, v1: 'Сума s = 6 (Финал)', v2: 'Монета 3: dp[6-3] + 1 = 1 + 1', v3: 'dp[6] = 2 (3+3)!', msg: 'За <strong>s = 6</strong>: ако вземем монета 4, трябват <code>dp[2]+1 = 3</code> монети (4+1+1), но с монета 3 получаваме <code>dp[3]+1 = 2</code> монети (<strong>3 + 3</strong>)!' }
+                ];
+            } else {
+                document.getElementById('t6-subtitle').innerText = 'Задача В: Най-дълга нарастваща подредица (LIS) за A = [3, 10, 2, 1, 20]:';
+                t6Code = [
+                    'vector<int> dp(n, 1); // Всеки елемент сам за себе си е с дължина 1',
+                    'for (int i = 0; i < n; i++) {',
+                    '    for (int j = 0; j < i; j++) {',
+                    '        if (A[j] < A[i]) dp[i] = max(dp[i], dp[j] + 1);',
+                    '    }',
+                    '}'
+                ];
+                t6Steps = [
+                    { line: 4, arr: ['1 (3)', '2 (10)', '1 (2)', '1 (1)', '? (20)'], act: 1, v1: 'i = 1 (A[1] = 10)', v2: 'A[0]=3 < 10 -> dp[0]+1', v3: 'dp[1] = 2 ([3, 10])', msg: 'За числото <strong>10</strong> виждаме предходното <code>3 &lt; 10</code> и удължаваме редицата до дължина <strong>2</strong> (<code>[3, 10]</code>).' },
+                    { line: 4, arr: ['1 (3)', '2 (10)', '1 (2)', '1 (1)', '? (20)'], act: 2, v1: 'i = 2 и 3 (числа 2 и 1)', v2: 'Няма по-малки преди тях', v3: 'dp[2]=1, dp[3]=1', msg: 'За числата <code>2</code> и <code>1</code> няма по-малки елементи вляво от тях, затова остават с дължина <strong>1</strong>.' },
+                    { line: 4, arr: ['1 (3)', '2 (10)', '1 (2)', '1 (1)', '3 (20)'], act: 4, v1: 'i = 4 (A[4] = 20)', v2: 'Най-добро: след 10 (dp[1]+1)', v3: 'dp[4] = 3 ([3, 10, 20])', msg: 'За <strong>20</strong> проверяваме всички по-малки числа вляво и избираме най-дългата верига след <code>10</code>: <code>dp[1] + 1 = 3</code> (подредицата <strong>[3, 10, 20]</strong>)!' }
+                ];
+            }
+            t6Idx = 0;
+            renderT6();
+        }
+
+        function renderT6() {
+            const s = t6Steps[t6Idx];
+            document.getElementById('t6-step-lbl').innerText = `Стъпка ${t6Idx + 1} от ${t6Steps.length}`;
+            renderCodeLines('t6-code', t6Code, s.line);
+
+            const stage = document.getElementById('t6-stage-inner');
+            if (curApp === 'turtle') {
+                stage.className = 'grid-2d';
+                stage.style.gridTemplateColumns = 'repeat(3, 86px)';
+            } else {
+                stage.className = 'cells-row';
+                stage.style.gridTemplateColumns = '';
+            }
+
+            stage.innerHTML = '';
+            s.arr.forEach((v, idx) => {
+                let cls = 'cell-item';
+                if (idx === s.act) cls += ' target-cell';
+                else if (!v.includes('?')) cls += ' done-cell';
+                const subLbl = curApp === 'coins' ? `dp[${idx}]` : `[${idx}]`;
+                stage.innerHTML += `<div class="${cls}" style="min-width:68px;">${v}<span class="sub">${subLbl}</span></div>`;
+            });
+
+            document.getElementById('t6-val1').innerText = s.v1;
+            document.getElementById('t6-val2').innerText = s.v2;
+            document.getElementById('t6-val3').innerText = s.v3;
+            document.getElementById('t6-exp').innerHTML = s.msg;
+            document.getElementById('t6-prev').disabled = (t6Idx === 0);
+            document.getElementById('t6-next').disabled = (t6Idx === t6Steps.length - 1);
+        }
+        function stepT6(d) { t6Idx = Math.max(0, Math.min(t6Steps.length - 1, t6Idx + d)); renderT6(); }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderT1();
+            setT2Mode('pull');
+            buildT3();
+            renderT4();
+            renderT5();
+            buildT6();
+        });
+    </script>
+</body>
+
+</html>

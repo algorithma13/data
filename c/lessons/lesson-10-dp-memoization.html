@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 10 (С): Динамично програмиране - Рекурсия и Мемоизация - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #10b981; /* Зелен акцент за Група C */
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            padding: 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(16, 185, 129, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 260px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .lesson-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+            padding-bottom: 1.5rem;
+        }
+
+        .lesson-header h1 {
+            font-size: 2.05rem;
+            color: var(--accent);
+            margin-bottom: 0.85rem;
+            line-height: 1.25;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .section-block {
+            margin-bottom: 2.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1.5rem 0 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            font-size: 1.32rem;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #34d399;
+            margin: 1.25rem 0 0.5rem 0;
+        }
+
+        .btn-try-right {
+            background: rgba(16, 185, 129, 0.14);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-try-right:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        p { margin-bottom: 0.95rem; color: var(--text-muted); font-size: 1.02rem; }
+        ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.45rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.95rem 1.1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.2rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.91rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+        }
+
+        .note-box.warn {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .note-box.danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .note-box h4 {
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+            font-size: 1rem;
+        }
+
+        .note-box.warn h4 { color: var(--warning); }
+        .note-box.danger h4 { color: var(--danger); }
+
+        table.func-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.25rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-size: 0.89rem;
+        }
+
+        table.func-table th, table.func-table td {
+            padding: 0.65rem 0.85rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.func-table th {
+            background-color: rgba(15, 23, 42, 0.9);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        table.func-table td { color: #cbd5e1; }
+        table.func-table tr:last-child td { border-bottom: none; }
+
+        .app-task-card {
+            background-color: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 0.6rem;
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .app-task-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .app-task-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .app-task-card h4 span {
+            font-size: 0.75rem;
+            background: rgba(16, 185, 129, 0.18);
+            color: var(--accent);
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.3rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ДЕСЕН ПАНЕЛ: ТАБОВЕ И ВИЗУАЛИЗАЦИЯ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.85rem 1.25rem;
+            background-color: rgba(11, 17, 32, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.75rem;
+            border-radius: 0.45rem;
+            font-size: 0.79rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.5rem 1.75rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .vis-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.5);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.45rem 0.85rem;
+            border: none;
+            border-radius: 0.35rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.83rem;
+            background: var(--accent);
+            color: #000;
+        }
+
+        button:hover { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover { background-color: #334155; }
+        .btn-danger { background-color: var(--danger); color: #fff; }
+
+        /* СЦЕНИ И КЛЕТКИ */
+        .stage-box {
+            background: rgba(11, 17, 32, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.15rem 1rem;
+            margin-bottom: 0.95rem;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .cells-row {
+            display: flex;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cell-item {
+            min-width: 48px;
+            height: 50px;
+            padding: 0 0.45rem;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.25s;
+        }
+
+        .cell-item span.sub {
+            font-size: 0.64rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .cell-item.active-cell {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.2);
+            color: #fde68a;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+        }
+
+        .cell-item.found-cell {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.24);
+            color: #6ee7b7;
+            transform: scale(1.05);
+        }
+
+        .cell-item.memo-hit-cell {
+            border-color: var(--purple);
+            background: rgba(139, 92, 246, 0.28);
+            color: #ddd6fe;
+            box-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
+        }
+
+        .cell-item.danger-cell {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.22);
+            color: #fca5a5;
+        }
+
+        /* ДЪРВО НА ИЗВИКВАНИЯТА */
+        .tree-nodes-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+            width: 100%;
+        }
+
+        .tree-level {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .t-node {
+            padding: 0.25rem 0.55rem;
+            border-radius: 0.4rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .t-node.t-active {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.25);
+            color: #fef08a;
+            transform: scale(1.08);
+        }
+
+        .t-node.t-dup {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.22);
+            color: #fca5a5;
+        }
+
+        /* ТАБЛО С ПРОМЕНЛИВИ И ТРАСИРАНЕ НА КОДА */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .state-box {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.45rem;
+            text-align: center;
+        }
+
+        .state-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .state-val {
+            font-size: 0.96rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 2px;
+        }
+
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-bottom: 0.85rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.14rem 0.85rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.15s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(16, 185, 129, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .line-num {
+            width: 28px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #fff;
+        }
+
+        .calc-box {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.9rem 1.15rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .calc-box strong {
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .state-grid { grid-template-columns: 1fr; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Раздел IV: Динамично програмиране</span>
+        <div class="nav-controls">
+            <a href="../../group-c.html">&larr; Обратно към Група C</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ТЕОРИЯ И ПРИЛОЖНИ ЗАДАЧИ (ТОЧКИ 1 ДО 6)
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-header">
+                <h1>Динамично програмиране: Рекурсия и Мемоизация</h1>
+                <div class="lesson-meta">
+                    <div>🎓 <strong>Група C:</strong> 7–8. клас</div>
+                    <div>⏱️ <strong>Време:</strong> 60 мин</div>
+                    <div>📦 <strong>Ключови понятия:</strong> Припокриващи се подзадачи, Top-Down (memo), Bottom-Up (dp)</div>
+                </div>
+            </div>
+
+            <div class="note-box">
+                <h4>💡 Златното правило на Динамичното програмиране</h4>
+                <p style="margin:0; font-size:1.08rem; color:#fff; font-weight:600;">„Тези, които не помнят миналото, са осъдени да го пресмятат отново!“ — Никога не решавай един и същ подпроблем два пъти.</p>
+            </div>
+
+            <!-- ТОЧКА 1 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>1. Същност на ДП и двете му фундаментални свойства</h2>
+                    <button class="btn-try-right" onclick="switchTab(1)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Динамичното програмиране (ДП) е мощна алгоритмична техника, при която разбиваме сложна задача на по-малки подзадачи, решаваме всяка подзадача <strong>само веднъж</strong> и записваме отговора ѝ в таблица („бележник“).</p>
+                <p>За да бъде една задача решима с Динамично програмиране, тя трябва да притежава <strong>две задължителни свойства</strong> (които често отличават ДП от алчните алгоритми и „Разделяй и владей“):</p>
+                <ol>
+                    <li><strong>Припокриващи се подзадачи (Overlapping Subproblems):</strong> При рекурсивното разбиване на задачата едни и същи малки подзадачи се извикват многократно.</li>
+                    <li><strong>Оптимална подструктура (Optimal Substructure):</strong> Оптималното решение на голямата задача може да се сглоби директно от оптималните решения на нейните подзадачи.</li>
+                </ol>
+                <h3>Четирите стъпки за решаване на всяка ДП задача:</h3>
+                <ul>
+                    <li><strong>1. Дефиниране на състоянието:</strong> Какво точно означава <code>dp[i]</code> (напр. „минималната цена да стигнем до стъпало <code>i</code>“)?</li>
+                    <li><strong>2. Базови случаи (Дъно):</strong> Кои са най-малките стойности, чийто отговор знаем директно (напр. <code>dp[0] = 0, dp[1] = 1</code>)?</li>
+                    <li><strong>3. Рекурентна връзка (Преход):</strong> Формулата, по която изчисляваме <code>dp[i]</code> чрез предходните състояния.</li>
+                    <li><strong>4. Ред на изчисление и Финален отговор:</strong> В коя клетка на таблицата се намира крайният отговор (обикновено <code>dp[n]</code>)?</li>
+                </ul>
+            </div>
+
+            <!-- ТОЧКА 2 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>2. Капанът на чистата рекурсия (Експоненциален взрив)</h2>
+                    <button class="btn-try-right" onclick="switchTab(2)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Да разгледаме класическата редица на Фибоначи: <code>fib(0) = 0</code>, <code>fib(1) = 1</code> и <code>fib(n) = fib(n - 1) + fib(n - 2)</code> за всяко <code>n &ge; 2</code>.</p>
+<pre><code>long long fib_slow(int n) {
+    if (n &lt;= 1) return n;
+    return fib_slow(n - 1) + fib_slow(n - 2);
+}</code></pre>
+                <div class="note-box danger">
+                    <h4>🚨 Защо чистата рекурсия получава Time Limit Exceeded (TLE)?</h4>
+                    <p style="margin:0;">За да пресметне <code>fib(5)</code>, функцията пресмята <code>fib(3)</code> два пъти, а <code>fib(2)</code> — три пъти! Дървото на извикванията се удвоява на всяко ниво и има сложност <strong>O(2<sup>N</sup>)</strong>. За <code>fib(50)</code> са нужни над <strong>20 милиарда операции</strong> (десетки секунди), докато лимитът по състезания е около <code>10<sup>8</sup></code> операции за 1 секунда!</p>
+                </div>
+            </div>
+
+            <!-- ТОЧКА 3 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>3. Мемоизация (Top-Down ДП — отгоре надолу)</h2>
+                    <button class="btn-try-right" onclick="switchTab(3)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p><strong>Мемоизацията</strong> превръща бавната рекурсия в мълниеносно решение само с 3 реда код! Създаваме масив („бележник“) <code>memo[N]</code>, запълнен със специална стойност <code>-1</code> („още не е пресметнато“):</p>
+                <ol>
+                    <li>Преди да правим рекурсивни извиквания за <code>n</code>, проверяваме: <code>if (memo[n] != -1) return memo[n];</code>.</li>
+                    <li>Ако стойността все още е <code>-1</code>, пресмятаме отговора и <strong>задължително го записваме в бележника</strong> преди да го върнем: <code>return memo[n] = fib(n - 1) + fib(n - 2);</code>.</li>
+                </ol>
+<pre><code>long long memo[105]; // Първоначално запълнен с -1 чрез memset или цикъл
+
+long long fib_memo(int n) {
+    if (n &lt;= 1) return n;
+    if (memo[n] != -1) return memo[n]; // Вече е сметнато -> връщаме веднага!
+    return memo[n] = fib_memo(n - 1) + fib_memo(n - 2);
+}</code></pre>
+                <p>Така всяко състояние от <code>2</code> до <code>N</code> се изчислява <strong>точно по веднъж</strong>! Времевата сложност пада от експоненциална <code>O(2<sup>N</sup>)</code> на линейна <strong><code>O(N)</code></strong>!</p>
+            </div>
+
+            <!-- ТОЧКА 4 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>4. Табулация (Bottom-Up ДП — отдолу нагоре с цикъл)</h2>
+                    <button class="btn-try-right" onclick="switchTab(4)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Вместо да тръгваме от голямото число <code>N</code> надолу с рекурсия (Top-Down), можем да попълним масива <code>dp[]</code> итеративно от най-малките подзадачи към най-голямата с обикновен <code>for</code> цикъл! Този подход се нарича <strong>Табулация (Bottom-Up ДП)</strong>.</p>
+<pre><code>dp[0] = 0;
+dp[1] = 1;
+for (int i = 2; i &lt;= n; i++) {
+    dp[i] = dp[i - 1] + dp[i - 2];
+}</code></pre>
+                <table class="func-table">
+                    <tr><th>Критерий</th><th>Top-Down (Мемоизация)</th><th>Bottom-Up (Табулация)</th></tr>
+                    <tr><td><strong>Реализация</strong></td><td>Рекурсивна функция + <code>memo[]</code></td><td>Обикновен цикъл + масив <code>dp[]</code></td></tr>
+                    <tr><td><strong>Риск от Stack Overflow</strong></td><td>Да, при дълбока рекурсия (<code>N &gt; 10<sup>5</sup></code>)</td><td><strong>Не!</strong> Не ползва системния стек</td></tr>
+                    <tr><td><strong>Скорост в практиката</strong></td><td>Малко по-бавна (заради извикванията)</td><td><strong>По-бърза</strong> и позволява пестене на памет до <code>O(1)</code></td></tr>
+                    <tr><td><strong>Кога е по-удобна?</strong></td><td>Когато не всички състояния са нужни</td><td>Когато трябва да минем през всички от <code>1</code> до <code>N</code></td></tr>
+                </table>
+            </div>
+
+            <!-- ТОЧКА 5 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>5. Чести капани и грешки на състезания</h2>
+                    <button class="btn-try-right" onclick="switchTab(5)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Дори при вярна формула, много състезатели губят точки заради следните четири технически капана (които сме пропуснали в старата версия на урока):</p>
+                <ol>
+                    <li><strong>Препълване на <code>int</code> (Integer Overflow):</strong> Резултатите в ДП растат изключително бързо! Още при <code>fib(47) = 2 971 215 073</code> надхвърляме 32-битовия <code>int</code>. Винаги използвайте <code>long long</code> или смятайте по модул (напр. <code>% 1000000007</code>).</li>
+                    <li><strong>Грешна начална стойност в <code>memo</code>:</strong> Ако в задачата валидният отговор може да бъде отрицателно число (включително <code>-1</code>), <strong>не ползвайте</strong> <code>-1</code> за маркер „несметнато“! Тогава програмата ще пресмята състоянията с отговор <code>-1</code> отново и отново (TLE). Ползвайте булев масив <code>bool visited[N]</code> или <code>-INF</code>.</li>
+                    <li><strong>Бърза инициализация с <code>memset</code>:</strong> Функцията <code>memset(memo, -1, sizeof(memo));</code> работи <strong>само за <code>0</code> и <code>-1</code></strong> (защото запълва паметта байт по байт). За произволни числа използвайте <code>fill(memo, memo + n + 1, VAL)</code> или <code>vector&lt;long long&gt; memo(n + 1, -1)</code>.</li>
+                    <li><strong>Възстановяване на пътя (Path Reconstruction):</strong> Често освен минималната цена се иска да отпечатаме и самите стъпки! За целта пазим втори масив <code>parent[i]</code>, в който записваме от кое предходно състояние сме дошли в <code>i</code>.</li>
+                </ol>
+            </div>
+
+            <!-- ТОЧКА 6 -->
+            <div class="section-block" style="border-bottom:none;">
+                <div class="section-head">
+                    <h2>6. Класически приложни задачи с 1D Динамично програмиране</h2>
+                    <button class="btn-try-right" onclick="switchTab(6)">⚡ Трасирай вдясно &rarr;</button>
+                </div>
+                <p>Кликнете върху някоя от трите фундаментални задачи по-долу, за да разгледате нейната рекурентна връзка и да я трасирате стъпка по стъпка в десния панел:</p>
+
+                <div class="app-task-card" onclick="openDpApp('stairs')">
+                    <h4>Задача А: Стълбичка — Брой начини на изкачване <span>Комбинаторно ДП</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Имате стълба с <code>N</code> стъпала. На всяка крачка можете да се качите с <code>1</code> или с <code>2</code> стъпала. По колко различни начина можете да стигнете до връх <code>N</code>? Формула: <code>dp[i] = dp[i - 1] + dp[i - 2]</code>.</p>
+                </div>
+
+                <div class="app-task-card" onclick="openDpApp('frog')">
+                    <h4>Задача Б: Жабокът от AtCoder (Frog 1) — Минимална цена <span>Оптимизационно ДП</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Жабок скача по камъни с височини <code>H[1..N]</code> от камък <code>i</code> към <code>i + 1</code> или <code>i + 2</code> с цена <code>|H[i] - H[j]|</code>. Търсим минималната обща цена до камък <code>N</code>: <code>dp[i] = min(dp[i-1] + |H[i]-H[i-1]|, dp[i-2] + |H[i]-H[i-2]|)</code>.</p>
+                </div>
+
+                <div class="app-task-card" onclick="openDpApp('robber')">
+                    <h4>Задача В: Максимална сума без съседни елементи (Обир на къщи) <span>ДП с избор Вземи / Пропусни</span></h4>
+                    <p style="margin:0; font-size:0.94rem;">Даден е масив от положителни числа <code>A[1..N]</code>. Изберете подмножество от числа без две съседни с максимална сума: <code>dp[i] = max(dp[i - 1], dp[i - 2] + A[i])</code>.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: 6 ТАБА С КОНКРЕТНИ ПРИМЕРИ И ТРАСИРАНЕ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(1)" id="tab-btn-1">1. Състояние и Преход</button>
+                <button class="tab-btn" onclick="switchTab(2)" id="tab-btn-2">2. Чиста рекурсия</button>
+                <button class="tab-btn" onclick="switchTab(3)" id="tab-btn-3">3. Top-Down (Memo)</button>
+                <button class="tab-btn" onclick="switchTab(4)" id="tab-btn-4">4. Bottom-Up (Цикъл)</button>
+                <button class="tab-btn" onclick="switchTab(5)" id="tab-btn-5">5. Капани и Път</button>
+                <button class="tab-btn" onclick="switchTab(6)" id="tab-btn-6">6. Приложни задачи</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: СЪСТОЯНИЕ И РЕКУРЕНТНА ВРЪЗКА -->
+                <div class="tab-pane active" id="tab-1">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📐 Трасиране на Точка 1: Как се ражда ДП таблицата</span>
+                            <span id="t1-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Проследете 4-те стъпки на Динамичното програмиране върху задачата за сумиране на брой пътища до стъпало <code>i</code>.
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t1-prev" onclick="stepT1(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t1-next" onclick="stepT1(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT1()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.78rem; color:var(--text-muted);">Таблица на състоянията dp[0..5]:</div>
+                            <div class="cells-row" id="t1-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Етап от ДП дизайна</div>
+                                <div class="state-val" id="t1-phase">Дефиниция</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Текуща формула</div>
+                                <div class="state-val" id="t1-form">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Стойност</div>
+                                <div class="state-val" id="t1-val">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t1-code"></div>
+                        <div class="calc-box" id="t1-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: КАПАНЪТ НА ЧИСТАТА РЕКУРСИЯ -->
+                <div class="tab-pane" id="tab-2">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🌳 Трасиране на Точка 2: Защо чистата рекурсия fib(5) се повтаря?</span>
+                            <span id="t2-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Вижте в червено колко пъти едни и същи подзадачи (<code>fib(3)</code> и <code>fib(2)</code>) се пресмятат отначало!
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t2-prev" onclick="stepT2(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t2-next" onclick="stepT2(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT2()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="tree-nodes-grid" id="t2-tree"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Активно извикване</div>
+                                <div class="state-val" id="t2-cur">fib(5)</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Общо извиквания</div>
+                                <div class="state-val" id="t2-calls" style="color:var(--danger);">1</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Излишни повторения</div>
+                                <div class="state-val" id="t2-dups" style="color:var(--warning);">0</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t2-code"></div>
+                        <div class="calc-box" id="t2-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: МЕМОИЗАЦИЯ (TOP-DOWN) -->
+                <div class="tab-pane" id="tab-3">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Трасиране на Точка 3: Мемоизация fib_memo(5) с бележник memo[]</span>
+                            <span id="t3-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t3-prev" onclick="stepT3(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t3-next" onclick="stepT3(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT3()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.78rem; color:var(--text-muted);">Бележник memo[0..5] (-1 = още не е пресметнато):</div>
+                            <div class="cells-row" id="t3-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Извикване</div>
+                                <div class="state-val" id="t3-call">fib_memo(5)</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Статус на бележника</div>
+                                <div class="state-val" id="t3-hit">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Спестени клонове</div>
+                                <div class="state-val" id="t3-saved" style="color:#c4b5fd;">0</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t3-code"></div>
+                        <div class="calc-box" id="t3-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 4: ТАБУЛАЦИЯ (BOTTOM-UP) И ПЕСТЕНЕ НА ПАМЕТ -->
+                <div class="tab-pane" id="tab-4">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🔄 Трасиране на Точка 4: Bottom-Up Табулация (Итеративно ДП)</span>
+                            <span id="t4-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t4-prev" onclick="stepT4(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t4-next" onclick="stepT4(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT4()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.78rem; color:var(--text-muted);">Попълване на масива dp[0..6] отляво надясно:</div>
+                            <div class="cells-row" id="t4-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Индекс i в цикъла</div>
+                                <div class="state-val" id="t4-i">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">dp[i - 1] + dp[i - 2]</div>
+                                <div class="state-val" id="t4-sum">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Нова стойност dp[i]</div>
+                                <div class="state-val" id="t4-res">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t4-code"></div>
+                        <div class="calc-box" id="t4-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 5: КАПАНИ И ВЪЗСТАНОВЯВАНЕ НА ПЪТЯ -->
+                <div class="tab-pane" id="tab-5">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🧭 Трасиране на Точка 5: Възстановяване на оптималния път с parent[]</span>
+                            <span id="t5-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:0.8rem;">
+                            Как след намиране на минималната цена <code>dp[N]</code> да открием точно по кои стъпала сме минали чрез масива <code>parent[]</code>?
+                        </p>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t5-prev" onclick="stepT5(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t5-next" onclick="stepT5(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT5()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.78rem; color:var(--text-muted);">Стъпала 1..5 с цени cost = [0, 10, 15, 20, 5, 10] и записан parent[i]:</div>
+                            <div class="cells-row" id="t5-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label">Текущ връх cur</div>
+                                <div class="state-val" id="t5-cur">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Идваме от parent[cur]</div>
+                                <div class="state-val" id="t5-par">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label">Възстановен път</div>
+                                <div class="state-val" id="t5-path">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t5-code"></div>
+                        <div class="calc-box" id="t5-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 6: ПРИЛОЖНИ ЗАДАЧИ -->
+                <div class="tab-pane" id="tab-6">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🏆 Трасиране на Точка 6: Приложни задачи с 1D ДП</span>
+                            <span id="t6-step-lbl" style="font-size:0.84rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="controls">
+                            <button id="sub-stairs" onclick="openDpApp('stairs')">Задача А: Стълбичка</button>
+                            <button class="btn-slate" id="sub-frog" onclick="openDpApp('frog')">Задача Б: Жабокът (Frog 1)</button>
+                            <button class="btn-slate" id="sub-robber" onclick="openDpApp('robber')">Задача В: Обир на къщи</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t6-prev" onclick="stepT6(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t6-next" onclick="stepT6(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="buildT6()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div id="t6-subtitle" style="font-size:0.78rem; color:var(--text-muted);">Състояния dp[1..N]:</div>
+                            <div class="cells-row" id="t6-cells"></div>
+                        </div>
+
+                        <div class="state-grid">
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl1">Текущ индекс i</div>
+                                <div class="state-val" id="t6-val1">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl2">Избор / Опции</div>
+                                <div class="state-val" id="t6-val2">-</div>
+                            </div>
+                            <div class="state-box">
+                                <div class="state-label" id="t6-lbl3">Записано в dp[i]</div>
+                                <div class="state-val" id="t6-val3">-</div>
+                            </div>
+                        </div>
+
+                        <div class="code-box" id="t6-code"></div>
+                        <div class="calc-box" id="t6-exp"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ТОЧНО ЦЕНТРИРАН (50/50) И ПОДВИЖЕН РАЗДЕЛИТЕЛ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(20, Math.min(80, pct));
+            leftPanel.style.width = `calc(${pct}% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(${100 - pct}% - ${halfResizer}px)`;
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+
+        resizer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) startResize(e);
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX);
+        }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = `calc(50% - ${halfResizer}px)`;
+            rightPanel.style.width = `calc(50% - ${halfResizer}px)`;
+        });
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + num).classList.add('active');
+            document.getElementById('tab-btn-' + num).classList.add('active');
+        }
+
+        function renderCodeLines(boxId, linesArr, activeLine) {
+            const box = document.getElementById(boxId);
+            box.innerHTML = linesArr.map((txt, idx) => {
+                const lnum = idx + 1;
+                const esc = txt.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div class="code-line ${lnum === activeLine ? 'active-line' : ''}">
+                    <span class="line-num">${lnum}</span>
+                    <span class="line-text">${esc}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ==========================================
+        // ТАБ 1: 4-ТЕ СТЪПКИ НА ДП
+        // ==========================================
+        const t1Code = [
+            '// Стъпка 1: Дефинираме състоянието dp[i]',
+            'long long dp[6] = {0};',
+            '// Стъпка 2: Задаваме базовите случаи (дъното)',
+            'dp[0] = 1; dp[1] = 1;',
+            '// Стъпка 3: Рекурентен преход за всяко i от 2 до 5',
+            'for (int i = 2; i <= 5; i++) {',
+            '    dp[i] = dp[i - 1] + dp[i - 2];',
+            '}',
+            '// Стъпка 4: Финалният отговор е в dp[5]',
+            'cout << dp[5] << endl;'
+        ];
+        const t1Steps = [
+            { line: 2, arr: ['?','?','?','?','?','?'], act: -1, phase: '1. Състояние', form: 'dp[i] = ?', val: '-', msg: '<strong>Стъпка 1 (Състояние):</strong> Дефинираме <code>dp[i]</code> като броя начини да стигнем до стъпало <code>i</code>.' },
+            { line: 4, arr: ['1','1','?','?','?','?'], act: 1, phase: '2. База (Дъно)', form: 'dp[0]=1, dp[1]=1', val: '1', msg: '<strong>Стъпка 2 (Базови случаи):</strong> Знаем директно без формула, че <code>dp[0] = 1</code> и <code>dp[1] = 1</code>.' },
+            { line: 7, arr: ['1','1','2','?','?','?'], act: 2, phase: '3. Преход (i=2)', form: 'dp[1] + dp[0]', val: '1 + 1 = 2', msg: '<strong>Стъпка 3 (Рекурентна връзка):</strong> За <code>i = 2</code> прилагаме формулата <code>dp[2] = dp[1] + dp[0] = 2</code>.' },
+            { line: 7, arr: ['1','1','2','3','5','8'], act: 5, phase: '3. Преход (i=3..5)', form: 'dp[i-1] + dp[i-2]', val: 'dp[5] = 8', msg: 'С цикъла последователно попълваме <code>dp[3] = 3</code>, <code>dp[4] = 5</code> и <code>dp[5] = 8</code>, използвайки вече сметнатите клетки!' },
+            { line: 10, arr: ['1','1','2','3','5','8'], act: 5, phase: '4. Финал', form: 'cout << dp[5]', val: '8 начина', msg: '<strong>Стъпка 4 (Отговор):</strong> Търсеният отговор за цялата задача се намира в последната клетка <strong>dp[5] = 8</strong>!' }
+        ];
+        let t1Idx = 0;
+
+        function renderT1() {
+            const s = t1Steps[t1Idx];
+            document.getElementById('t1-step-lbl').innerText = `Стъпка ${t1Idx + 1} от ${t1Steps.length}`;
+            renderCodeLines('t1-code', t1Code, s.line);
+
+            const cells = document.getElementById('t1-cells');
+            cells.innerHTML = '';
+            s.arr.forEach((v, idx) => {
+                let cls = 'cell-item';
+                if (idx === s.act) cls += ' active-cell';
+                else if (v !== '?') cls += ' found-cell';
+                cells.innerHTML += `<div class="${cls}">${v}<span class="sub">dp[${idx}]</span></div>`;
+            });
+
+            document.getElementById('t1-phase').innerText = s.phase;
+            document.getElementById('t1-form').innerText = s.form;
+            document.getElementById('t1-val').innerText = s.val;
+            document.getElementById('t1-exp').innerHTML = s.msg;
+            document.getElementById('t1-prev').disabled = (t1Idx === 0);
+            document.getElementById('t1-next').disabled = (t1Idx === t1Steps.length - 1);
+        }
+        function stepT1(d) { t1Idx = Math.max(0, Math.min(t1Steps.length - 1, t1Idx + d)); renderT1(); }
+        function resetT1() { t1Idx = 0; renderT1(); }
+
+        // ==========================================
+        // ТАБ 2: ЧИСТА РЕКУРСИЯ И ПОВТОРЕНИЯТА
+        // ==========================================
+        const t2Code = [
+            'long long fib_slow(int n) {',
+            '    if (n <= 1) return n;                  // Базов случай',
+            '    return fib_slow(n - 1) + fib_slow(n - 2); // Две нови разклонения!',
+            '}'
+        ];
+        const t2Steps = [
+            { line: 1, cur: 'fib(5)', calls: 1, dups: 0, lvls: [['fib(5)']], dupSet: [], msg: 'Извикваме <code>fib_slow(5)</code>. За да го сметне, програмата трябва да пресметне <code>fib(4)</code> и <code>fib(3)</code>.' },
+            { line: 3, cur: 'fib(4) и fib(3)', calls: 3, dups: 0, lvls: [['fib(5)'], ['fib(4)', 'fib(3)']], dupSet: [], msg: 'Разклоняваме се към <code>fib(4)</code> и <code>fib(3)</code>.' },
+            { line: 3, cur: 'Ниво 3', calls: 7, dups: 1, lvls: [['fib(5)'], ['fib(4)', 'fib(3)'], ['fib(3)', 'fib(2)', 'fib(2)*', 'fib(1)']], dupSet: ['fib(3)', 'fib(2)*'], msg: 'Забележете: <code>fib(3)</code> се появява за втори път, а <code>fib(2)</code> ще бъде изчислено цели <strong>3 отделни пъти</strong>!' },
+            { line: 2, cur: 'Пълно дърво (15 извиквания)', calls: 15, dups: 9, lvls: [['fib(5)'], ['fib(4)', 'fib(3)*'], ['fib(3)', 'fib(2)*', 'fib(2)*', 'fib(1)'], ['fib(2)', 'fib(1)', 'fib(1)', 'fib(0)', 'fib(1)', 'fib(0)']], dupSet: ['fib(3)*', 'fib(2)*'], msg: 'За <code>n = 5</code> направихме <strong>15 извиквания</strong> (9 от които са излишни повторения). За <code>n = 50</code> извикванията стават <strong>20 365 011 074</strong> и програмата блокира с TLE!' }
+        ];
+        let t2Idx = 0;
+
+        function renderT2() {
+            const s = t2Steps[t2Idx];
+            document.getElementById('t2-step-lbl').innerText = `Стъпка ${t2Idx + 1} от ${t2Steps.length}`;
+            renderCodeLines('t2-code', t2Code, s.line);
+
+            const tree = document.getElementById('t2-tree');
+            tree.innerHTML = '';
+            s.lvls.forEach(lvl => {
+                let rowHtml = `<div class="tree-level">`;
+                lvl.forEach(item => {
+                    const isDup = item.includes('*');
+                    const clean = item.replace('*', '');
+                    rowHtml += `<div class="t-node ${isDup ? 't-dup' : 't-active'}">${clean}${isDup ? ' (Повторение!)' : ''}</div>`;
+                });
+                rowHtml += `</div>`;
+                tree.innerHTML += rowHtml;
+            });
+
+            document.getElementById('t2-cur').innerText = s.cur;
+            document.getElementById('t2-calls').innerText = s.calls;
+            document.getElementById('t2-dups').innerText = s.dups;
+            document.getElementById('t2-exp').innerHTML = s.msg;
+            document.getElementById('t2-prev').disabled = (t2Idx === 0);
+            document.getElementById('t2-next').disabled = (t2Idx === t2Steps.length - 1);
+        }
+        function stepT2(d) { t2Idx = Math.max(0, Math.min(t2Steps.length - 1, t2Idx + d)); renderT2(); }
+        function resetT2() { t2Idx = 0; renderT2(); }
+
+        // ==========================================
+        // ТАБ 3: МЕМОИЗАЦИЯ (TOP-DOWN)
+        // ==========================================
+        const t3Code = [
+            'long long memo[6] = {-1, -1, -1, -1, -1, -1};',
+            'long long fib_memo(int n) {',
+            '    if (n <= 1) return memo[n] = n;',
+            '    if (memo[n] != -1) return memo[n]; // Взимаме готовия отговор от бележника!',
+            '    return memo[n] = fib_memo(n - 1) + fib_memo(n - 2);',
+            '}'
+        ];
+        const t3Steps = [
+            { line: 1, memo: [-1,-1,-1,-1,-1,-1], act: 5, hit: -1, call: 'fib_memo(5)', status: 'Смятаме надолу', saved: 0, msg: 'Стартираме <code>fib_memo(5)</code>. Бележникът <code>memo</code> е пълен с <code>-1</code>. Спускаме се по левия клон: 5 &rarr; 4 &rarr; 3 &rarr; 2 &rarr; 1 и 0.' },
+            { line: 3, memo: [0,1,-1,-1,-1,-1], act: 1, hit: -1, call: 'Дъно: n=1 и n=0', status: 'Базов случай', saved: 0, msg: 'Достигаме базовите случаи <code>n = 1</code> и <code>n = 0</code> и записваме <code>memo[0] = 0, memo[1] = 1</code>.' },
+            { line: 5, memo: [0,1,1,2,-1,-1], act: 3, hit: 1, call: 'Връщане в n=2 и n=3', status: 'Запис в memo[2] и memo[3]', saved: 1, msg: 'Пресмятаме <code>memo[2] = 1 + 0 = 1</code>. След това за <code>n = 3</code> викаме <code>fib_memo(1)</code> — то вече е в бележника! Записваме <strong>memo[3] = 2</strong>.' },
+            { line: 4, memo: [0,1,1,2,3,-1], act: 4, hit: 2, call: 'fib_memo(4) пита за fib_memo(2)', status: '⚡ MEMO HIT (memo[2]=1)', saved: 2, msg: 'За да сметнем <code>fib_memo(4)</code>, питаме за <code>fib_memo(2)</code>. Ред 4 вижда, че <strong>memo[2] == 1 != -1</strong> и връща 1 мигновено без рекурсия! Записваме <strong>memo[4] = 3</strong>.' },
+            { line: 4, memo: [0,1,1,2,3,5], act: 5, hit: 3, call: 'fib_memo(5) пита за fib_memo(3)', status: '⚡ MEMO HIT (memo[3]=2)', saved: 5, msg: 'Връщаме се в <code>fib_memo(5)</code> и питаме за десния му клон <code>fib_memo(3)</code>. Ред 4 веднага връща <strong>memo[3] = 2</strong>! Отрязахме цялото дясно поддърво и получихме <strong>memo[5] = 5</strong>!' }
+        ];
+        let t3Idx = 0;
+
+        function renderT3() {
+            const s = t3Steps[t3Idx];
+            document.getElementById('t3-step-lbl').innerText = `Стъпка ${t3Idx + 1} от ${t3Steps.length}`;
+            renderCodeLines('t3-code', t3Code, s.line);
+
+            const cells = document.getElementById('t3-cells');
+            cells.innerHTML = '';
+            s.memo.forEach((v, idx) => {
+                let cls = 'cell-item';
+                if (idx === s.hit) cls += ' memo-hit-cell';
+                else if (idx === s.act) cls += ' active-cell';
+                else if (v !== -1) cls += ' found-cell';
+                cells.innerHTML += `<div class="${cls}">${v}<span class="sub">memo[${idx}]</span></div>`;
+            });
+
+            document.getElementById('t3-call').innerText = s.call;
+            document.getElementById('t3-hit').innerText = s.status;
+            document.getElementById('t3-saved').innerText = s.saved + ' извиквания';
+            document.getElementById('t3-exp').innerHTML = s.msg;
+            document.getElementById('t3-prev').disabled = (t3Idx === 0);
+            document.getElementById('t3-next').disabled = (t3Idx === t3Steps.length - 1);
+        }
+        function stepT3(d) { t3Idx = Math.max(0, Math.min(t3Steps.length - 1, t3Idx + d)); renderT3(); }
+        function resetT3() { t3Idx = 0; renderT3(); }
+
+        // ==========================================
+        // ТАБ 4: ТАБУЛАЦИЯ (BOTTOM-UP)
+        // ==========================================
+        const t4Code = [
+            'long long dp[7];',
+            'dp[0] = 0;',
+            'dp[1] = 1;',
+            'for (int i = 2; i <= 6; i++) {',
+            '    dp[i] = dp[i - 1] + dp[i - 2]; // Взимаме предните две клетки',
+            '}',
+            'cout << dp[6] << endl;'
+        ];
+        const t4Steps = [
+            { line: 3, dp: ['0','1','?','?','?','?','?'], i: 'База', src: [0,1], cur: -1, sum: '-', res: 'dp[0]=0, dp[1]=1', msg: 'Попълваме базовите клетки <code>dp[0] = 0</code> и <code>dp[1] = 1</code> преди цикъла.' },
+            { line: 5, dp: ['0','1','1','?','?','?','?'], i: 'i = 2', src: [0,1], cur: 2, sum: '1 + 0', res: 'dp[2] = 1', msg: 'При <strong>i = 2</strong>: събираме <code>dp[1] + dp[0] = 1 + 0</code> и записваме <strong>dp[2] = 1</strong>.' },
+            { line: 5, dp: ['0','1','1','2','?','?','?'], i: 'i = 3', src: [1,2], cur: 3, sum: '1 + 1', res: 'dp[3] = 2', msg: 'При <strong>i = 3</strong>: събираме <code>dp[2] + dp[1] = 1 + 1</code> и записваме <strong>dp[3] = 2</strong>.' },
+            { line: 5, dp: ['0','1','1','2','3','?','?'], i: 'i = 4', src: [2,3], cur: 4, sum: '2 + 1', res: 'dp[4] = 3', msg: 'При <strong>i = 4</strong>: събираме <code>dp[3] + dp[2] = 2 + 1</code> и записваме <strong>dp[4] = 3</strong>.' },
+            { line: 5, dp: ['0','1','1','2','3','5','?'], i: 'i = 5', src: [3,4], cur: 5, sum: '3 + 2', res: 'dp[5] = 5', msg: 'При <strong>i = 5</strong>: събираме <code>dp[4] + dp[3] = 3 + 2</code> и записваме <strong>dp[5] = 5</strong>.' },
+            { line: 7, dp: ['0','1','1','2','3','5','8'], i: 'i = 6 (Край)', src: [4,5], cur: 6, sum: '5 + 3', res: 'dp[6] = 8', msg: 'При <strong>i = 6</strong>: получаваме <strong>dp[6] = 8</strong>. Без никаква рекурсия и само с един прост цикъл!' }
+        ];
+        let t4Idx = 0;
+
+        function renderT4() {
+            const s = t4Steps[t4Idx];
+            document.getElementById('t4-step-lbl').innerText = `Стъпка ${t4Idx + 1} от ${t4Steps.length}`;
+            renderCodeLines('t4-code', t4Code, s.line);
+
+            const cells = document.getElementById('t4-cells');
+            cells.innerHTML = '';
+            s.dp.forEach((v, idx) => {
+                let cls = 'cell-item';
+                if (idx === s.cur) cls += ' active-cell';
+                else if (s.src.includes(idx)) cls += ' memo-hit-cell';
+                else if (v !== '?') cls += ' found-cell';
+                cells.innerHTML += `<div class="${cls}">${v}<span class="sub">dp[${idx}]</span></div>`;
+            });
+
+            document.getElementById('t4-i').innerText = s.i;
+            document.getElementById('t4-sum').innerText = s.sum;
+            document.getElementById('t4-res').innerText = s.res;
+            document.getElementById('t4-exp').innerHTML = s.msg;
+            document.getElementById('t4-prev').disabled = (t4Idx === 0);
+            document.getElementById('t4-next').disabled = (t4Idx === t4Steps.length - 1);
+        }
+        function stepT4(d) { t4Idx = Math.max(0, Math.min(t4Steps.length - 1, t4Idx + d)); renderT4(); }
+        function resetT4() { t4Idx = 0; renderT4(); }
+
+        // ==========================================
+        // ТАБ 5: ВЪЗСТАНОВЯВАНЕ НА ПЪТЯ С PARENT[]
+        // ==========================================
+        const t5Code = [
+            '// По време на ДП записваме от кое стъпало идваме най-евтино:',
+            'if (dp[i - 1] < dp[i - 2]) { dp[i] = dp[i - 1] + c[i]; parent[i] = i - 1; }',
+            'else                       { dp[i] = dp[i - 2] + c[i]; parent[i] = i - 2; }',
+            '',
+            '// Възстановяване на пътя отзад напред (от N към 1):',
+            'vector<int> path;',
+            'for (int cur = 5; cur != 0; cur = parent[cur]) {',
+            '    path.push_back(cur);',
+            '}',
+            'reverse(path.begin(), path.end()); // Обръщаме пътя в правилен ред!'
+        ];
+        const t5Steps = [
+            { line: 2, par: [0, 0, 1, 1, 2, 4], act: -1, path: [], cur: '-', p: '-', msg: 'След попълване на <code>dp[1..5]</code> имаме записан масив <code>parent = [0, 1, 1, 2, 4]</code> (за всяко стъпало помним от кое предходно стъпало сме скочили най-изгодно).' },
+            { line: 7, par: [0, 0, 1, 1, 2, 4], act: 5, path: [5], cur: '5', p: 'parent[5] = 4', msg: 'Тръгваме от финала <strong>cur = 5</strong>. Добавяме <code>5</code> в пътя и гледаме <code>parent[5] = 4</code>.' },
+            { line: 7, par: [0, 0, 1, 1, 2, 4], act: 4, path: [5, 4], cur: '4', p: 'parent[4] = 2', msg: 'От стъпало <strong>cur = 4</strong> добавяме <code>4</code> в пътя и скачаме назад към <code>parent[4] = 2</code> (пропуснали сме скъпото стъпало 3!).' },
+            { line: 7, par: [0, 0, 1, 1, 2, 4], act: 2, path: [5, 4, 2], cur: '2', p: 'parent[2] = 1', msg: 'От стъпало <strong>cur = 2</strong> добавяме <code>2</code> и отиваме към <code>parent[2] = 1</code>.' },
+            { line: 10, par: [0, 0, 1, 1, 2, 4], act: 1, path: [1, 2, 4, 5], cur: '1 -> Край', p: 'reverse(path)', msg: 'Добавяме началното стъпало <code>1</code> (<code>parent[1] = 0</code> спира цикъла). След <code>reverse()</code> получаваме точния оптимален маршрут: <strong>1 &rarr; 2 &rarr; 4 &rarr; 5</strong>!' }
+        ];
+        let t5Idx = 0;
+
+        function renderT5() {
+            const s = t5Steps[t5Idx];
+            document.getElementById('t5-step-lbl').innerText = `Стъпка ${t5Idx + 1} от ${t5Steps.length}`;
+            renderCodeLines('t5-code', t5Code, s.line);
+
+            const cells = document.getElementById('t5-cells');
+            cells.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                let cls = 'cell-item';
+                if (i === s.act) cls += ' active-cell';
+                else if (s.path.includes(i)) cls += ' found-cell';
+                cells.innerHTML += `<div class="${cls}">#${i}<span class="sub">par=${s.par[i]}</span></div>`;
+            }
+
+            document.getElementById('t5-cur').innerText = s.cur;
+            document.getElementById('t5-par').innerText = s.p;
+            document.getElementById('t5-path').innerText = s.path.length ? s.path.join(' -> ') : '-';
+            document.getElementById('t5-exp').innerHTML = s.msg;
+            document.getElementById('t5-prev').disabled = (t5Idx === 0);
+            document.getElementById('t5-next').disabled = (t5Idx === t5Steps.length - 1);
+        }
+        function stepT5(d) { t5Idx = Math.max(0, Math.min(t5Steps.length - 1, t5Idx + d)); renderT5(); }
+        function resetT5() { t5Idx = 0; renderT5(); }
+
+        // ==========================================
+        // ТАБ 6: ПРИЛОЖНИ ЗАДАЧИ (СТЪЛБИЧКА, ЖАБОКЪТ, ОБИР НА КЪЩИ)
+        // ==========================================
+        let curDpApp = 'stairs';
+        let t6Code = [];
+        let t6Steps = [];
+        let t6Idx = 0;
+
+        function openDpApp(mode) {
+            curDpApp = mode;
+            switchTab(6);
+            document.getElementById('sub-stairs').className = (mode === 'stairs') ? '' : 'btn-slate';
+            document.getElementById('sub-frog').className = (mode === 'frog') ? '' : 'btn-slate';
+            document.getElementById('sub-robber').className = (mode === 'robber') ? '' : 'btn-slate';
+            buildT6();
+        }
+
+        function buildT6() {
+            if (curDpApp === 'stairs') {
+                document.getElementById('t6-subtitle').innerText = 'Задача А: Брой начини за изкачване на стълба с N = 5 стъпала (крачки 1 или 2):';
+                t6Code = [
+                    'dp[0] = 1; dp[1] = 1;',
+                    'for (int i = 2; i <= 5; i++) {',
+                    '    dp[i] = dp[i - 1] + dp[i - 2];',
+                    '}',
+                    'cout << dp[5] << endl;'
+                ];
+                t6Steps = [
+                    { line: 1, arr: ['1','1','?','?','?','?'], act: 1, v1: 'База 0 и 1', v2: '1 начин', v3: 'dp[0]=1, dp[1]=1', msg: 'До стъпало 0 и стъпало 1 има точно по <strong>1 начин</strong> да застанем.' },
+                    { line: 3, arr: ['1','1','2','?','?','?'], act: 2, v1: 'i = 2', v2: 'от 1 (+1) или от 0 (+2)', v3: 'dp[2] = 2', msg: 'До стъпало 2 стигаме от стъпало 1 или директно от 0 &rarr; <code>dp[2] = 1 + 1 = 2</code> начина.' },
+                    { line: 3, arr: ['1','1','2','3','?','?'], act: 3, v1: 'i = 3', v2: 'dp[2] + dp[1]', v3: 'dp[3] = 3', msg: 'До стъпало 3: <code>dp[3] = dp[2] + dp[1] = 2 + 1 = 3</code> начина.' },
+                    { line: 5, arr: ['1','1','2','3','5','8'], act: 5, v1: 'i = 4 и 5', v2: 'dp[4]=5, dp[5]=8', v3: 'Отговор: 8', msg: 'Попълваме <code>dp[4] = 5</code> и <code>dp[5] = 8</code>. Общо <strong>8 различни начина</strong> да изкачим стълбата!' }
+                ];
+            } else if (curDpApp === 'frog') {
+                document.getElementById('t6-subtitle').innerText = 'Задача Б: Жабокът (Frog 1) с височини на камъните H = [10, 30, 40, 20]:';
+                t6Code = [
+                    'dp[1] = 0;',
+                    'dp[2] = abs(H[2] - H[1]);',
+                    'for (int i = 3; i <= 4; i++) {',
+                    '    int jump1 = dp[i - 1] + abs(H[i] - H[i - 1]);',
+                    '    int jump2 = dp[i - 2] + abs(H[i] - H[i - 2]);',
+                    '    dp[i] = min(jump1, jump2);',
+                    '}'
+                ];
+                t6Steps = [
+                    { line: 2, arr: ['0','20','?','?'], act: 1, v1: 'База i=1, 2', v2: '|30 - 10| = 20', v3: 'dp[1]=0, dp[2]=20', msg: 'На камък 1 цената е <code>0</code>. За камък 2 единственият скок е от камък 1 с цена <code>|30 - 10| = 20</code>.' },
+                    { line: 6, arr: ['0','20','30','?'], act: 2, v1: 'i = 3 (H=40)', v2: 'min(20+|40-30|, 0+|40-10|)', v3: 'dp[3] = 30', msg: 'За камък 3 (височина 40): от камък 2 цената е <code>20 + |40-30| = 30</code>, а от камък 1 е <code>0 + |40-10| = 30</code> &rarr; <strong>dp[3] = 30</strong>.' },
+                    { line: 6, arr: ['0','20','30','20'], act: 3, v1: 'i = 4 (H=20)', v2: 'min(30+|20-40|, 20+|20-30|)', v3: 'dp[4] = 30', msg: 'За камък 4 (височина 20): от камък 3 цената е <code>30 + 20 = 50</code>, а от камък 2 е <code>20 + |20-30| = 30</code>! Избираме по-малкото: <strong>dp[4] = 30</strong>.' }
+                ];
+            } else {
+                document.getElementById('t6-subtitle').innerText = 'Задача В: Обир на къщи без две съседни за A = [3, 10, 9, 2, 11]:';
+                t6Code = [
+                    'dp[0] = 0;',
+                    'dp[1] = A[1];',
+                    'for (int i = 2; i <= 5; i++) {',
+                    '    long long skip = dp[i - 1];          // Пропускаме елемент i',
+                    '    long long take = dp[i - 2] + A[i];   // Взимаме елемент i',
+                    '    dp[i] = max(skip, take);',
+                    '}'
+                ];
+                t6Steps = [
+                    { line: 2, arr: ['0','3','?','?','?','?'], act: 1, v1: 'i = 1 (A[1]=3)', v2: 'База', v3: 'dp[1] = 3', msg: 'За първата къща максималната сума е нейната стойност: <strong>dp[1] = 3</strong>.' },
+                    { line: 6, arr: ['0','3','10','?','?','?'], act: 2, v1: 'i = 2 (A[2]=10)', v2: 'max(3, 0 + 10)', v3: 'dp[2] = 10', msg: 'За <code>i = 2</code> (стойност 10): по-добре е да вземем 10, отколкото 3 &rarr; <strong>dp[2] = 10</strong>.' },
+                    { line: 6, arr: ['0','3','10','12','?','?'], act: 3, v1: 'i = 3 (A[3]=9)', v2: 'max(10, 3 + 9)', v3: 'dp[3] = 12', msg: 'За <code>i = 3</code> (стойност 9): ако пропуснем, имаме <code>dp[2] = 10</code>; ако вземем 9, прибавяме към <code>dp[1] = 3</code> и получаваме <strong>3 + 9 = 12</strong>!' },
+                    { line: 6, arr: ['0','3','10','12','12','23'], act: 5, v1: 'i = 4 и 5 (A[5]=11)', v2: 'max(12, 12 + 11)', v3: 'dp[5] = 23', msg: 'При <code>i = 4</code> остава <code>12</code>, а при <code>i = 5</code> (стойност 11) избираме <code>dp[3] + 11 = 12 + 11 = 23</code> (взети са числата 3, 9 и 11)!' }
+                ];
+            }
+            t6Idx = 0;
+            renderT6();
+        }
+
+        function renderT6() {
+            const s = t6Steps[t6Idx];
+            document.getElementById('t6-step-lbl').innerText = `Стъпка ${t6Idx + 1} от ${t6Steps.length}`;
+            renderCodeLines('t6-code', t6Code, s.line);
+
+            const cells = document.getElementById('t6-cells');
+            cells.innerHTML = '';
+            s.arr.forEach((v, idx) => {
+                let cls = 'cell-item';
+                if (idx === s.act) cls += ' active-cell';
+                else if (v !== '?') cls += ' found-cell';
+                const labelIdx = (curDpApp === 'frog') ? idx + 1 : idx;
+                cells.innerHTML += `<div class="${cls}">${v}<span class="sub">dp[${labelIdx}]</span></div>`;
+            });
+
+            document.getElementById('t6-val1').innerText = s.v1;
+            document.getElementById('t6-val2').innerText = s.v2;
+            document.getElementById('t6-val3').innerText = s.v3;
+            document.getElementById('t6-exp').innerHTML = s.msg;
+            document.getElementById('t6-prev').disabled = (t6Idx === 0);
+            document.getElementById('t6-next').disabled = (t6Idx === t6Steps.length - 1);
+        }
+        function stepT6(d) { t6Idx = Math.max(0, Math.min(t6Steps.length - 1, t6Idx + d)); renderT6(); }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderT1();
+            renderT2();
+            renderT3();
+            renderT4();
+            renderT5();
+            buildT6();
+        });
+    </script>
+</body>
+
+</html>
