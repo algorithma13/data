@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок (D): Решето на Ератостен и приложения - Algorithma 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;800&family=Consolas&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #1e293b;
+            --accent: #f59e0b;       /* Оранжев акцент за Група D */
+            --accent-hover: #d97706;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-bg: #1e293b;
+            --code-bg: #0f172a;
+            --panel-bg: #162032;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --highlight: #3b82f6;    /* Син акцент за лого и вторични елементи */
+            --purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background-color: rgba(11, 17, 32, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 0.95rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--highlight); }
+        .logo svg { width: 24px; height: 24px; color: var(--highlight); }
+
+        .header-center-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.3rem 0.95rem;
+            border-radius: 1.25rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .nav-controls a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-controls a:hover {
+            color: var(--accent);
+        }
+
+        /* ДВУПАНЕЛЕН КОНТЕЙНЕР С ТОЧНО ЦЕНТРИРАН РАЗДЕЛИТЕЛ (50/50) */
+        .lesson-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .left-panel {
+            width: calc(50% - 5px);
+            min-width: 270px;
+            max-width: calc(80% - 5px);
+            padding: 2.3rem 2.5rem;
+            overflow-y: auto;
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+        }
+
+        .resizer {
+            width: 10px;
+            background-color: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 50;
+            transition: background-color 0.2s, border-color 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .resizer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+            background-color: rgba(245, 158, 11, 0.35);
+            transition: background-color 0.2s;
+        }
+
+        .resizer::after {
+            content: '||';
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            background-color: var(--bg-secondary);
+            padding: 6px 0;
+            z-index: 1;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        .resizer:hover, .resizer.dragging {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .resizer:hover::before, .resizer.dragging::before {
+            background-color: #000;
+        }
+
+        .resizer:hover::after, .resizer.dragging::after {
+            color: #000;
+            background-color: var(--accent);
+        }
+
+        .right-panel {
+            width: calc(50% - 5px);
+            min-width: 270px;
+            max-width: calc(80% - 5px);
+            background-color: var(--panel-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ТИПОГРАФИЯ В ЛЕВИЯ ПАНЕЛ */
+        .lesson-header {
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+            padding-bottom: 1.4rem;
+        }
+
+        .lesson-header h1 {
+            font-size: 2.05rem;
+            color: var(--accent);
+            margin-bottom: 0.85rem;
+            line-height: 1.25;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-family: 'Consolas', monospace;
+            background: var(--code-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .section-block {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.09);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1.4rem 0 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+            margin: 0;
+        }
+
+        h3 {
+            font-size: 1.08rem;
+            color: #fbbf24;
+            margin: 1.2rem 0 0.5rem 0;
+        }
+
+        .btn-try-right {
+            background: rgba(245, 158, 11, 0.14);
+            color: var(--accent);
+            border: 1px solid rgba(245, 158, 11, 0.38);
+            padding: 0.32rem 0.78rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-try-right:hover {
+            background: var(--accent);
+            color: #111827;
+        }
+
+        p { margin-bottom: 0.9rem; color: #cbd5e1; font-size: 1.01rem; }
+        ul, ol { margin-bottom: 1.2rem; padding-left: 1.5rem; color: #cbd5e1; }
+        li { margin-bottom: 0.45rem; }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 0.9rem 1.1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.1rem;
+            font-family: 'Consolas', monospace;
+            color: #e2e8f0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            background-color: var(--code-bg);
+            padding: 0.14rem 0.38rem;
+            border-radius: 0.25rem;
+            color: #38bdf8;
+        }
+
+        .note-box {
+            background-color: rgba(245, 158, 11, 0.09);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.2rem;
+        }
+
+        .note-box.info-blue {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left-color: var(--highlight);
+        }
+
+        .note-box h4 {
+            color: var(--accent);
+            margin-bottom: 0.35rem;
+            font-size: 0.98rem;
+        }
+
+        .note-box.info-blue h4 { color: #60a5fa; }
+
+        details.qa-box {
+            background-color: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.55rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.1rem;
+        }
+
+        details.qa-box summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: #93c5fd;
+            font-size: 0.96rem;
+            user-select: none;
+        }
+
+        details.qa-box .qa-ans {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed rgba(148, 163, 184, 0.25);
+            color: #e2e8f0;
+            font-size: 0.94rem;
+        }
+
+        table.trace-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.25rem;
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }
+
+        table.trace-table th, table.trace-table td {
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.trace-table th {
+            background-color: rgba(15, 23, 42, 0.95);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        table.trace-table td { color: #cbd5e1; font-family: 'Consolas', monospace; }
+        table.trace-table tr:last-child td { border-bottom: none; }
+
+        .app-task-card {
+            background-color: rgba(30, 41, 59, 0.65);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--highlight);
+            border-radius: 0.6rem;
+            padding: 1.05rem 1.25rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .app-task-card:hover {
+            border-color: var(--accent);
+            background-color: rgba(245, 158, 11, 0.08);
+        }
+
+        .app-task-card h4 {
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+            font-size: 1.03rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .app-task-card h4 span {
+            font-size: 0.74rem;
+            background: rgba(59, 130, 246, 0.18);
+            color: #93c5fd;
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.3rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ДЕСЕН ПАНЕЛ: ТАБОВЕ И ИНТЕРАКТИВНО ТРАСИРАНЕ */
+        .tabs-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.8rem 1.15rem;
+            background-color: rgba(11, 17, 32, 0.88);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0.42rem 0.72rem;
+            border-radius: 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: #111827;
+            border-color: var(--accent);
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.32);
+        }
+
+        .tabs-content {
+            flex: 1;
+            padding: 1.25rem 1.5rem;
+            overflow-y: auto;
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .vis-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.95rem;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+        }
+
+        .vis-title {
+            font-size: 1.04rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* КОМПАКТЕН RAM ПАНЕЛ ОТГОРЕ */
+        .ram-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(22, 32, 50, 0.95);
+            padding: 0.35rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .ram-cell {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 0.38rem 0.45rem;
+            border-radius: 0.4rem;
+            text-align: center;
+        }
+
+        .ram-lbl {
+            font-size: 0.64rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .ram-val {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--accent);
+            font-family: 'Consolas', monospace;
+            margin-top: 1px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-bottom: 0.8rem;
+            align-items: center;
+            background: rgba(11, 17, 32, 0.55);
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.42rem 0.8rem;
+            border: none;
+            border-radius: 0.38rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            font-size: 0.81rem;
+            background: var(--accent);
+            color: #111827;
+        }
+
+        button:hover:not(:disabled) { background: var(--accent-hover); color: #fff; }
+        button:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        .btn-blue { background-color: var(--highlight); color: #fff; }
+        .btn-blue:hover:not(:disabled) { background-color: #2563eb; }
+        .btn-slate { background-color: #475569; color: #fff; }
+        .btn-slate:hover:not(:disabled) { background-color: #334155; }
+
+        input[type="number"], input[type="text"] {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.35rem 0.55rem;
+            border-radius: 0.35rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.86rem;
+            width: 74px;
+            outline: none;
+        }
+
+        /* СЦЕНИ С ЧИСЛОВИ РЕШЕТКИ И МАСИВИ */
+        .stage-box {
+            background: rgba(11, 17, 32, 0.78);
+            border: 1px solid var(--border);
+            border-radius: 0.7rem;
+            padding: 0.95rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .sieve-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+            gap: 6px;
+        }
+
+        .num-box {
+            height: 46px;
+            border-radius: 0.42rem;
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Consolas', monospace;
+            font-weight: 800;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .num-box .sub {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .num-box.prime-confirmed {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .num-box.prime-active {
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.28);
+            color: #fef08a;
+            transform: scale(1.08);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.48);
+            z-index: 4;
+        }
+
+        .num-box.crossed-now {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.28);
+            color: #fecaca;
+            transform: scale(1.06);
+        }
+
+        .num-box.crossed-old {
+            border-color: rgba(239, 68, 68, 0.35);
+            background: rgba(15, 23, 42, 0.55);
+            color: #64748b;
+            text-decoration: line-through;
+            opacity: 0.68;
+        }
+
+        .num-box.in-range {
+            border-color: var(--highlight);
+            background: rgba(59, 130, 246, 0.22);
+            color: #dbeafe;
+        }
+
+        /* РАЗШИРЕН КОДОВ ПАНЕЛ С ПОДСВЕТКА НА РЕДОВЕ */
+        .code-box {
+            background-color: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-bottom: 0.8rem;
+            max-height: 270px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            display: flex;
+            padding: 0.13rem 0.85rem;
+            border-left: 4px solid transparent;
+            transition: background-color 0.12s;
+        }
+
+        .code-line.active-line {
+            background-color: rgba(245, 158, 11, 0.22);
+            border-left-color: var(--accent);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .line-num {
+            width: 28px;
+            color: #64748b;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-text {
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .code-line.active-line .line-text {
+            color: #fff;
+        }
+
+        .calc-box {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.85rem 1.1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-left: 4px solid var(--accent);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .chain-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.65rem;
+            padding-top: 0.65rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .chain-pill {
+            background: rgba(59, 130, 246, 0.18);
+            border: 1px solid #60a5fa;
+            border-radius: 0.4rem;
+            padding: 0.25rem 0.6rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.84rem;
+            color: #dbeafe;
+            font-weight: 700;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 0.75rem;
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: auto;
+            width: 100%;
+            flex-shrink: 0;
+            background-color: var(--bg-primary);
+        }
+
+        footer p {
+            font-size: 0.65rem;
+            margin: 0;
+            opacity: 0.65;
+        }
+
+        @media (max-width: 920px) {
+            body { height: auto; overflow: auto; }
+            .lesson-container { flex-direction: column; }
+            .left-panel, .right-panel { width: 100% !important; max-width: 100% !important; }
+            .resizer { display: none; }
+            .ram-bar { grid-template-columns: repeat(2, 1fr); position: static; }
+            .header-center-badge { position: static; transform: none; }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5E409LEYXB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-5E409LEYXB');
+</script>
+
+<body>
+
+    <header>
+        <a href="../../index.html" class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+            </svg>
+            <span>Algorithma 13</span>
+        </a>
+        <span class="header-center-badge">Група D &bull; Теория на числата и Прости числа</span>
+        <div class="nav-controls">
+            <a href="../../group-d.html">&larr; Обратно към Група D</a>
+        </div>
+    </header>
+
+    <div class="lesson-container" id="lesson-container">
+
+        <!-- =======================================================
+             ЛЯВ ПАНЕЛ: ПЪЛНА ТЕОРИЯ, КОДОВЕ И БАЗОВИ ЗАДАЧИ
+        ======================================================== -->
+        <div class="left-panel" id="left-panel">
+            <div class="lesson-header">
+                <h1>Решето на Ератостен — Идея, алгоритъм и основни приложения</h1>
+                <div class="lesson-meta">
+                    <div>🏫 <strong>Група D</strong></div>
+                    <div>⚡ <strong>Сложност:</strong> O(n log log n)</div>
+                    <div>💾 <strong>Памет за 10<sup>7</sup>:</strong> ~10 MB (bool)</div>
+                    <div>🎯 <strong>Факторизация:</strong> O(log x)</div>
+                </div>
+            </div>
+
+            <!-- РАЗДЕЛ 1: ИДЕЯ, АЛГОРИТЪМ И ОПТИМИЗАЦИИ -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>1. Идея, алгоритъм и ключови оптимизации</h2>
+                    <button class="btn-try-right" onclick="switchTab(1)">⚡ Трасирай resheto.cpp &rarr;</button>
+                </div>
+
+                <p>Ако проверяваме всяко число поотделно дали има делител до корен квадратен от него, за всички числа до <code>n = 10<sup>7</sup></code> ще направим около <code>3 &middot; 10<sup>10</sup></code> операции и ще получим <strong>Time Limit Exceeded (TLE)</strong>.</p>
+
+                <div class="note-box">
+                    <h4>💡 Идеята на Ератостен</h4>
+                    <p style="margin: 0; color: #fff;">Ератостен обръща логиката: <strong>вместо да търсим делители на всяко число, задраскваме кратните на простите числа!</strong></p>
+                </div>
+
+                <details class="qa-box">
+                    <summary>❓ Въпрос: Ако вече знаем, че 2 е просто число, какво можем веднага да кажем за 4, 6, 8, 10, &hellip; без изобщо да проверяваме дали се делят на други числа?</summary>
+                    <div class="qa-ans">
+                        Всички те се делят на <code>2</code> (и са по-големи от <code>2</code>), следователно <strong>със сигурност са съставни</strong> и можем мигновено да ги задраскаме!
+                    </div>
+                </details>
+
+                <h3>Стъпки на алгоритъма:</h3>
+                <ol>
+                    <li>Отбелязваме всички числа от <code>2</code> до <code>n</code> като „незадраскани“ (<code>p[i] = true</code>). Числата <code>0</code> и <code>1</code> не са прости (<code>p[0] = p[1] = false</code>).</li>
+                    <li>Взимаме първото незадраскано число <code>i</code> (започваме от <code>i = 2</code>). То със сигурност е просто, защото никое по-малко число не го е разделило.</li>
+                    <li>Задраскваме всички негови кратни в таблицата (<code>p[j] = false</code>).</li>
+                    <li>Продължаваме със следващото незадраскано <code>i</code>.</li>
+                </ol>
+
+                <h3>Двете ключови оптимизации:</h3>
+                <details class="qa-box">
+                    <summary>❓ Оптимизация 1: Когато стигнем до простото число i = 5, има ли смисъл да задраскваме 5&middot;2 = 10, 5&middot;3 = 15 и 5&middot;4 = 20?</summary>
+                    <div class="qa-ans">
+                        <strong>Няма смисъл!</strong> Всички кратни от вида <code>i &middot; k</code> (за <code>k &lt; i</code>) вече са били задраскани на по-ранна стъпка от простите делители на <code>k</code> (напр. <code>10</code> и <code>20</code> от <code>2</code>, а <code>15</code> от <code>3</code>). Първото кратно на <code>i</code>, което все още НЕ е задраскано, е <strong><code>i &middot; i</code></strong> (за <code>i = 5</code> това е <code>25</code>)!
+                    </div>
+                </details>
+
+                <details class="qa-box">
+                    <summary>❓ Оптимизация 2: Ако n = 20, на стъпка i = 5 първото число за задраскване е 5&middot;5 = 25 (извън таблицата). До кое условие за i върти външният цикъл?</summary>
+                    <div class="qa-ans">
+                        Външният цикъл за задраскване трябва да върти само докато <strong><code>i * i &le; n</code></strong>! Всички незадраскани числа след корен квадратен от <code>n</code> автоматично са прости.
+                    </div>
+                </details>
+
+                <h3>Проследяване за n = 20:</h3>
+                <table class="trace-table">
+                    <tr>
+                        <th>Стъпка</th>
+                        <th>Текущо i</th>
+                        <th>Старт (i &middot; i)</th>
+                        <th>Новозадраскани</th>
+                        <th>Състояние от 2 до 20 (x = задраскано)</th>
+                    </tr>
+                    <tr>
+                        <td>Начало</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>i = 2</td>
+                        <td>4</td>
+                        <td>4, 6, 8, 10, 12, 14, 16, 18, 20</td>
+                        <td>2 3 x 5 x 7 x 9 x 11 x 13 x 15 x 17 x 19 x</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>i = 3</td>
+                        <td>9</td>
+                        <td>9, 15</td>
+                        <td>2 3 x 5 x 7 x x x 11 x 13 x x x 17 x 19 x</td>
+                    </tr>
+                    <tr>
+                        <td>Край</td>
+                        <td>i = 5</td>
+                        <td>25 (&gt; 20)</td>
+                        <td>Спираме цикъла!</td>
+                        <td style="color: var(--accent); font-weight: 700;">Прости: 2, 3, 5, 7, 11, 13, 17, 19</td>
+                    </tr>
+                </table>
+
+                <h3>Пример: Класическо решето на Ератостен (resheto.cpp)</h3>
+                <p>Програмата чете <code>n</code> (<code>n &le; 10<sup>7</sup></code>) и извежда всички прости числа до <code>n</code>. Масивът <code>p</code> е <strong>глобален</strong>, за да се задели в статичната памет (около <code>10 MB</code> за <code>10<sup>7</sup></code> елемента от тип <code>bool</code>), където автоматично е инициализиран с <code>false</code>.</p>
+<pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int MAXN = 10000005;
+bool p[MAXN];
+
+int main()
+{
+    int n;
+    cin &gt;&gt; n;
+    for(int i = 2; i &lt;= n; i++) p[i] = true;
+
+    for(int i = 2; i * i &lt;= n; i++)
+    {
+        if(p[i])
+        {
+            for(int j = i * i; j &lt;= n; j += i) p[j] = false;
+        }
+    }
+    for(int i = 2; i &lt;= n; i++)
+    {
+        if(p[i]) cout &lt;&lt; i &lt;&lt; " ";
+    }
+    cout &lt;&lt; "\n";
+}</code></pre>
+            </div>
+
+            <!-- ПРИЛОЖЕНИЕ 1 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>2. Приложение 1: Брой прости числа в интервал [l, r]</h2>
+                    <button class="btn-try-right" onclick="switchTab(2)">⚡ Трасирай interval.cpp &rarr;</button>
+                </div>
+                <p>Дадени са <code>q</code> (<code>q &le; 10<sup>5</sup></code>) заявки с интервали <code>[l, r]</code> (<code>1 &le; l &le; r &le; 10<sup>6</sup></code>). За всяка заявка трябва да изведем колко са простите числа в <code>[l, r]</code>.</p>
+                <p>Дори да сме пуснали решето предварително, обхождането от <code>l</code> до <code>r</code> с цикъл за всяка от <code>10<sup>5</sup></code> заявки ще направи до <code>10<sup>11</sup></code> стъпки (<strong>TLE</strong>).</p>
+                <div class="note-box info-blue">
+                    <h4>🚀 Решение за O(1) на заявка чрез префиксни суми</h4>
+                    <p style="margin: 0;">Строим масив от префиксни суми <code>s[i]</code>, който пази броя на простите числа от <code>1</code> до <code>i</code>. Тогава отговорът за всеки интервал <code>[l, r]</code> е просто <strong><code>s[r] - s[l - 1]</code></strong>!</p>
+                </div>
+<pre><code>for(int i = 1; i &lt;= mx; i++)
+{
+    s[i] = s[i - 1];
+    if(p[i]) s[i]++;
+}
+// За всяка заявка [l, r]:
+if(l &lt; 1) l = 1;
+cout &lt;&lt; s[r] - s[l - 1] &lt;&lt; "\n";</code></pre>
+            </div>
+
+            <!-- ПРИЛОЖЕНИЕ 2 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>3. Приложение 2: Най-малък прост делител d[x] и факторизация за O(log x)</h2>
+                    <button class="btn-try-right" onclick="switchTab(3)">⚡ Трасирай delitel.cpp &rarr;</button>
+                </div>
+                <p><strong>Това е най-важното състезателно приложение на решетото!</strong> Ако трябва да разложим <code>q = 10<sup>5</sup></code> числа (до <code>10<sup>7</sup></code>) на прости множители, стандартната проверка до корен квадратен от <code>x</code> за всяко число е твърде бавна.</p>
+                <p>Вместо <code>true / false</code>, за всяко число пазим кое просто число го е задраскало първо — неговия <strong>най-малък прост делител <code>d[x]</code></strong>. Например за <code>60</code>:</p>
+                <ul>
+                    <li>Взимаме <code>d[60] = 2</code> и делим: <code>60 / 2 = 30</code>.</li>
+                    <li>Взимаме <code>d[30] = 2</code> и делим: <code>30 / 2 = 15</code>.</li>
+                    <li>Взимаме <code>d[15] = 3</code> и делим: <code>15 / 3 = 5</code>.</li>
+                    <li>Взимаме <code>d[5] = 5</code> и делим: <code>5 / 5 = 1</code> &rarr; спираме! Прости множители: <code>2, 2, 3, 5</code>.</li>
+                </ul>
+                <p>На всяка стъпка числото намалява поне наполовина, затова разлагането на число до <code>10<sup>7</sup></code> прави <strong>най-много 23 деления</strong>!</p>
+                <div class="note-box">
+                    <h4>⚠️ Тънкости в кода на delitel.cpp</h4>
+                    <p style="margin: 0;">Първоначално задаваме <code>d[i] = i</code>. Вътре във вложения цикъл записваме <code>d[j] = i</code> <strong>само ако <code>d[j] == j</code></strong> (тоест числото <code>j</code> все още не е пипано от по-малък прост делител — така за <code>12</code> ще остане <code>d[12] = 2</code>, а няма да се презапише с <code>3</code>)!</p>
+                </div>
+            </div>
+
+            <!-- ПРИЛОЖЕНИЕ 3 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>4. Приложение 3: Брой различни прости делители c[x]</h2>
+                    <button class="btn-try-right" onclick="switchTab(4)">⚡ Трасирай diff.cpp &rarr;</button>
+                </div>
+                <p>Търсим за всяко число от <code>2</code> до <code>n</code> колко <strong>различни прости делителя</strong> има (например <code>12 = 2<sup>2</sup> &middot; 3</code> има <code>2</code> различни прости делителя: <code>2</code> и <code>3</code>).</p>
+                <details class="qa-box">
+                    <summary>❓ Въпрос: Защо в diff.cpp външният цикъл върти чак до n (а не до i * i &le; n), и вътрешният цикъл започва от i (а не от i * i)?</summary>
+                    <div class="qa-ans">
+                        1. Външният цикъл трябва да стигне чак до <code>n</code>, защото простите числа, по-големи от корен квадратен от <code>n</code> (например <code>5, 7, 11</code> при <code>n = 12</code>), също трябва да прибавят <code>+1</code> на себе си и на своите кратни (напр. <code>5</code> дели <code>10</code>)!<br>
+                        2. Вътрешният цикъл тръгва от <code>j = i</code>, защото както самото просто число <code>i</code>, така и кратните му преди <code>i &middot; i</code> (като <code>6 = 2 &middot; 3</code> при <code>i = 3</code>) трябва да отчетат <code>i</code> като свой прост делител!
+                    </div>
+                </details>
+<pre><code>for(int i = 2; i &lt;= n; i++)
+{
+    if(c[i] == 0) // Числото i е просто!
+    {
+        for(int j = i; j &lt;= n; j += i) c[j]++;
+    }
+}</code></pre>
+            </div>
+
+            <!-- ПРИЛОЖЕНИЕ 4 -->
+            <div class="section-block">
+                <div class="section-head">
+                    <h2>5. Приложение 4: Брой и сума на всички делители („Решето на делителите“)</h2>
+                    <button class="btn-try-right" onclick="switchTab(5)">⚡ Трасирай brsum.cpp &rarr;</button>
+                </div>
+                <p>Какво се случва, ако махнем проверката за просто число и пуснем кратните на <strong>всяко число <code>i</code> от <code>1</code> до <code>n</code></strong>? Тогава всяко <code>i</code> посещава точно онези числа <code>j</code>, на които <code>i</code> е делител!</p>
+                <ul>
+                    <li><code>c[j]++</code> преброява всички положителни делители на <code>j</code>.</li>
+                    <li><code>s[j] += i</code> намира сумата на всички делители на <code>j</code> (пазим я в <code>long long</code>).</li>
+                    <li><strong>Сложност:</strong> Вътрешният цикъл прави <code>n/1 + n/2 + n/3 + &hellip; + n/n &approx; n ln n</code> стъпки — т.е. <strong><code>O(n log n)</code></strong>, което за <code>n = 10<sup>6</sup></code> работи отлично!</li>
+                </ul>
+            </div>
+
+            <!-- БАЗОВИ ЗАДАЧИ -->
+            <div class="section-block" style="border-bottom: none;">
+                <div class="section-head">
+                    <h2>6. Базови задачи за упражнение</h2>
+                    <button class="btn-try-right" onclick="switchTab(6)">⚡ Отвори лабораторията &rarr;</button>
+                </div>
+                <p>Кликнете върху някоя от трите задачи по-долу, за да я тествате интерактивно в десния панел:</p>
+
+                <div class="app-task-card" onclick="openPracticeTask(1)">
+                    <h4>Базова задача 1: Прости близнаци <span>2 &le; n &le; 10<sup>6</sup></span></h4>
+                    <p style="margin-bottom: 0.4rem; font-size: 0.94rem;">Дадено е цяло число <code>n</code>. Изведете всички двойки прости числа <code>(a, b)</code> с <code>b &le; n</code>, за които <code>b &minus; a = 2</code>. Пример за <code>n = 20</code>: <code>(3, 5), (5, 7), (11, 13), (17, 19)</code>.</p>
+                    <p style="margin: 0; font-size: 0.86rem; color: #fbbf24;"><strong>Насока:</strong> Пуснете класическо решето до <code>n</code>, след което обходете <code>i</code> от <code>2</code> до <code>n &minus; 2</code> и проверявайте <code>p[i] &amp;&amp; p[i + 2]</code>.</p>
+                </div>
+
+                <div class="app-task-card" onclick="openPracticeTask(2)">
+                    <h4>Базова задача 2: Числа с точно три делителя <span>q &le; 10<sup>5</sup>, x &le; 10<sup>12</sup></span></h4>
+                    <p style="margin-bottom: 0.4rem; font-size: 0.94rem;">Дадени са <code>q</code> цели числа <code>x</code>. За всяко изведете <code>YES</code>, ако има точно 3 положителни делителя, или <code>NO</code> иначе. Пример за <code>4, 6, 49</code> &rarr; <code>YES, NO, YES</code> (делителите на 49 са 1, 7, 49).</p>
+                    <p style="margin: 0; font-size: 0.86rem; color: #fbbf24;"><strong>Насока:</strong> Нечетен брой делители имат само точните квадрати, а точен квадрат <code>r<sup>2</sup></code> няма други делители освен <code>1, r, r<sup>2</sup></code> точно когато <code>r</code> е просто число до <code>10<sup>6</sup></code>!</p>
+                </div>
+
+                <div class="app-task-card" onclick="openPracticeTask(3)">
+                    <h4>Базова задача 3: Почти прости числа (k-прости в интервал) <span>1 &le; l &le; r &le; 10<sup>6</sup>, 1 &le; k &le; 7</span></h4>
+                    <p style="margin-bottom: 0.4rem; font-size: 0.94rem;">Дадени са <code>q</code> заявки <code>(l, r, k)</code>. Изведете колко числа в <code>[l, r]</code> имат точно <code>k</code> различни прости делителя. Пример за <code>l = 1, r = 10, k = 2</code> &rarr; <code>2</code> (числата <code>6 = 2&middot;3</code> и <code>10 = 2&middot;5</code>).</p>
+                    <p style="margin: 0; font-size: 0.86rem; color: #fbbf24;"><strong>Насока:</strong> Пресметнете <code>c[x]</code> чрез <code>diff.cpp</code> и изградете 7 масива от префиксни суми <code>pref[k][i]</code> за всяко <code>k</code> от 1 до 7!</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ВЕРТИКАЛЕН РАЗДЕЛИТЕЛ ТОЧНО ПО СРЕДАТА (50/50) -->
+        <div class="resizer" id="resizer" title="Влачете наляво/надясно за преоразмеряване (Двоен клик за точно 50/50)"></div>
+
+        <!-- =======================================================
+             ДЕСЕН ПАНЕЛ: 6 ОТДЕЛНИ ТАБА С ВИЗУАЛИЗАЦИИ И ТРАСИРАНЕ
+        ======================================================== -->
+        <div class="right-panel" id="right-panel">
+
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(1)" id="tab-btn-1">1. resheto.cpp</button>
+                <button class="tab-btn" onclick="switchTab(2)" id="tab-btn-2">2. interval.cpp</button>
+                <button class="tab-btn" onclick="switchTab(3)" id="tab-btn-3">3. delitel.cpp</button>
+                <button class="tab-btn" onclick="switchTab(4)" id="tab-btn-4">4. diff.cpp</button>
+                <button class="tab-btn" onclick="switchTab(5)" id="tab-btn-5">5. brsum.cpp</button>
+                <button class="tab-btn" onclick="switchTab(6)" id="tab-btn-6">6. Базови задачи</button>
+            </div>
+
+            <div class="tabs-content">
+
+                <!-- ТАБ 1: КЛАСИЧЕСКО РЕШЕТО (resheto.cpp) -->
+                <div class="tab-pane active" id="tab-1">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🔢 Трасиране на класическо решето (resheto.cpp)</span>
+                            <span id="t1-step-lbl" style="font-size:0.82rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="ram-bar">
+                            <div class="ram-cell"><div class="ram-lbl">n</div><div class="ram-val" id="t1-n">20</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Текущо i</div><div class="ram-val" id="t1-i" style="color:#fde68a;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Старт i * i</div><div class="ram-val" id="t1-ii" style="color:#93c5fd;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Незадраскани</div><div class="ram-val" id="t1-cnt" style="color:var(--success);">19</div></div>
+                        </div>
+
+                        <div class="controls">
+                            <span style="font-size:0.82rem; color:var(--text-muted);">N (10..40):</span>
+                            <input type="number" id="t1-in-n" value="20" min="10" max="40" onchange="buildT1()">
+                            <button class="btn-slate" id="t1-prev" onclick="stepT1(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t1-next" onclick="stepT1(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="buildT1()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div class="sieve-grid" id="t1-grid"></div>
+                        </div>
+
+                        <div class="code-box" id="t1-code"></div>
+                        <div class="calc-box" id="t1-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 2: БРОЙ ПРОСТИ В ИНТЕРВАЛ [l, r] (interval.cpp) -->
+                <div class="tab-pane" id="tab-2">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📊 Префиксни суми за интервал [l, r] (interval.cpp)</span>
+                            <span id="t2-step-lbl" style="font-size:0.82rem; color:var(--accent); font-family:monospace;">O(1) заявка</span>
+                        </div>
+
+                        <div class="ram-bar">
+                            <div class="ram-cell"><div class="ram-lbl">Интервал [l, r]</div><div class="ram-val" id="t2-lr">[1, 10]</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">s[r]</div><div class="ram-val" id="t2-sr" style="color:#93c5fd;">4</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">s[l - 1]</div><div class="ram-val" id="t2-sl" style="color:#fde68a;">0</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">s[r] - s[l - 1]</div><div class="ram-val" id="t2-ans" style="color:var(--success);">4</div></div>
+                        </div>
+
+                        <div class="controls">
+                            <span style="font-size:0.82rem; color:var(--text-muted);">l:</span>
+                            <input type="number" id="t2-in-l" value="1" min="1" max="20">
+                            <span style="font-size:0.82rem; color:var(--text-muted);">r:</span>
+                            <input type="number" id="t2-in-r" value="10" min="1" max="20">
+                            <button onclick="runT2Query()">Изчисли заявка</button>
+                            <button class="btn-slate" onclick="setT2Preset(1, 10)">[1, 10]</button>
+                            <button class="btn-slate" onclick="setT2Preset(10, 20)">[10, 20]</button>
+                            <button class="btn-slate" onclick="setT2Preset(6, 16)">[6, 16]</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t2-prev" onclick="stepT2(-1)">&larr; Предишна стъпка в кода</button>
+                            <button class="btn-blue" id="t2-next" onclick="stepT2(1)">Следваща стъпка в кода &rarr;</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:0.45rem;">Клетки 1..20 (Горе: числото i | Долу: префиксна сума s[i]):</div>
+                            <div class="sieve-grid" id="t2-grid"></div>
+                        </div>
+
+                        <div class="code-box" id="t2-code"></div>
+                        <div class="calc-box" id="t2-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 3: НАЙ-МАЛЪК ПРОСТ ДЕЛИТЕЛ И ФАКТОРИЗАЦИЯ (delitel.cpp) -->
+                <div class="tab-pane" id="tab-3">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>⚡ Най-малък прост делител d[x] и O(log x) разлагане (delitel.cpp)</span>
+                            <span id="t3-step-lbl" style="font-size:0.82rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="ram-bar">
+                            <div class="ram-cell"><div class="ram-lbl">Текущо x</div><div class="ram-val" id="t3-x">60</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">d[x]</div><div class="ram-val" id="t3-dx" style="color:#fde68a;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Следващо x / d[x]</div><div class="ram-val" id="t3-nx" style="color:#93c5fd;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Брой деления</div><div class="ram-val" id="t3-steps" style="color:var(--success);">0</div></div>
+                        </div>
+
+                        <div class="controls">
+                            <span style="font-size:0.82rem; color:var(--text-muted);">Разложи x:</span>
+                            <input type="number" id="t3-in-x" value="60" min="2" max="999999">
+                            <button onclick="buildT3()">Разложи</button>
+                            <button class="btn-slate" onclick="setT3Preset(12)">12</button>
+                            <button class="btn-slate" onclick="setT3Preset(60)">60</button>
+                            <button class="btn-slate" onclick="setT3Preset(360)">360</button>
+                            <button class="btn-slate" onclick="setT3Preset(1001)">1001</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t3-prev" onclick="stepT3(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t3-next" onclick="stepT3(1)">Следващо деление &rarr;</button>
+                            <button onclick="buildT3()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:0.45rem;">Извадка от таблицата d[2..20] (за 12 остава d[12] = 2, понеже d[j] == j пази първия прост делител!):</div>
+                            <div class="sieve-grid" id="t3-grid"></div>
+                            <div class="chain-wrap" id="t3-chain"></div>
+                        </div>
+
+                        <div class="code-box" id="t3-code"></div>
+                        <div class="calc-box" id="t3-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 4: БРОЙ РАЗЛИЧНИ ПРОСТИ ДЕЛИТЕЛИ (diff.cpp) -->
+                <div class="tab-pane" id="tab-4">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🧩 Брой различни прости делители c[x] за n = 12 (diff.cpp)</span>
+                            <span id="t4-step-lbl" style="font-size:0.82rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="ram-bar">
+                            <div class="ram-cell"><div class="ram-lbl">n</div><div class="ram-val">12</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Външно i</div><div class="ram-val" id="t4-i" style="color:#fde68a;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">c[i] == 0?</div><div class="ram-val" id="t4-chk" style="color:#93c5fd;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Увеличени кратни j</div><div class="ram-val" id="t4-j" style="color:var(--success);">-</div></div>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t4-prev" onclick="stepT4(-1)">&larr; Назад</button>
+                            <button class="btn-blue" id="t4-next" onclick="stepT4(1)">Следваща стъпка &rarr;</button>
+                            <button onclick="resetT4()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:0.45rem;">Масив c[2..12] (брой различни прости делители за всяко число):</div>
+                            <div class="sieve-grid" id="t4-grid"></div>
+                        </div>
+
+                        <div class="code-box" id="t4-code"></div>
+                        <div class="calc-box" id="t4-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 5: РЕШЕТО НА ДЕЛИТЕЛИТЕ (brsum.cpp) -->
+                <div class="tab-pane" id="tab-5">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>📐 Решето на делителите: брой c[j] и сума s[j] за n = 12 (brsum.cpp)</span>
+                            <span id="t5-step-lbl" style="font-size:0.82rem; color:var(--accent); font-family:monospace;">Стъпка 1</span>
+                        </div>
+
+                        <div class="ram-bar">
+                            <div class="ram-cell"><div class="ram-lbl">Делител i</div><div class="ram-val" id="t5-i" style="color:#fde68a;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">Кратно j</div><div class="ram-val" id="t5-j" style="color:#93c5fd;">-</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">c[12] (брой)</div><div class="ram-val" id="t5-c12" style="color:var(--success);">0</div></div>
+                            <div class="ram-cell"><div class="ram-lbl">s[12] (сума)</div><div class="ram-val" id="t5-s12">0</div></div>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn-slate" id="t5-prev" onclick="stepT5(-1)">&larr; Предишно i</button>
+                            <button class="btn-blue" id="t5-next" onclick="stepT5(1)">Следващо i &rarr;</button>
+                            <button onclick="resetT5()">Отначало</button>
+                        </div>
+
+                        <div class="stage-box">
+                            <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:0.45rem;">Клетки 1..12 (Горе: числото j | Долу: br=c[j], sum=s[j]):</div>
+                            <div class="sieve-grid" id="t5-grid" style="grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));"></div>
+                        </div>
+
+                        <div class="code-box" id="t5-code"></div>
+                        <div class="calc-box" id="t5-exp"></div>
+                    </div>
+                </div>
+
+                <!-- ТАБ 6: ЛАБОРАТОРИЯ ЗА БАЗОВИТЕ ЗАДАЧИ -->
+                <div class="tab-pane" id="tab-6">
+                    <div class="vis-card">
+                        <div class="vis-title">
+                            <span>🏆 Интерактивна лаборатория за базовите задачи</span>
+                        </div>
+
+                        <div class="controls">
+                            <button id="pt-btn-1" onclick="openPracticeTask(1)">1. Прости близнаци</button>
+                            <button class="btn-slate" id="pt-btn-2" onclick="openPracticeTask(2)">2. Точно 3 делителя</button>
+                            <button class="btn-slate" id="pt-btn-3" onclick="openPracticeTask(3)">3. k-прости в [l, r]</button>
+                        </div>
+
+                        <!-- Под-панел Задача 1 -->
+                        <div id="pt-pane-1">
+                            <div class="controls">
+                                <span style="font-size:0.84rem; color:var(--text-muted);">Въведи n (5..100):</span>
+                                <input type="number" id="pt1-n" value="20" min="5" max="100">
+                                <button onclick="runPractice1()">Намери близнаците</button>
+                            </div>
+                            <div class="stage-box" id="pt1-out"></div>
+                            <div class="calc-box" id="pt1-exp"></div>
+                        </div>
+
+                        <!-- Под-панел Задача 2 -->
+                        <div id="pt-pane-2" style="display:none;">
+                            <div class="controls">
+                                <span style="font-size:0.84rem; color:var(--text-muted);">Числа x (разделени с интервал):</span>
+                                <input type="text" id="pt2-in" value="4 6 49 121 100" style="width:210px;">
+                                <button onclick="runPractice2()">Провери</button>
+                            </div>
+                            <div class="stage-box" id="pt2-out"></div>
+                            <div class="calc-box" id="pt2-exp"></div>
+                        </div>
+
+                        <!-- Под-панел Задача 3 -->
+                        <div id="pt-pane-3" style="display:none;">
+                            <div class="controls">
+                                <span style="font-size:0.82rem; color:var(--text-muted);">l:</span>
+                                <input type="number" id="pt3-l" value="1" min="1" max="200" style="width:62px;">
+                                <span style="font-size:0.82rem; color:var(--text-muted);">r:</span>
+                                <input type="number" id="pt3-r" value="10" min="1" max="200" style="width:62px;">
+                                <span style="font-size:0.82rem; color:var(--text-muted);">k:</span>
+                                <input type="number" id="pt3-k" value="2" min="1" max="4" style="width:54px;">
+                                <button onclick="runPractice3()">Преброй</button>
+                                <button class="btn-slate" onclick="setPt3Preset(1, 30, 2)">[1, 30], k=2</button>
+                                <button class="btn-slate" onclick="setPt3Preset(1, 70, 3)">[1, 70], k=3</button>
+                            </div>
+                            <div class="stage-box" id="pt3-out"></div>
+                            <div class="calc-box" id="pt3-exp"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Сайтът е разработен и се поддържа от Милен Мавродиев.</p>
+    </footer>
+
+    <script>
+        // ==========================================
+        // 0. ЦЕНТРИРАН (50/50) ПОДВИЖЕН РАЗДЕЛИТЕЛ И ТАБОВЕ
+        // ==========================================
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const container = document.getElementById('lesson-container');
+        let isDragging = false;
+
+        function startResize(e) {
+            isDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function doResize(clientX) {
+            if (!isDragging) return;
+            const rect = container.getBoundingClientRect();
+            const halfResizer = resizer.offsetWidth / 2;
+            let pct = ((clientX - rect.left) / rect.width) * 100;
+            pct = Math.max(22, Math.min(78, pct));
+            leftPanel.style.width = 'calc(' + pct + '% - ' + halfResizer + 'px)';
+            rightPanel.style.width = 'calc(' + (100 - pct) + '% - ' + halfResizer + 'px)';
+        }
+
+        function stopResize() {
+            if (isDragging) {
+                isDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizer.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', (e) => doResize(e.clientX));
+        document.addEventListener('mouseup', stopResize);
+        resizer.addEventListener('touchstart', (e) => { if (e.touches.length === 1) startResize(e); }, { passive: false });
+        document.addEventListener('touchmove', (e) => { if (isDragging && e.touches.length === 1) doResize(e.touches[0].clientX); }, { passive: false });
+        document.addEventListener('touchend', stopResize);
+        resizer.addEventListener('dblclick', () => {
+            const halfResizer = resizer.offsetWidth / 2;
+            leftPanel.style.width = 'calc(50% - ' + halfResizer + 'px)';
+            rightPanel.style.width = 'calc(50% - ' + halfResizer + 'px)';
+        });
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + num).classList.add('active');
+            document.getElementById('tab-btn-' + num).classList.add('active');
+        }
+
+        function renderCodeBox(boxId, linesArr, activeLine) {
+            const box = document.getElementById(boxId);
+            box.innerHTML = linesArr.map((txt, idx) => {
+                const ln = idx + 1;
+                const esc = txt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const cls = (ln === activeLine) ? 'code-line active-line' : 'code-line';
+                return '<div class="' + cls + '" id="' + boxId + '-ln-' + ln + '">' +
+                    '<span class="line-num">' + ln + '</span>' +
+                    '<span class="line-text">' + esc + '</span>' +
+                    '</div>';
+            }).join('');
+            const actEl = document.getElementById(boxId + '-ln-' + activeLine);
+            if (actEl) actEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // ТАБ 1: КЛАСИЧЕСКО РЕШЕТО (resheto.cpp)
+        // ==========================================
+        const codeResheto = [
+            '#include <bits/stdc++.h>',
+            'using namespace std;',
+            '',
+            'const int MAXN = 10000005;',
+            'bool p[MAXN];',
+            '',
+            'int main()',
+            '{',
+            '    int n;',
+            '    cin >> n;',
+            '    for(int i = 2; i <= n; i++) p[i] = true;',
+            '',
+            '    for(int i = 2; i * i <= n; i++)',
+            '    {',
+            '        if(p[i])',
+            '        {',
+            '            for(int j = i * i; j <= n; j += i) p[j] = false;',
+            '        }',
+            '    }',
+            '    for(int i = 2; i <= n; i++)',
+            '    {',
+            '        if(p[i]) cout << i << " ";',
+            '    }',
+            '    cout << "\\n";',
+            '}'
+        ];
+
+        let t1Steps = [];
+        let t1Idx = 0;
+        let t1N = 20;
+
+        function buildT1() {
+            t1N = Math.max(10, Math.min(40, parseInt(document.getElementById('t1-in-n').value, 10) || 20));
+            document.getElementById('t1-in-n').value = t1N;
+
+            let p = new Array(t1N + 1).fill(false);
+            for (let i = 2; i <= t1N; i++) p[i] = true;
+
+            t1Steps = [{
+                line: 11, i: '-', ii: '-', pSnap: [...p], nowCrossed: [], activePrime: -1, finished: false,
+                exp: 'Инициализираме всички числа от <code>2</code> до <code>' + t1N + '</code> като незадраскани (<code>p[i] = true</code>).'
+            }];
+
+            for (let i = 2; i * i <= t1N; i++) {
+                if (p[i]) {
+                    const newly = [];
+                    for (let j = i * i; j <= t1N; j += i) {
+                        if (p[j]) newly.push(j);
+                        p[j] = false;
+                    }
+                    t1Steps.push({
+                        line: 17, i: i, ii: i * i, pSnap: [...p], nowCrossed: newly, activePrime: i, finished: false,
+                        exp: 'Числото <strong>i = ' + i + '</strong> е незадраскано (просто)! Започваме от <code>j = ' + i + ' * ' + i + ' = ' + (i * i) + '</code> със стъпка <code>+' + i + '</code>. Новозадраскани на тази стъпка: <strong>' + (newly.length ? newly.join(', ') : 'няма нови (вече са задраскани)') + '</strong>.'
+                    });
+                } else {
+                    t1Steps.push({
+                        line: 15, i: i, ii: i * i, pSnap: [...p], nowCrossed: [], activePrime: -1, finished: false,
+                        exp: 'Проверяваме <strong>i = ' + i + '</strong>: <code>p[' + i + '] == false</code> (вече е задраскано като съставно), затова пропускаме вътрешния цикъл!'
+                    });
+                }
+            }
+
+            let stopI = 2;
+            while (stopI * stopI <= t1N) stopI++;
+            const primesList = [];
+            for (let k = 2; k <= t1N; k++) if (p[k]) primesList.push(k);
+
+            t1Steps.push({
+                line: 22, i: stopI + ' (спира)', ii: (stopI * stopI) + ' > ' + t1N, pSnap: [...p], nowCrossed: [], activePrime: -1, finished: true,
+                exp: 'При <strong>i = ' + stopI + '</strong> имаме <code>i * i = ' + (stopI * stopI) + ' &gt; ' + t1N + '</code> — спираме външния цикъл! Всички останали незадраскани числа са прости (' + primesList.length + ' бр.): <strong>' + primesList.join(', ') + '</strong>.'
+            });
+
+            t1Idx = 0;
+            renderT1();
+        }
+
+        function renderT1() {
+            const s = t1Steps[t1Idx];
+            document.getElementById('t1-step-lbl').innerText = 'Стъпка ' + (t1Idx + 1) + ' от ' + t1Steps.length;
+            document.getElementById('t1-n').innerText = t1N;
+            document.getElementById('t1-i').innerText = s.i;
+            document.getElementById('t1-ii').innerText = s.ii;
+
+            let alive = 0;
+            for (let k = 2; k <= t1N; k++) if (s.pSnap[k]) alive++;
+            document.getElementById('t1-cnt').innerText = alive;
+
+            const grid = document.getElementById('t1-grid');
+            grid.innerHTML = '';
+            for (let k = 2; k <= t1N; k++) {
+                let cls = 'num-box';
+                if (k === s.activePrime) cls += ' prime-active';
+                else if (s.nowCrossed.includes(k)) cls += ' crossed-now';
+                else if (!s.pSnap[k]) cls += ' crossed-old';
+                else if (s.finished || (typeof s.i === 'number' && k < s.i)) cls += ' prime-confirmed';
+
+                grid.innerHTML += '<div class="' + cls + '">' + k + '<span class="sub">' + (s.pSnap[k] ? 'true' : 'false') + '</span></div>';
+            }
+
+            renderCodeBox('t1-code', codeResheto, s.line);
+            document.getElementById('t1-exp').innerHTML = s.exp;
+            document.getElementById('t1-prev').disabled = (t1Idx === 0);
+            document.getElementById('t1-next').disabled = (t1Idx === t1Steps.length - 1);
+        }
+
+        function stepT1(d) {
+            t1Idx = Math.max(0, Math.min(t1Steps.length - 1, t1Idx + d));
+            renderT1();
+        }
+
+        // ==========================================
+        // ТАБ 2: БРОЙ ПРОСТИ В ИНТЕРВАЛ (interval.cpp)
+        // ==========================================
+        const codeInterval = [
+            '#include <bits/stdc++.h>',
+            'using namespace std;',
+            '',
+            'const int MAXN = 1000005;',
+            'bool p[MAXN];',
+            'int s[MAXN];',
+            '',
+            'int main()',
+            '{',
+            '    int mx = 1000000;',
+            '    for(int i = 2; i <= mx; i++) p[i] = true;',
+            '    for(int i = 2; i * i <= mx; i++)',
+            '        if(p[i])',
+            '            for(int j = i * i; j <= mx; j += i) p[j] = false;',
+            '',
+            '    for(int i = 1; i <= mx; i++)',
+            '    {',
+            '        s[i] = s[i - 1];',
+            '        if(p[i]) s[i]++;',
+            '    }',
+            '    int q; cin >> q;',
+            '    while(q--)',
+            '    {',
+            '        int l, r; cin >> l >> r;',
+            '        if(l < 1) l = 1;',
+            '        cout << s[r] - s[l - 1] << "\\n";',
+            '    }',
+            '}'
+        ];
+
+        const p20 = [false, false, true, true, false, true, false, true, false, false, false, true, false, true, false, false, false, true, false, true, false];
+        const s20 = [0];
+        for (let i = 1; i <= 20; i++) s20[i] = s20[i - 1] + (p20[i] ? 1 : 0);
+
+        let t2StepIdx = 2;
+        let t2L = 1, t2R = 10;
+
+        function setT2Preset(l, r) {
+            document.getElementById('t2-in-l').value = l;
+            document.getElementById('t2-in-r').value = r;
+            runT2Query();
+        }
+
+        function runT2Query() {
+            t2L = Math.max(1, Math.min(20, parseInt(document.getElementById('t2-in-l').value, 10) || 1));
+            t2R = Math.max(t2L, Math.min(20, parseInt(document.getElementById('t2-in-r').value, 10) || 10));
+            document.getElementById('t2-in-l').value = t2L;
+            document.getElementById('t2-in-r').value = t2R;
+            t2StepIdx = 2;
+            renderT2();
+        }
+
+        function stepT2(d) {
+            t2StepIdx = Math.max(0, Math.min(2, t2StepIdx + d));
+            renderT2();
+        }
+
+        function renderT2() {
+            const ans = s20[t2R] - s20[t2L - 1];
+            document.getElementById('t2-lr').innerText = '[' + t2L + ', ' + t2R + ']';
+            document.getElementById('t2-sr').innerText = s20[t2R];
+            document.getElementById('t2-sl').innerText = s20[t2L - 1];
+            document.getElementById('t2-ans').innerText = ans;
+
+            const grid = document.getElementById('t2-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 20; i++) {
+                let cls = 'num-box';
+                if (i >= t2L && i <= t2R) {
+                    cls += p20[i] ? ' prime-confirmed' : ' in-range';
+                } else if (i === t2L - 1) {
+                    cls += ' prime-active';
+                }
+                grid.innerHTML += '<div class="' + cls + '">' + i + '<span class="sub">s=' + s20[i] + '</span></div>';
+            }
+
+            const linesMap = [12, 18, 26];
+            const primesInRange = [];
+            for (let i = t2L; i <= t2R; i++) if (p20[i]) primesInRange.push(i);
+
+            const msgs = [
+                '<strong>Етап 1 (Решето):</strong> Еднократно маркираме простите числа в <code>p[1..mx]</code> преди четенето на заявките.',
+                '<strong>Етап 2 (Префиксни суми):</strong> Попълваме <code>s[i] = s[i - 1] + (p[i] ? 1 : 0)</code>. Всяка клетка <code>s[i]</code> вече знае общия брой прости числа от <code>1</code> до <code>i</code>!',
+                '<strong>Етап 3 (Заявка за O(1)):</strong> За интервала <code>[' + t2L + ', ' + t2R + ']</code> пресмятаме директно <code>s[' + t2R + '] - s[' + (t2L - 1) + '] = ' + s20[t2R] + ' - ' + s20[t2L - 1] + ' = </code><strong>' + ans + '</strong> (простите числа вътре са: ' + (primesInRange.length ? primesInRange.join(', ') : 'няма') + ').'
+            ];
+
+            renderCodeBox('t2-code', codeInterval, linesMap[t2StepIdx]);
+            document.getElementById('t2-exp').innerHTML = msgs[t2StepIdx];
+            document.getElementById('t2-prev').disabled = (t2StepIdx === 0);
+            document.getElementById('t2-next').disabled = (t2StepIdx === 2);
+        }
+
+        // ==========================================
+        // ТАБ 3: НАЙ-МАЛЪК ПРОСТ ДЕЛИТЕЛ d[x] (delitel.cpp)
+        // ==========================================
+        const codeDelitel = [
+            '#include <bits/stdc++.h>',
+            'using namespace std;',
+            '',
+            'const int MAXN = 10000005;',
+            'int d[MAXN];',
+            '',
+            'int main()',
+            '{',
+            '    int mx = 10000000;',
+            '    for(int i = 2; i <= mx; i++) d[i] = i;',
+            '',
+            '    for(int i = 2; i * i <= mx; i++)',
+            '    {',
+            '        if(d[i] == i)',
+            '        {',
+            '            for(int j = i * i; j <= mx; j += i)',
+            '            {',
+            '                if(d[j] == j) d[j] = i;',
+            '            }',
+            '        }',
+            '    }',
+            '    int q; cin >> q;',
+            '    while(q--)',
+            '    {',
+            '        int x; cin >> x;',
+            '        while(x > 1)',
+            '        {',
+            '            cout << d[x] << " ";',
+            '            x /= d[x];',
+            '        }',
+            '        cout << "\\n";',
+            '    }',
+            '}'
+        ];
+
+        const MAX_SPF = 1000000;
+        const spf = new Int32Array(MAX_SPF + 1);
+        for (let i = 2; i <= MAX_SPF; i++) spf[i] = i;
+        for (let i = 2; i * i <= MAX_SPF; i++) {
+            if (spf[i] === i) {
+                for (let j = i * i; j <= MAX_SPF; j += i) {
+                    if (spf[j] === j) spf[j] = i;
+                }
+            }
+        }
+
+        let t3Steps = [];
+        let t3Idx = 0;
+
+        function setT3Preset(val) {
+            document.getElementById('t3-in-x').value = val;
+            buildT3();
+        }
+
+        function buildT3() {
+            let startX = Math.max(2, Math.min(999999, parseInt(document.getElementById('t3-in-x').value, 10) || 60));
+            document.getElementById('t3-in-x').value = startX;
+
+            t3Steps = [{
+                line: 25, curX: startX, dx: spf[startX], nextX: '-', divs: 0, factors: [],
+                exp: 'Прочитаме <strong>x = ' + startX + '</strong>. В предварително изчислената таблица веднага виждаме най-малкия му прост делител: <code>d[' + startX + '] = ' + spf[startX] + '</code>.'
+            }];
+
+            let cur = startX;
+            const factors = [];
+            let cnt = 0;
+            while (cur > 1) {
+                const pDiv = spf[cur];
+                const nxt = Math.floor(cur / pDiv);
+                factors.push(pDiv);
+                cnt++;
+                t3Steps.push({
+                    line: 29, curX: cur, dx: pDiv, nextX: nxt, divs: cnt, factors: [...factors],
+                    exp: 'Деление #' + cnt + ': Отпечатваме <code>d[' + cur + '] = ' + pDiv + '</code> и делим <code>x = ' + cur + ' / ' + pDiv + ' = ' + nxt + '</code>.'
+                });
+                cur = nxt;
+            }
+
+            t3Steps.push({
+                line: 31, curX: 1, dx: '-', nextX: '-', divs: cnt, factors: [...factors],
+                exp: '✅ Достигнахме <code>x == 1</code> и излизаме от цикъла само след <strong>' + cnt + ' деления</strong>! Пълно разлагане: <strong>' + startX + ' = ' + factors.join(' &middot; ') + '</strong>.'
+            });
+
+            t3Idx = 0;
+            renderT3();
+        }
+
+        function renderT3() {
+            const s = t3Steps[t3Idx];
+            document.getElementById('t3-step-lbl').innerText = 'Стъпка ' + (t3Idx + 1) + ' от ' + t3Steps.length;
+            document.getElementById('t3-x').innerText = s.curX;
+            document.getElementById('t3-dx').innerText = s.dx;
+            document.getElementById('t3-nx').innerText = s.nextX;
+            document.getElementById('t3-steps').innerText = s.divs;
+
+            const grid = document.getElementById('t3-grid');
+            grid.innerHTML = '';
+            for (let k = 2; k <= 20; k++) {
+                let cls = 'num-box';
+                if (k === s.curX) cls += ' prime-active';
+                else if (spf[k] === k) cls += ' prime-confirmed';
+                grid.innerHTML += '<div class="' + cls + '">' + k + '<span class="sub">d=' + spf[k] + '</span></div>';
+            }
+
+            const chain = document.getElementById('t3-chain');
+            if (s.factors.length === 0) {
+                chain.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted); font-family:monospace;">Открити прости множители: (още няма)</span>';
+            } else {
+                chain.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Множители дотук:</span> ' +
+                    s.factors.map(f => '<span class="chain-pill">' + f + '</span>').join(' &times; ');
+            }
+
+            renderCodeBox('t3-code', codeDelitel, s.line);
+            document.getElementById('t3-exp').innerHTML = s.exp;
+            document.getElementById('t3-prev').disabled = (t3Idx === 0);
+            document.getElementById('t3-next').disabled = (t3Idx === t3Steps.length - 1);
+        }
+
+        function stepT3(d) {
+            t3Idx = Math.max(0, Math.min(t3Steps.length - 1, t3Idx + d));
+            renderT3();
+        }
+
+        // ==========================================
+        // ТАБ 4: БРОЙ РАЗЛИЧНИ ПРОСТИ ДЕЛИТЕЛИ (diff.cpp)
+        // ==========================================
+        const codeDiff = [
+            '#include <bits/stdc++.h>',
+            'using namespace std;',
+            '',
+            'const int MAXN = 1000005;',
+            'int c[MAXN];',
+            '',
+            'int main()',
+            '{',
+            '    int n;',
+            '    cin >> n;',
+            '',
+            '    for(int i = 2; i <= n; i++)',
+            '    {',
+            '        if(c[i] == 0)',
+            '        {',
+            '            for(int j = i; j <= n; j += i) c[j]++;',
+            '        }',
+            '    }',
+            '    for(int i = 2; i <= n; i++)',
+            '    {',
+            '        cout << i << ": " << c[i] << "\\n";',
+            '    }',
+            '}'
+        ];
+
+        let t4Steps = [];
+        let t4Idx = 0;
+
+        function buildT4() {
+            const n = 12;
+            const c = new Array(n + 1).fill(0);
+            t4Steps = [{
+                line: 10, i: '-', chk: '-', jList: [], cSnap: [...c],
+                exp: 'Въвеждаме <code>n = 12</code>. Глобалният масив <code>c[2..12]</code> първоначално е запълнен с нули.'
+            }];
+
+            for (let i = 2; i <= n; i++) {
+                if (c[i] === 0) {
+                    const touched = [];
+                    for (let j = i; j <= n; j += i) {
+                        c[j]++;
+                        touched.push(j);
+                    }
+                    t4Steps.push({
+                        line: 16, i: i, chk: 'ДА (просто)', jList: touched, cSnap: [...c],
+                        exp: 'За <strong>i = ' + i + '</strong> имаме <code>c[' + i + '] == 0</code> &rarr; числото е <strong>просто</strong>! Обхождаме всички негови кратни от <code>j = ' + i + '</code> до <code>12</code> (<strong>' + touched.join(', ') + '</strong>) и увеличаваме <code>c[j]++</code>.'
+                    });
+                } else {
+                    t4Steps.push({
+                        line: 14, i: i, chk: 'НЕ (c=' + c[i] + ')', jList: [], cSnap: [...c],
+                        exp: 'За <strong>i = ' + i + '</strong> имаме <code>c[' + i + '] = ' + c[i] + ' &ne; 0</code> (съставно число) — пропускаме вътрешния цикъл.'
+                    });
+                }
+            }
+
+            t4Steps.push({
+                line: 21, i: 'Край', chk: '-', jList: [], cSnap: [...c],
+                exp: '✅ Таблицата е готова! Например <code>6 = 2&middot;3</code>, <code>10 = 2&middot;5</code> и <code>12 = 2<sup>2</sup>&middot;3</code> имат по <strong>2 различни прости делителя</strong>, а степени на едно просто число като <code>4 = 2<sup>2</sup></code>, <code>8 = 2<sup>3</sup></code> и <code>9 = 3<sup>2</sup></code> имат само по <strong>1</strong>!'
+            });
+            t4Idx = 0;
+            renderT4();
+        }
+
+        function renderT4() {
+            const s = t4Steps[t4Idx];
+            document.getElementById('t4-step-lbl').innerText = 'Стъпка ' + (t4Idx + 1) + ' от ' + t4Steps.length;
+            document.getElementById('t4-i').innerText = s.i;
+            document.getElementById('t4-chk').innerText = s.chk;
+            document.getElementById('t4-j').innerText = s.jList.length ? s.jList.join(', ') : '-';
+
+            const grid = document.getElementById('t4-grid');
+            grid.innerHTML = '';
+            for (let k = 2; k <= 12; k++) {
+                let cls = 'num-box';
+                if (k === s.i) cls += ' prime-active';
+                else if (s.jList.includes(k)) cls += ' prime-confirmed';
+                else if (s.cSnap[k] > 0) cls += ' in-range';
+                grid.innerHTML += '<div class="' + cls + '">' + k + '<span class="sub">c=' + s.cSnap[k] + '</span></div>';
+            }
+
+            renderCodeBox('t4-code', codeDiff, s.line);
+            document.getElementById('t4-exp').innerHTML = s.exp;
+            document.getElementById('t4-prev').disabled = (t4Idx === 0);
+            document.getElementById('t4-next').disabled = (t4Idx === t4Steps.length - 1);
+        }
+
+        function stepT4(d) { t4Idx = Math.max(0, Math.min(t4Steps.length - 1, t4Idx + d)); renderT4(); }
+        function resetT4() { t4Idx = 0; renderT4(); }
+
+        // ==========================================
+        // ТАБ 5: РЕШЕТО НА ДЕЛИТЕЛИТЕ (brsum.cpp)
+        // ==========================================
+        const codeBrsum = [
+            '#include <bits/stdc++.h>',
+            'using namespace std;',
+            '',
+            'const int MAXN = 1000005;',
+            'int c[MAXN];',
+            'long long s[MAXN];',
+            '',
+            'int main()',
+            '{',
+            '    int n;',
+            '    cin >> n;',
+            '',
+            '    for(int i = 1; i <= n; i++)',
+            '    {',
+            '        for(int j = i; j <= n; j += i)',
+            '        {',
+            '            c[j]++;',
+            '            s[j] += i;',
+            '        }',
+            '    }',
+            '    for(int i = 1; i <= n; i++)',
+            '    {',
+            '        cout << i << " -> br: " << c[i] << ", suma: " << s[i] << "\\n";',
+            '    }',
+            '}'
+        ];
+
+        let t5Steps = [];
+        let t5Idx = 0;
+
+        function buildT5() {
+            const n = 12;
+            const c = new Array(n + 1).fill(0);
+            const s = new Array(n + 1).fill(0);
+
+            t5Steps = [{
+                line: 11, i: '-', jStr: '-', cSnap: [...c], sSnap: [...s], touched: [],
+                exp: 'Стартираме за <code>n = 12</code>. Без проверка за простота пускаме всяко число <code>i</code> от <code>1</code> до <code>12</code> да посети кратните си!'
+            }];
+
+            for (let i = 1; i <= n; i++) {
+                const touched = [];
+                for (let j = i; j <= n; j += i) {
+                    c[j]++;
+                    s[j] += i;
+                    touched.push(j);
+                }
+                t5Steps.push({
+                    line: 18, i: i, jStr: touched.join(', '), cSnap: [...c], sSnap: [...s], touched: touched,
+                    exp: 'Делител <strong>i = ' + i + '</strong> посещава числата <strong>' + touched.join(', ') + '</strong>: за всяко от тях увеличава броя на делителите <code>c[j]++</code> и прибавя себе си към сумата <code>s[j] += ' + i + '</code>.'
+                });
+            }
+
+            t5Steps.push({
+                line: 23, i: 'Край', jStr: '-', cSnap: [...c], sSnap: [...s], touched: [],
+                exp: '✅ За <code>12</code> получаваме точно <strong>br = 6</strong> делителя (1, 2, 3, 4, 6, 12) и <strong>suma = 28</strong>, а за съвършеното число <code>6</code> получаваме <strong>br = 4, suma = 12</strong>!'
+            });
+            t5Idx = 0;
+            renderT5();
+        }
+
+        function renderT5() {
+            const st = t5Steps[t5Idx];
+            document.getElementById('t5-step-lbl').innerText = 'Стъпка ' + (t5Idx + 1) + ' от ' + t5Steps.length;
+            document.getElementById('t5-i').innerText = st.i;
+            document.getElementById('t5-j').innerText = st.jStr;
+            document.getElementById('t5-c12').innerText = st.cSnap[12];
+            document.getElementById('t5-s12').innerText = st.sSnap[12];
+
+            const grid = document.getElementById('t5-grid');
+            grid.innerHTML = '';
+            for (let k = 1; k <= 12; k++) {
+                let cls = 'num-box';
+                if (k === st.i) cls += ' prime-active';
+                else if (st.touched.includes(k)) cls += ' prime-confirmed';
+                grid.innerHTML += '<div class="' + cls + '" style="height:52px;">' + k + '<span class="sub">br:' + st.cSnap[k] + ' sum:' + st.sSnap[k] + '</span></div>';
+            }
+
+            renderCodeBox('t5-code', codeBrsum, st.line);
+            document.getElementById('t5-exp').innerHTML = st.exp;
+            document.getElementById('t5-prev').disabled = (t5Idx === 0);
+            document.getElementById('t5-next').disabled = (t5Idx === t5Steps.length - 1);
+        }
+
+        function stepT5(d) { t5Idx = Math.max(0, Math.min(t5Steps.length - 1, t5Idx + d)); renderT5(); }
+        function resetT5() { t5Idx = 0; renderT5(); }
+
+        // ==========================================
+        // ТАБ 6: БАЗОВИ ЗАДАЧИ
+        // ==========================================
+        function openPracticeTask(num) {
+            switchTab(6);
+            [1, 2, 3].forEach(i => {
+                document.getElementById('pt-pane-' + i).style.display = (i === num) ? 'block' : 'none';
+                document.getElementById('pt-btn-' + i).className = (i === num) ? '' : 'btn-slate';
+            });
+            if (num === 1) runPractice1();
+            if (num === 2) runPractice2();
+            if (num === 3) runPractice3();
+        }
+
+        function runPractice1() {
+            let n = Math.max(5, Math.min(100, parseInt(document.getElementById('pt1-n').value, 10) || 20));
+            document.getElementById('pt1-n').value = n;
+
+            const pairs = [];
+            for (let i = 2; i <= n - 2; i++) {
+                if (spf[i] === i && spf[i + 2] === i + 2) {
+                    pairs.push('(' + i + ', ' + (i + 2) + ')');
+                }
+            }
+            document.getElementById('pt1-out').innerHTML =
+                '<div class="chain-wrap" style="border:none; margin:0; padding:0;">' +
+                (pairs.length ? pairs.map(pr => '<span class="chain-pill">' + pr + '</span>').join('') : 'Няма двойки') +
+                '</div>';
+            document.getElementById('pt1-exp').innerHTML =
+                'За <code>n = ' + n + '</code> открихме <strong>' + pairs.length + '</strong> двойки прости близнаци чрез проверката <code>if (p[i] &amp;&amp; p[i + 2])</code>!';
+        }
+
+        function runPractice2() {
+            const raw = document.getElementById('pt2-in').value.trim();
+            const nums = raw.split(/\s+/).map(Number).filter(v => !isNaN(v) && v >= 1 && v <= 1000000000000);
+            const itemsHtml = nums.map(x => {
+                const r = Math.round(Math.sqrt(x));
+                const isSquare = (r * r === x);
+                const ok = isSquare && r >= 2 && r <= MAX_SPF && spf[r] === r;
+                const reason = ok ? ('r = ' + r + ' е просто &rarr; делители: 1, ' + r + ', ' + x) : (isSquare ? ('r = ' + r + ' не е просто') : 'не е точен квадрат');
+                return '<div style="padding:0.45rem 0.7rem; margin-bottom:0.4rem; border-radius:0.4rem; background:var(--code-bg); border-left:4px solid ' + (ok ? 'var(--success)' : 'var(--danger)') + '; font-family:monospace; font-size:0.85rem;">' +
+                    '<strong>x = ' + x + '</strong> &rarr; <strong style="color:' + (ok ? 'var(--success)' : 'var(--danger)') + ';">' + (ok ? 'YES' : 'NO') + '</strong> (' + reason + ')' +
+                    '</div>';
+            }).join('');
+
+            document.getElementById('pt2-out').innerHTML = itemsHtml || 'Въведете поне едно положително число.';
+            document.getElementById('pt2-exp').innerHTML =
+                'Ключово наблюдение: Число <code>x &le; 10<sup>12</sup></code> има точно 3 делителя тогава и само тогава, когато <code>x = r<sup>2</sup></code> за <strong>просто число <code>r &le; 10<sup>6</sup></code></strong>!';
+        }
+
+        function setPt3Preset(l, r, k) {
+            document.getElementById('pt3-l').value = l;
+            document.getElementById('pt3-r').value = r;
+            document.getElementById('pt3-k').value = k;
+            runPractice3();
+        }
+
+        function countDistinctPrimeFactors(x) {
+            let cnt = 0;
+            while (x > 1) {
+                const p = spf[x];
+                cnt++;
+                while (x % p === 0) x = Math.floor(x / p);
+            }
+            return cnt;
+        }
+
+        function runPractice3() {
+            let l = Math.max(1, Math.min(200, parseInt(document.getElementById('pt3-l').value, 10) || 1));
+            let r = Math.max(l, Math.min(200, parseInt(document.getElementById('pt3-r').value, 10) || 10));
+            let k = Math.max(1, Math.min(4, parseInt(document.getElementById('pt3-k').value, 10) || 2));
+            document.getElementById('pt3-l').value = l;
+            document.getElementById('pt3-r').value = r;
+            document.getElementById('pt3-k').value = k;
+
+            const matches = [];
+            for (let x = l; x <= r; x++) {
+                if (countDistinctPrimeFactors(x) === k) matches.push(x);
+            }
+
+            document.getElementById('pt3-out').innerHTML =
+                '<div class="chain-wrap" style="border:none; margin:0; padding:0;">' +
+                (matches.length ? matches.map(m => '<span class="chain-pill">' + m + '</span>').join('') : '<span style="color:var(--text-muted); font-family:monospace;">Няма такива числа в интервала</span>') +
+                '</div>';
+            document.getElementById('pt3-exp').innerHTML =
+                'В интервала <code>[' + l + ', ' + r + ']</code> има точно <strong>' + matches.length + '</strong> числа с <code>k = ' + k + '</code> различни прости делителя!';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            buildT1();
+            runT2Query();
+            buildT3();
+            buildT4();
+            buildT5();
+            runPractice1();
+        });
+    </script>
+</body>
+
+</html>
